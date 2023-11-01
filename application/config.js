@@ -14,7 +14,8 @@ const config = {
 		authTimeout: 3000,
 		refreshIntervalSeconds: process.env.IMAP_REFRESH_INTERVAL_SECONDS
 	},
-	http: {port: normalizePort(process.env.PORT || '3000')}
+	http: {port: normalizePort(process.env.PORT || '3000')},
+	branding: process.env.BRANDING || ["PROJECT_NAME", "YOUR_NAME", "YOUR_WEBSITE"]
 }
 
 if (!config.imap.user || !config.imap.password || !config.imap.host) {
