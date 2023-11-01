@@ -1,0 +1,30 @@
+{
+  "name": "48hr.email | disposable email",
+  "description": "a simple and fast disposable mail service that works directly with your imap server. No database required.",
+  "repository": "https://github.com/Crazyco-xyz/48hr.email",
+  "logo": "https://github.com/Crazyco-xyz/48hr.email/blobl/main/infrastructure/web/public/images/logo.gif",
+  "keywords": [
+    "node",
+    "disposable-mail"
+  ],
+  "env": {
+    "DOMAINS": {
+      "description": "Email domains."
+    },
+    "IMAP_SERVER": {
+      "description": "Hostname of the server (usually imap.example.com)"
+    },
+    "IMAP_USER": {
+      "description": "Username to login to the imap server"
+    },
+    "IMAP_PASSWORD": {
+      "description": "Password to login to the imap server"
+    },
+    "IMAP_REFRESH_INTERVAL_SECONDS": {
+      "description": "How often to refresh the imap messages manually"
+    },
+    "DELETE_MAILS_OLDER_THAN_DAYS": {
+      "description": "How many days to to wait before deleting messages. (default: `30`)"
+    }
+  }
+}

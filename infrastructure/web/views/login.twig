@@ -1,0 +1,36 @@
+{% extends 'layout.twig' %}
+
+{% block body %}
+
+<div id="login">
+    <h1>Welcome!</h1>
+    <h4>Here you can either create a new Inbox, or access your old one</h4>
+    <br>
+    <br>
+
+    {% if userInputError %}
+        <blockquote class="warning">
+            Your input was invalid. Please try other values.
+        </blockquote>
+    {% endif %}
+    <form method="POST" action="/login">
+        <fieldset>
+            <label for="nameField">Name</label>
+            <input type="text" id="nameField" name="username" value="{{ username }}">
+            <label for="commentField">Domain</label>
+            <div class="dropdown">
+                <select id="commentField" name="domain">
+                    {% for domain in domains %}
+                        <option value="{{ domain }}">{{ domain }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="buttons">
+                <input class="button" type="submit" value="Access This Inbox">
+                <a class="button" href="/login/random">Create Random Inbox</a>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+{% endblock %}

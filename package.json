@@ -1,0 +1,63 @@
+{
+  "name": "48hr.email",
+  "version": "1.0",
+  "private": false,
+  "scripts": {
+    "start": "node ./app.js",
+    "test": "xo",
+    "debug": "node --nolazy --inspect-brk=9229 ./app.js"
+  },
+  "dependencies": {
+    "array.prototype.flatmap": "^1.2.1",
+    "async-retry": "^1.2.3",
+    "compression": "^1.7.3",
+    "debug": "^2.6.9",
+    "express": "~4.16.0",
+    "express-validator": "^5.3.1",
+    "helmet": "^3.16.0",
+    "http-errors": "~1.6.2",
+    "imap-simple": "^4.3.0",
+    "lodash": "^4.17.13",
+    "mailparser": "^2.4.3",
+    "mem": "^4.2.0",
+    "mnemonist": "^0.27.2",
+    "moment": "^2.24.0",
+    "morgan": "~1.9.0",
+    "nodemailer": "^5.1.1",
+    "p-series": "^2.0.0",
+    "random-word": "^2.0.0",
+    "sanitize-html": "^1.20.0",
+    "socket.io": "^2.2.0",
+    "twig": "~0.10.3"
+  },
+  "devDependencies": {
+    "xo": "^0.24.0"
+  },
+  "xo": {
+    "semicolon": false,
+    "prettier": true,
+    "rules": {
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    },
+    "overrides": [
+      {
+        "files": "public/javascripts/*.js",
+        "esnext": false,
+        "env": [
+          "browser"
+        ],
+        "globals": [
+          "io"
+        ]
+      }
+    ]
+  },
+  "engines": {
+    "node": "10.x"
+  }
+}

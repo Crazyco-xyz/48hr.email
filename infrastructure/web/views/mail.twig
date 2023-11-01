@@ -1,0 +1,35 @@
+
+
+{% extends 'layout.twig' %}
+
+{% block body %}
+    <script>
+        enableNewMessageNotifications('{{ address }}', false)
+    </script>
+
+    <div style="float: right; text-align: end;">
+	    <a href="/{{ address }}">
+	        ← Return to inbox</a>
+	    <br>
+        <a href="/login">
+            Logout</a>
+    </div>
+    <hr>
+	<div style="text-align: center;">
+    <h1>{{ mail.subject }}</h1>
+    </div>
+    {% if mail.html %}
+    <div>
+		<iframe srcdoc='{{ mail.html }}'></iframe>
+	</div>
+    {% elseif mail.textAsHtml %}
+        <div class="mail_body">
+            {{ mail.textAsHtml|raw }}
+	</div>
+    {% else %}
+        <div class="mail_body"></div>
+    {% endif %}
+    <h3 style="text-align: center;display: block;">{{ mail.from.text }} | {{ mail.date| date }}</h3>
+
+
+{% endblock %}
