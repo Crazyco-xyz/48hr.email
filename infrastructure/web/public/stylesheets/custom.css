@@ -1,5 +1,3 @@
-
-
 body {
     margin: 0;
     padding: 10px 10px 10px;
@@ -31,7 +29,6 @@ a.no-link-color {
     color: black;
     background-color: #9b4cda;
 }
-
 
 iframe {
     width: 80%;
