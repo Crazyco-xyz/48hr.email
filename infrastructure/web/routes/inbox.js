@@ -2,7 +2,7 @@ const express = require('express')
 
 const router = new express.Router()
 const {sanitizeParam} = require('express-validator/filter')
-
+const config = require('../../../application/config')
 const sanitizeAddress = sanitizeParam('address').customSanitizer(
 	(value, {req}) => {
 		return req.params.address
