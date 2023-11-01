@@ -16,7 +16,9 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, (req, res, _next) => {
 	res.render('inbox', {
 		title: `${config.branding[0]} | ` + req.params.address,
 		address: req.params.address,
-		mailSummaries: mailProcessingService.getMailSummaries(req.params.address)
+		mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
+		madeby: config.branding[1],
+		madebysite: config.branding[2]
 	})
 })
 
