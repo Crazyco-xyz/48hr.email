@@ -14,7 +14,7 @@ const sanitizeAddress = sanitizeParam('address').customSanitizer(
 router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, (req, res, _next) => {
 	const mailProcessingService = req.app.get('mailProcessingService')
 	res.render('inbox', {
-		title: "48hr.email | " + req.params.address,
+		title: `${config.branding[0]} | ` + req.params.address,
 		address: req.params.address,
 		mailSummaries: mailProcessingService.getMailSummaries(req.params.address)
 	})

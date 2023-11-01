@@ -7,9 +7,10 @@ const config = require('../../../application/config')
 
 router.get('/', (req, res, _next) => {
 	res.render('login', {
-		title: '48hr.email | Your temporary Inbox',
+		title: `${config.branding[0]} | Your temporary Inbox`,
 		username: randomWord(),
-		domains: config.email.domains
+		domains: config.email.domains,
+		madeby: config.branding[1]
 	})
 })
 
@@ -30,7 +31,8 @@ router.post(
 				title: 'Login',
 				username: req.body.username,
 				domain: req.body.domain,
-				userInputError: true
+				userInputError: true,
+				madeby: config.branding[1]
 			})
 		}
 
