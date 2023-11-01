@@ -10,7 +10,8 @@ router.get('/', (req, res, _next) => {
 		title: `${config.branding[0]} | Your temporary Inbox`,
 		username: randomWord(),
 		domains: config.email.domains,
-		madeby: config.branding[1]
+		madeby: config.branding[1],
+		madebysite: config.branding[2]
 	})
 })
 
@@ -32,7 +33,8 @@ router.post(
 				username: req.body.username,
 				domain: req.body.domain,
 				userInputError: true,
-				madeby: config.branding[1]
+				madeby: config.branding[1],
+				madebysite: config.branding[2]
 			})
 		}
 
