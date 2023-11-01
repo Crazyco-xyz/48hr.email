@@ -1,6 +1,6 @@
 {
   "name": "48hr.email",
-  "version": "1.0",
+  "version": "1.0.0",
   "private": false,
   "scripts": {
     "start": "node ./app.js",
