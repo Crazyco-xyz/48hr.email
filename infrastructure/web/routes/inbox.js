@@ -38,7 +38,9 @@ router.get(
 				res.render('mail', {
 					title: req.params.address,
 					address: req.params.address,
-					mail
+					mail,
+					madeby: config.branding[1],
+					madebysite: config.branding[2]
 				})
 			} else {
 				next({message: 'email not found', status: 404})
