@@ -43,8 +43,6 @@ imaps.ImapSimple.prototype.deleteMessage = function (uid, callback) {
     });
 };
 
-
-
 /**
  * Close a mailbox
  *
