@@ -67,7 +67,6 @@ class MailProcessingService extends EventEmitter {
 	onMailDeleted(uid) {
 		debug('mail deleted with uid', uid)
 		this.mailRepository.removeUid(uid)
-		// No client notification required, as nobody can hold a connection for 30+ days.
 	}
 
 	async _deleteOldMails() {

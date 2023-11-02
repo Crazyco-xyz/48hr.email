@@ -46,7 +46,7 @@ imaps.ImapSimple.prototype.deleteMessage = function (uid, callback) {
 /**
  * Close a mailbox
  *
- * @param {boolean} [autoExpunge=true] If autoExpunge is true, any messages marked as Deleted in the currently open mailbox will be remove
+ * @param {boolean} [autoExpunge=true] If autoExpunge is true, any messages marked as Deleted in the currently open mailbox will be removed
  * @param {function} [callback] Optional callback, receiving signature (err)
  * @returns {undefined|Promise} Returns a promise when no callback is specified, resolving to `boxName`
  * @memberof ImapSimple

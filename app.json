@@ -2,7 +2,7 @@
   "name": "48hr.email | disposable email",
   "description": "a simple and fast disposable mail service that works directly with your imap server. No database required.",
   "repository": "https://github.com/Crazyco-xyz/48hr.email",
-  "logo": "https://github.com/Crazyco-xyz/48hr.email/blobl/main/infrastructure/web/public/images/logo.gif",
+  "logo": "https://github.com/Crazyco-xyz/48hr.email/blobl/main/infrastructure/web/public/images/logo.png",
   "keywords": [
     "node",
     "disposable-mail"
@@ -24,7 +24,7 @@
       "description": "How often to refresh the imap messages manually"
     },
     "DELETE_MAILS_OLDER_THAN_DAYS": {
-      "description": "How many days to to wait before deleting messages. (default: `30`)"
+      "description": "How many days to to wait before deleting messages."
     }
   }
 }
