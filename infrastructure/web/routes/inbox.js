@@ -39,6 +39,7 @@ router.get(
 					title: req.params.address,
 					address: req.params.address,
 					mail,
+					uid: req.params.uid,
 					madeby: config.branding[1],
 					madebysite: config.branding[2]
 				})
@@ -47,6 +48,21 @@ router.get(
 			}
 		} catch (error) {
 			console.error('error while fetching one email', error)
+			next(error)
+		}
+	}
+)
+
+router.get(
+	'^/:address/delete/:uid([0-9]+$)',
+	sanitizeAddress,
+	async (req, res, next) => {
+		try {
+			const mailProcessingService = req.app.get('mailProcessingService')
+			await mailProcessingService.deleteSpecificEmail(req.params.uid)
+			res.redirect(`/${req.params.address}`)
+		} catch (error) {
+			console.error('error while deleting email', error)
 			next(error)
 		}
 	}

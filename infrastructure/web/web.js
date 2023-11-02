@@ -1,6 +1,6 @@
 const path = require('path')
 const http = require('http')
-const debug = require('debug')('voidmail:server')
+const debug = require('debug')('48hr-email:server')
 const express = require('express')
 const logger = require('morgan')
 const Twig = require('twig')

@@ -26,7 +26,7 @@ class MailRepository {
 		// TODO: make this more efficient, looping through each email is not cool.
 		this.mailSummaries.forEachAssociation((mails, to) => {
 			mails
-				.filter(mail => mail.uid === uid)
+				.filter(mail => mail.uid === parseInt(uid))
 				.forEach(mail => {
 					this.mailSummaries.remove(to, mail)
 					debug('removed ', mail.date, to, mail.subject)

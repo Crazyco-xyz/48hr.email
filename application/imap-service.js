@@ -217,6 +217,17 @@ class ImapService extends EventEmitter {
 	}
 
 	/**
+	 *
+	 * @param uid delete specific mail per UID
+	 */
+	async deleteSpecificEmail(uid) {
+		debug(`deleting mails ${uid}`)
+		await this.connection.deleteMessage(uid)
+		console.log(`deleted mail with UID: ${uid}.`)
+		this.emit(ImapService.EVENT_DELETED_MAIL, uid)
+	}
+
+	/**
 	 * Helper method because ImapSimple#search also fetches each message. We just need the uids here.
 	 *
 	 * @param {Object} searchCriteria (see ImapSimple#search)

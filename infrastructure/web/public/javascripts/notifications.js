@@ -7,7 +7,7 @@ function showNewMailsNotification(address, reloadPage) {
 	const notification = new Notification(address, {
 		body: 'You have new messages',
 		icon: '/images/logo.gif',
-		tag: 'voidmail-replace-notification',
+		tag: '48hr-email-replace-notification',
 		renotify: true
 	})
 	notification.addEventListener('click', event => {
