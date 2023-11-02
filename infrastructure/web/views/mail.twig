@@ -18,7 +18,7 @@
     </div>
     {% if mail.html %}
     <div>
-		<iframe srcdoc='{{ mail.html }}'></iframe>
+		<iframe srcdoc='{{ mail.html|replace({'<html>': '<html style="color: white"'}) }}'></iframe>
 	</div>
     {% elseif mail.textAsHtml %}
         <div class="mail_body">
