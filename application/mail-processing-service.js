@@ -31,9 +31,10 @@ class MailProcessingService extends EventEmitter {
 		return this.mailRepository.getForRecipient(address)
 	}
 
-	deleteSpecificEmail(uid) {
-		this.imapService.deleteSpecificEmail(uid)
-		this.mailRepository.removeUid(uid)
+	deleteSpecificEmail(adress, uid) {
+		if (this.mailRepository.UserRemoveUid(adress, uid) == true) {
+			this.imapService.deleteSpecificEmail(uid)
+		}
 	}
 
 	getOneFullMail(address, uid) {
