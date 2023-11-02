@@ -14,6 +14,17 @@ All data is being removed 48hrs after they have reached the mail server.
 
 -----
 
+### What are its features?
+
+- Create a custom inbox with select name and domain, or get a fully randomized one
+- Receive emails with a clean preview in your inbox, with optional browser notifications
+- Read emails, with support for CSS & JS just like you are used to from regular email providers
+- Delete your emails ahead of time by pressing the delete button
+
+<br><br>
+
+-----
+
 ### How does this work?
 
 48hr.email uses an existing IMAP server for its handling. A single catch-all account and the accompanying credentials handle all the emails.
@@ -64,7 +75,6 @@ WantedBy=multi-user.target
 
 -----
 ### TODO:
-- Add email deletion button
 - Clean up codebase
 
 #### Maybe later (PRs welcome):
