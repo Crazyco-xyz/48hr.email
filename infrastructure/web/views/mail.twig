@@ -18,6 +18,14 @@
     </div>
     {% if mail.html %}
     <div>
+
+        {# TODO: 
+            Find a better solution for this monstrocity.
+            Replaces clean html tag with styled one for readabbility. 
+            Realistically, the entire iFrame or even website itself might be vulnerable.
+            srcdoc='html' seems like a very, very unsafe method to me, unfortunately I havent found a better solution.
+        #}
+
 		<iframe srcdoc='{{ mail.html|replace({'<html>': '<html style="color: white"'}) }}'></iframe>
 	</div>
     {% elseif mail.textAsHtml %}
