@@ -41,12 +41,14 @@ app.use(
 )
 Twig.extendFilter('sanitizeHtml', sanitizeHtmlTwigFilter)
 
+/**
 app.get('/', (req, res, _next) => {
 	res.redirect('/login')
 })
+**/
 
-app.use('/login', loginRouter)
-app.use('/', inboxRouter)
+app.use('/', loginRouter)
+app.use('/inbox', inboxRouter)
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {

@@ -15,8 +15,17 @@ router.get('/', (req, res, _next) => {
 	})
 })
 
-router.get('/random', (req, res, _next) => {
-	res.redirect(`/${randomWord()}@${config.email.domains[Math.floor(Math.random() * config.email.domains.length)]}`)
+router.get('/inbox/random', (req, res, _next) => {
+	res.redirect(`/inbox/${randomWord()}@${config.email.domains[Math.floor(Math.random() * config.email.domains.length)]}`)
+})
+
+router.get('/logout', (req, res, _next) => {
+
+	/**
+	 * If we ever need a logout sequence, now we can have one!
+	 */
+
+	res.redirect('/')
 })
 
 router.post(
@@ -38,7 +47,7 @@ router.post(
 			})
 		}
 
-		res.redirect(`/${req.body.username}@${req.body.domain}`)
+		res.redirect(`/inbox/${req.body.username}@${req.body.domain}`)
 	}
 )
 

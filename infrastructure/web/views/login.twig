@@ -13,7 +13,7 @@
             Your input was invalid. Please try other values.
         </blockquote>
     {% endif %}
-    <form method="POST" action="/login">
+    <form method="POST" action="/">
         <fieldset>
             <label for="nameField">Name</label>
             <input type="text" id="nameField" name="username" value="{{ username }}">
@@ -27,7 +27,7 @@
             </div>
             <div class="buttons">
                 <input class="button" type="submit" value="Access This Inbox">
-                <a class="button" href="/login/random">Create Random Inbox</a>
+                <a class="button" href="/inbox/random">Create Random Inbox</a>
             </div>
         </fieldset>
     </form>

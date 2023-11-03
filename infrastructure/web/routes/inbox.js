@@ -60,7 +60,7 @@ router.get(
 		try {
 			const mailProcessingService = req.app.get('mailProcessingService')
 			await mailProcessingService.deleteSpecificEmail(req.params.address, req.params.uid)
-			res.redirect(`/${req.params.address}`)
+			res.redirect(`/inbox/${req.params.address}`)
 		} catch (error) {
 			console.error('error while deleting email', error)
 			next(error)
