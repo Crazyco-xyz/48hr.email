@@ -17,7 +17,7 @@
         <fieldset>
             <label for="nameField">Name</label>
             <input type="text" id="nameField" name="username" value="{{ username }}">
-            <label for="commentField">Domain</label>
+            <label for="commentField">Domain ({{ domains|length }})</label>
             <div class="dropdown">
                 <select id="commentField" name="domain">
                     {% for domain in domains %}
