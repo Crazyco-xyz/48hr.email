@@ -2,6 +2,7 @@
 
 <img align="center" src="https://i.imgur.com/xrHgrKZ.png">
 
+
 -----
 
 ### What is this?
@@ -10,6 +11,7 @@
 
 All data is being removed 48hrs after they have reached the mail server.
 
+<p align="center">Join our <a href="https://discord.gg/VnEGwaRU8Y">Discord</a></p>
 <br><br>
 
 -----
