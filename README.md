@@ -85,6 +85,7 @@ WantedBy=multi-user.target
 <br><br>
 
 -----
+
 ### Screenshots:
 
 - #### Inbox:
@@ -95,3 +96,18 @@ WantedBy=multi-user.target
 
 - #### Email without CSS:
 <img align="center" src="https://i.imgur.com/VPZ8IG6.png">
+
+<br><br>
+
+-----
+
+### ❤️ Support
+If you like what you're seeing, **please consider donating**. I won't ever put this behind a paywall, but I'd still appreciate a few bucks!
+
+- **[Patreon](https://patreon.com/crazyco)**: ❤️ Account needed, subscription with perks across my entire org.
+- **[Wire-transfer](https://bunq.me/ClaraK)**: No account needed, one-time
+- **[Paypal](https://paypal.me/ClaraCrazy)**: Account needed, one-time
+- **[ko-fi](https://ko-fi.com/cynthialabs)**: No account needed, one-time
+- **Monero**: `41kyWeeoVdK4quzQ4M9ikVGs6tCQCLfdx8jLExTNsAu2SF1QAyDqRdjfGM6EL8L9NpXwt89HJeAoGf1aoArk7nDr4AMMV4T`
+
+**Thanks for all your support <3**
