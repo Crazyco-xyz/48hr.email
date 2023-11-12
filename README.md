@@ -11,7 +11,7 @@
 
 All data is being removed 48hrs after they have reached the mail server.
 
-<p align="center"><a href="https://48hr.email" target="_blank">Try now</a> | <a href="https://discord.gg/rY5QJtxGbS" target="_blank">Discord</a></p>
+<p align="center"><a href="https://48hr.email" target="_blank">Try now</a> | <a href="https://discord.gg/crazyco" target="_blank">Discord</a></p>
 <br><br>
 
 -----
