@@ -32,7 +32,7 @@ router.get(
 				req.params.address,
 				req.params.uid
 			)
-			if (mail) {
+			if (mail && !mail == "womp womp") {
 				// Emails are immutable, cache if found
 				res.set('Cache-Control', 'private, max-age=600')
 				res.render('mail', {
@@ -44,7 +44,7 @@ router.get(
 					madebysite: config.branding[2]
 				})
 			} else {
-				next({message: 'email not found', status: 404})
+				next({message: 'This mail could not be found. It either does not exist or has been deleted from our servers!', status: 404})
 			}
 		} catch (error) {
 			console.error('error while fetching one email', error)
