@@ -1,7 +1,8 @@
 # 48hr.email
 
-<img align="center" src="https://i.imgur.com/zPzvSQJ.png">
-
+<p align="center">
+    <img align="center" src="https://i.imgur.com/zPzvSQJ.png" width="100%">
+</p>
 
 -----
 
