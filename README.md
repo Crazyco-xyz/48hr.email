@@ -1,6 +1,6 @@
 # 48hr.email
 
-<img align="center" src="https://i.imgur.com/xrHgrKZ.png">
+<img align="center" src="https://i.imgur.com/zPzvSQJ.png">
 
 
 -----
