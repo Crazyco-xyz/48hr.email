@@ -44,7 +44,15 @@ router.get(
 					madebysite: config.branding[2]
 				})
 			} else {
-				res.redirect('/404')
+				res.render(
+					'error',
+					{
+						address: req.params.address,
+						message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
+						madeby: config.branding[1],
+						madebysite: config.branding[2],
+					}
+				)
 			}
 		} catch (error) {
 			console.error('error while fetching one email', error)

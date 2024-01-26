@@ -5,13 +5,10 @@
 	    <a href="/inbox/{{ address }}">
 	        ← Return to inbox</a>
 	    <br>
-        <a href="/inbox/{{ address }}/delete/{{ uid }}">
-            Delete Email</a>
-	    <br>
         <a href="/logout">
             Logout</a>
-
+    </div>
   <h1>{{message}}</h1>
-  <h2>{{status}}</h2>
-  <pre>{{stack}}</pre>
+  <h2>{{error.status}}</h2>
+  <pre>{{error.stack}}</pre>
 {% endblock %}
