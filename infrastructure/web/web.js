@@ -11,6 +11,7 @@ const socketio = require('socket.io')
 const config = require('../../application/config')
 const inboxRouter = require('./routes/inbox')
 const loginRouter = require('./routes/login')
+const errorRouter = require('./routes/error')
 const {sanitizeHtmlTwigFilter} = require('./views/twig-filters')
 
 // Init express middleware
@@ -49,6 +50,7 @@ app.get('/', (req, res, _next) => {
 
 app.use('/', loginRouter)
 app.use('/inbox', inboxRouter)
+app.use('/404', errorRouter)
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
