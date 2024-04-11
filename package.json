@@ -26,7 +26,7 @@
     "nodemailer": "^5.1.1",
     "p-series": "^2.0.0",
     "random-word": "^2.0.0",
-    "sanitize-html": "^1.20.0",
+    "sanitize-html": "^2.12.1",
     "socket.io": "^2.2.0",
     "twig": "~0.10.3"
   },
