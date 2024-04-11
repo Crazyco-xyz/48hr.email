@@ -13,7 +13,7 @@
     "compression": "^1.7.3",
     "debug": "^2.6.9",
     "express": "~4.19.2",
-    "express-validator": "^5.3.1",
+    "express-validator": "^7.0.1",
     "helmet": "^3.16.0",
     "http-errors": "~1.6.2",
     "imap-simple": "^4.3.0",
