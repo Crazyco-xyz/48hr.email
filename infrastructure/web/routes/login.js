@@ -2,7 +2,7 @@ const express = require('express')
 
 const router = new express.Router()
 const randomWord = require('random-word')
-const {check, validationResult} = require('express-validator/check')
+const {check, validationResult} = require('express-validator')
 const config = require('../../../application/config')
 
 router.get('/', (req, res, _next) => {

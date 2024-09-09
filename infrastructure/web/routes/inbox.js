@@ -1,9 +1,9 @@
 const express = require('express')
 
 const router = new express.Router()
-const {sanitizeParam} = require('express-validator/filter')
+const {param} = require('express-validator')
 const config = require('../../../application/config')
-const sanitizeAddress = sanitizeParam('address').customSanitizer(
+const sanitizeAddress = param('address').customSanitizer(
 	(value, {req}) => {
 		return req.params.address
 			.replace(/[^A-Za-z0-9_.+@-]/g, '') // Remove special characters

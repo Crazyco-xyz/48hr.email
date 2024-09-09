@@ -8,30 +8,31 @@
     "debug": "node --nolazy --inspect-brk=9229 ./app.js"
   },
   "dependencies": {
-    "array.prototype.flatmap": "^1.2.1",
-    "async-retry": "^1.2.3",
-    "compression": "^1.7.3",
+    "array.prototype.flatmap": "^1.3.2",
+    "async-retry": "^1.3.3",
+    "compression": "^1.7.4",
     "debug": "^2.6.9",
-    "express": "~4.16.0",
-    "express-validator": "^5.3.1",
-    "helmet": "^3.16.0",
+    "express": "^4.19.2",
+    "express-validator": "^7.2.0",
+    "helmet": "^3.23.3",
     "http-errors": "~1.6.2",
-    "imap-simple": "^4.3.0",
-    "lodash": "^4.17.13",
-    "mailparser": "^2.4.3",
-    "mem": "^4.2.0",
+    "imap-simple": "^1.6.3",
+    "lodash": "^4.17.21",
+    "mailparser": "^3.7.1",
+    "mem": "^4.3.0",
     "mnemonist": "^0.27.2",
-    "moment": "^2.24.0",
+    "moment": "^2.30.1",
     "morgan": "~1.9.0",
-    "nodemailer": "^5.1.1",
-    "p-series": "^2.0.0",
+    "nodemailer": "^6.9.15",
+    "p-series": "^2.1.0",
     "random-word": "^2.0.0",
-    "sanitize-html": "^1.20.0",
-    "socket.io": "^2.2.0",
-    "twig": "~0.10.3"
+    "sanitize-html": "^2.13.0",
+    "semver": "^7.6.3",
+    "socket.io": "^4.7.5",
+    "twig": "^0.10.3"
   },
   "devDependencies": {
-    "xo": "^0.24.0"
+    "xo": "^0.59.3"
   },
   "xo": {
     "semicolon": false,
@@ -58,6 +59,6 @@
     ]
   },
   "engines": {
-    "node": "10.x"
+    "node": "22.x"
   }
 }
