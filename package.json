@@ -13,7 +13,7 @@
     "compression": "^1.7.4",
     "debug": "^2.6.9",
     "encodings": "^1.0.0",
-    "express": "^4.19.2",
+    "express": "^4.21.0",
     "express-validator": "^7.2.0",
     "helmet": "^3.23.3",
     "http-errors": "~1.6.2",
