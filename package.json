@@ -1,9 +1,9 @@
 {
   "name": "48hr.email",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "private": false,
   "scripts": {
-    "start": "node ./app.js",
+    "start": "node --trace-warnings ./app.js",
     "test": "xo",
     "debug": "node --nolazy --inspect-brk=9229 ./app.js"
   },
@@ -17,7 +17,7 @@
     "express-validator": "^7.2.0",
     "helmet": "^3.23.3",
     "http-errors": "~1.6.2",
-    "imap-simple": "^1.6.3",
+    "imap-simple": "^4.3.0",
     "lodash": "^4.17.21",
     "mailparser": "^3.7.1",
     "mem": "^4.3.0",

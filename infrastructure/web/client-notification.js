@@ -1,5 +1,6 @@
 const EventEmitter = require('events')
 const debug = require('debug')('48hr-email:notification')
+require('events').defaultMaxListeners = 50;
 
 /**
  * Receives sign-ins from users and notifies them when new mails are available.
