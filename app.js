@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint unicorn/no-process-exit: 0 */
 
-const config = require('./application/config.js')
+const config = require('./application/config')
 
 // Until node 11 adds flatmap, we use this:
 require('array.prototype.flatmap').shim()
