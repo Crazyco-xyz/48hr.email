@@ -2,20 +2,22 @@
 
 const config = {
 	email: {
-		domains: process.env.DOMAINS,
-		deleteMailsOlderThanDays: process.env.DELETE_MAILS_OLDER_THAN_DAYS
+		domains: process.env.EMAIL_DOMAINS,
+		deleteMailsOlderThanDays: process.env.EMAIL_DELETE_MAILS_OLDER_THAN_DAYS || 2
 	},
 	imap: {
 		user: process.env.IMAP_USER,
 		password: process.env.IMAP_PASSWORD,
 		host: process.env.IMAP_SERVER,
-		port: 993,
-		tls: true,
-		authTimeout: 3000,
-		refreshIntervalSeconds: process.env.IMAP_REFRESH_INTERVAL_SECONDS
+		port: process.env.IMAP_PORT || 993,
+		tls: process.env.IMAP_TLS || true,
+		authTimeout: process.env.IMAP_AUTHTIMEOUT || 3000,
+		refreshIntervalSeconds: process.env.IMAP_REFRESH_INTERVAL_SECONDS || 10
 	},
-	http: {port: normalizePort(process.env.PORT || '3000')},
-	branding: process.env.BRANDING || ["PROJECT_NAME", "YOUR_NAME", "YOUR_WEBSITE"]
+	http: {
+		port: normalizePort(process.env.HTTP_PORT || '3000'),
+		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"]
+	},
 }
 
 if (!config.imap.user || !config.imap.password || !config.imap.host) {
@@ -46,4 +48,4 @@ function normalizePort(val) {
 	return false
 }
 
-module.exports = config
+module.exports = config;

@@ -49,7 +49,8 @@ All data is being removed 48hrs after they have reached the mail server.
     - `cd 48hr.email`
     - `npm i`
     - Change all settings to the desired values:
-        - Either use environmental variables, or modify `application/config.js`
+        - Either use environmental variables, or modify `application/config.sample.js` (Rename to `config.js` after)
+        - For a list of values, check `application/config.sample.js`.
     - `npm run start`
 
 - #### Service file example:
