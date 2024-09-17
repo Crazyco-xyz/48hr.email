@@ -76,6 +76,15 @@ WantedBy=multi-user.target
 
 <br><br>
 
+- #### Docker:
+    - `git clone https://github.com/Crazyco-xyz/48hr.email.git`
+    - `cd 48hr.email`
+    - Change all settings to the desired values:
+        - Either use environmental variables, or modify `application/config.js`
+    - `docker compose up -d`
+    - If desired, you can also move the config file somewhere else (change volume mount accordingly)
+
+
 -----
 ### TODO:
 - Clean up codebase
