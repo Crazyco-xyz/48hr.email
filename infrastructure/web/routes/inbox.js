@@ -14,11 +14,11 @@ const sanitizeAddress = param('address').customSanitizer(
 router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, (req, res, _next) => {
 	const mailProcessingService = req.app.get('mailProcessingService')
 	res.render('inbox', {
-		title: `${config.branding[0]} | ` + req.params.address,
+		title: `${config.http.branding[0]} | ` + req.params.address,
 		address: req.params.address,
 		mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
-		madeby: config.branding[1],
-		madebysite: config.branding[2]
+		madeby: config.http.branding[1],
+		madebysite: config.http.branding[2]
 	})
 })
 
@@ -40,8 +40,8 @@ router.get(
 					address: req.params.address,
 					mail,
 					uid: req.params.uid,
-					madeby: config.branding[1],
-					madebysite: config.branding[2]
+					madeby: config.http.branding[1],
+					madebysite: config.http.branding[2]
 				})
 			} else {
 				res.render(
@@ -49,8 +49,8 @@ router.get(
 					{
 						address: req.params.address,
 						message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
-						madeby: config.branding[1],
-						madebysite: config.branding[2],
+						madeby: config.http.branding[1],
+						madebysite: config.http.branding[2],
 					}
 				)
 			}

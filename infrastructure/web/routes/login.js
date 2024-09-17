@@ -7,11 +7,11 @@ const config = require('../../../application/config')
 
 router.get('/', (req, res, _next) => {
 	res.render('login', {
-		title: `${config.branding[0]} | Your temporary Inbox`,
+		title: `${config.http.branding[0]} | Your temporary Inbox`,
 		username: randomWord(),
 		domains: config.email.domains,
-		madeby: config.branding[1],
-		madebysite: config.branding[2]
+		madeby: config.http.branding[1],
+		madebysite: config.http.branding[2]
 	})
 })
 
@@ -42,8 +42,8 @@ router.post(
 				username: req.body.username,
 				domain: req.body.domain,
 				userInputError: true,
-				madeby: config.branding[1],
-				madebysite: config.branding[2]
+				madeby: config.http.branding[1],
+				madebysite: config.http.branding[2]
 			})
 		}
 
