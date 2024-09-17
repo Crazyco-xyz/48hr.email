@@ -1,0 +1,13 @@
+services:
+  48hr:
+    ## Map environment variables from file (e.g. for imap password)
+    #env_file: ./.env
+    image: localhost/48hr
+    restart: always
+    build: .
+    ports:
+      - 3000:3000
+    ## Map config file from project to docker container
+    volumes:
+      - ./application/config.js:/home/node/app/application/config.js
+
