@@ -35,6 +35,20 @@
     {% else %}
         <div class="mail_body"></div>
     {% endif %}
+    {% if mail.attachments %}
+    <div class="mail_body">
+        {% for attachment in mail.attachments %}
+            <a href="">📎 {{ attachment.filename }}</a>
+            {#
+                Add actual button to download each file, inline. 
+                Or even better. just an a href with filename.
+                very basic, like regular links look. maybe a paperclip icon
+            #}
+        {% endfor %}
+	</div>
+    {% endif %}
+
+
     <h3 style="text-align: center;display: block;">{{ mail.from.text }} | {{ mail.date| date }}</h3>
 
 
