@@ -62,7 +62,7 @@ router.get(
 )
 
 router.get(
-	'^/:address/delete/:uid([0-9]+$)',
+	'^/:address/:uid([0-9]+$)/delete',
 	sanitizeAddress,
 	async (req, res, next) => {
 		try {
