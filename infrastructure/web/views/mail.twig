@@ -44,7 +44,8 @@
         <div class="mail_body"></div>
     {% endif %}
     {% if mail.attachments %}
-    <div class="mail_attachments">
+    <div class="mail_attachments" >
+    <p>Download your attachments: (SoonTM) 
         {% for attachment in mail.attachments %}
             <a href="">📎 {{ attachment.filename }}</a>
             {#
@@ -53,6 +54,7 @@
                 very basic, like regular links look. maybe a paperclip icon
             #}
         {% endfor %}
+    </p>
 	</div>
     {% endif %}
 

@@ -6,7 +6,9 @@ body {
     min-height: 100vh;
     background-color: #131516;
     color: #cccccc;
+    overflow: hidden;
 }
+
 main {
     flex: 1; /* keep footer at the bottom */
 }
@@ -128,4 +130,9 @@ input, textarea, select, select:active, select:focus, select:hover {
     width: 100%;
     flex: 1;
     font-size: 1.3rem;
+}
+
+.mail_attachments {
+    width: 80%;
+    padding-left:10%
 }
