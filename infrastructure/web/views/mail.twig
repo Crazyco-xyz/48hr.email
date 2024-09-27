@@ -30,7 +30,7 @@
 	</div>
     {% elseif mail.textAsHtml %}
     <div class="mail_body">
-            {{ mail.textAsHtml|raw }}
+        {{ mail.textAsHtml|raw }}
 	</div>
     {% else %}
         <div class="mail_body"></div>
