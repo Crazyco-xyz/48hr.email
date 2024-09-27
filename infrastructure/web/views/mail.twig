@@ -13,8 +13,13 @@
             Logout</a>
     </div>
     <hr>
-	<div style="text-align: center;">
-    <h1>{{ mail.subject }}</h1>
+	<div class="mail_body" style="padding-left:10%;">
+    <h1 style="text-align:left;">
+        {{ mail.subject }}
+        <span style="float:right; padding-right:10vw;" >
+            From: {{ mail.from.text }} at {{ mail.date| date }}
+        </span>
+    </p>
     </div>
     {% if mail.html %}
     <div>
@@ -47,9 +52,5 @@
         {% endfor %}
 	</div>
     {% endif %}
-
-
-    <h3 style="text-align: center;display: block;">{{ mail.from.text }} | {{ mail.date| date }}</h3>
-
 
 {% endblock %}

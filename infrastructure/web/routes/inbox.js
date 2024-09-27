@@ -36,7 +36,7 @@ router.get(
 				// Emails are immutable, cache if found
 				res.set('Cache-Control', 'private, max-age=600')
 				res.render('mail', {
-					title: req.params.address,
+					title: mail.subject + " | " + req.params.address,
 					address: req.params.address,
 					mail,
 					uid: req.params.uid,
@@ -62,7 +62,7 @@ router.get(
 )
 
 router.get(
-	'^/:address/:uid([0-9]+$)/delete',
+	'^/:address/:uid/delete',
 	sanitizeAddress,
 	async (req, res, next) => {
 		try {
@@ -75,5 +75,41 @@ router.get(
 		}
 	}
 )
+
+router.get(
+	'^/:address/:uid/raw',
+	sanitizeAddress,
+	async (req, res, next) => {
+		try {
+			const mailProcessingService = req.app.get('mailProcessingService')
+			const mail = await mailProcessingService.getOneFullMail(
+				req.params.address,
+				req.params.uid
+			)
+			if (mail && mail != "womp womp") {
+				// Emails are immutable, cache if found
+				res.set('Cache-Control', 'private, max-age=600')
+				res.render('raw', {
+					title: mail.subject + " | raw | " + req.params.address,
+					mail
+				})
+			} else {
+				res.render(
+					'error',
+					{
+						address: req.params.address,
+						message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
+						madeby: config.http.branding[1],
+						madebysite: config.http.branding[2],
+					}
+				)
+			}
+		} catch (error) {
+			console.error('error while fetching one email', error)
+			next(error)
+		}
+	}
+)
+
 
 module.exports = router
