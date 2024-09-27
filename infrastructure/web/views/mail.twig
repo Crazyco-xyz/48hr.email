@@ -29,7 +29,7 @@
 		<iframe sandbox="allow-popups allow-popups-to-escape-sandbox" csp="script-src 'none'" srcdoc='{{ mail.html|replace({'<html>': '<html style="color: white"'}) }}'></iframe>
 	</div>
     {% elseif mail.textAsHtml %}
-        <div class="mail_body">
+    <div class="mail_body">
             {{ mail.textAsHtml|raw }}
 	</div>
     {% else %}
