@@ -1,0 +1,18 @@
+{% extends 'layout.twig' %}
+
+{% block body %}
+
+<div class="mail_body">
+<p>Not yet...</p>
+{% for header, html in mail.headers %}
+    <p>This doesnt work rn</p>
+        {# TODO:
+            Make raw email. show all headers, preferrably even attachment raws and ofc mail.
+            need inspiration? open a mail "raw" in gmail. thats what I wanna mirror.
+        #}
+
+{% endfor %}
+</div>
+
+
+{% endblock %}

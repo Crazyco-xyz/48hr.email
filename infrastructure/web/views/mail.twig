@@ -9,6 +9,9 @@
         <a href="/inbox/{{ address }}/{{ uid }}/delete">
             Delete Email</a>
 	    <br>
+        <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank">
+            View Raw</a>
+	    <br>
         <a href="/logout">
             Logout</a>
     </div>
@@ -41,7 +44,7 @@
         <div class="mail_body"></div>
     {% endif %}
     {% if mail.attachments %}
-    <div class="mail_body">
+    <div class="mail_attachments">
         {% for attachment in mail.attachments %}
             <a href="">📎 {{ attachment.filename }}</a>
             {#
