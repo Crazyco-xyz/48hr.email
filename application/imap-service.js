@@ -262,7 +262,7 @@ class ImapService extends EventEmitter {
 		return Mail.create(to, from, date, subject, uid)
 	}
 
-	async fetchOneFullMail(to, uid) {
+	async fetchOneFullMail(to, uid, raw = false) {
 		if (!this.connection) {
 			// Here we 'fail fast' instead of waiting for the connection.
 			throw new Error('imap connection not ready')
@@ -281,9 +281,14 @@ class ImapService extends EventEmitter {
 		if (messages.length === 0) {
 			return("womp womp")
 		}
-		const fullBody = _.find(messages[0].parts, {which: ''})
-		return simpleParser(fullBody.body)
+		if (!raw) {
+			const fullBody = await _.find(messages[0].parts, {which: ''})
+			return simpleParser(fullBody.body)
+		} else {
+			return messages[0].parts[1].body
+		}
 	}
+
 
 	async _getAllUids() {
 		// We ignore mails that are flagged as DELETED, but have not been removed (expunged) yet.

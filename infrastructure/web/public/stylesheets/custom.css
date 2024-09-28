@@ -6,7 +6,11 @@ body {
     min-height: 100vh;
     background-color: #131516;
     color: #cccccc;
-    overflow: hidden;
+    
+}
+
+body::-webkit-scrollbar {
+    display: none;
 }
 
 main {

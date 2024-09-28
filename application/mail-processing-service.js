@@ -37,8 +37,8 @@ class MailProcessingService extends EventEmitter {
 		}
 	}
 
-	getOneFullMail(address, uid) {
-		return this.cachedFetchFullMail(address, uid)
+	getOneFullMail(address, uid, raw = false) {
+		return this.cachedFetchFullMail(address, uid, raw)
 	}
 
 	getAllMailSummaries() {

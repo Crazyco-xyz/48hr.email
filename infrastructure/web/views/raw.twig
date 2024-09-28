@@ -1,18 +1,20 @@
-{% extends 'layout.twig' %}
-
 {% block body %}
+    <head>
+        <title>{{ title }}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui">
+        <meta name="darkreader" content="stfu">
 
-<div class="mail_body">
-<p>Not yet...</p>
-{% for header, html in mail.headers %}
-    <p>This doesnt work rn</p>
-        {# TODO:
-            Make raw email. show all headers, preferrably even attachment raws and ofc mail.
-            need inspiration? open a mail "raw" in gmail. thats what I wanna mirror.
-        #}
+        <meta name="description" content="Dont give shady companies your real email. Use 48hr.email to protect your privacy!">
+        <meta property="og:image" content="/images/logo.png">
 
-{% endfor %}
-</div>
+        <link rel="shortcut icon" href="/images/logo.ico">
+        <link rel='stylesheet' href='/dependencies/milligram.css' />
+        <link rel='stylesheet' href='/stylesheets/custom.css' />
 
+        <script src="/socket.io/socket.io.js" defer="true"></script>
+        <script src="/javascripts/notifications.js" defer="true"></script>
 
+    </head>
+    {{ mail | raw }}
 {% endblock %}

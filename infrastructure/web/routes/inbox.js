@@ -101,15 +101,17 @@ router.get(
 	async (req, res, next) => {
 		try {
 			const mailProcessingService = req.app.get('mailProcessingService')
-			const mail = await mailProcessingService.getOneFullMail(
+			mail = await mailProcessingService.getOneFullMail(
 				req.params.address,
-				req.params.uid
+				req.params.uid,
+				true
 			)
+			mail = mail.replace(/(?:\r\n|\r|\n)/g, '<br>')
 			if (mail && mail != "womp womp") {
 				// Emails are immutable, cache if found
 				res.set('Cache-Control', 'private, max-age=600')
 				res.render('raw', {
-					title: mail.subject + " | raw | " + req.params.address,
+					title: req.params.uid + " | raw | " + req.params.address,
 					mail
 				})
 			} else {
