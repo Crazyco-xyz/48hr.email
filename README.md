@@ -38,6 +38,13 @@ All data is being removed 48hrs after they have reached the mail server.
 
 ### How can I set this up myself?
 
+- Prerequisites:
+    - Mail server with IMAP
+    - One or multiple domains dedicated to this
+    - git & nodejs
+
+<br>
+
 <details>
 <summary>Option 1 - bare-bones install:</summary>
 
