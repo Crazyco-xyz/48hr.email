@@ -254,8 +254,12 @@ class ImapService extends EventEmitter {
 			.map(addressObj => addressObj.address)
 
 		const from = headerPart.from.flatMap(from => addressparser(from))
-
-		const subject = headerPart.subject[0]
+		let subject = "No Subject"
+		try {
+			subject = headerPart.subject[0]
+		} catch {
+			// Do nothing
+		}
 		const date = headerPart.date[0]
 		const {uid} = message.attributes
 

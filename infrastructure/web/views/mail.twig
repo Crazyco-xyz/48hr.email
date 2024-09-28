@@ -45,14 +45,9 @@
     {% endif %}
     {% if mail.attachments %}
     <div class="mail_attachments" >
-    <p>Download your attachments: (SoonTM) 
+    <p>
         {% for attachment in mail.attachments %}
-            <a href="">📎 {{ attachment.filename }}</a>
-            {#
-                Add actual button to download each file, inline. 
-                Or even better. just an a href with filename.
-                very basic, like regular links look. maybe a paperclip icon
-            #}
+            <a href="/inbox/{{ address }}/{{ uid }}/{{ attachment.checksum }}"><u>📎 {{ attachment.filename }}</u></a>
         {% endfor %}
     </p>
 	</div>

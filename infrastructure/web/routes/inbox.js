@@ -96,6 +96,62 @@ router.get(
 )
 
 router.get(
+	'^/:address/:uid/:checksum([a-f0-9]+$)',
+	sanitizeAddress,
+	async (req, res, next) => {
+		try {
+			const mailProcessingService = req.app.get('mailProcessingService')
+			const mail = await mailProcessingService.getOneFullMail(
+				req.params.address,
+				req.params.uid
+			)
+			var index = mail.attachments.findIndex(attachment => attachment.checksum === req.params.checksum);
+			const attachment = mail.attachments[index];
+			if (attachment) {
+				try {
+					if (attachment) {
+						res.set('Content-Disposition', `attachment; filename=${attachment.filename}`);
+						res.set('Content-Type', attachment.contentType);
+						res.send(attachment.content);
+						return; // Add this line to exit the function after sending the response
+					} else {
+						res.render(
+							'error',
+							{
+								address: req.params.address,
+								message: 'This attachment could not be found. It either does not exist or has been deleted from our servers!',
+								madeby: config.http.branding[1],
+								madebysite: config.http.branding[2],
+							}
+						);
+						return; // Add this line to exit the function after rendering the error page
+					}
+				} catch (error) {
+					console.error('error while fetching attachment', error);
+					next(error);
+				}
+			} else {
+				res.render(
+					'error',
+					{
+						address: req.params.address,
+						message: 'This attachment could not be found. It either does not exist or has been deleted from our servers!',
+						madeby: config.http.branding[1],
+						madebysite: config.http.branding[2],
+					}
+				)
+			}
+			res.redirect(`/inbox/${req.params.address}`)
+		} catch (error) {
+			console.error('error while deleting email', error)
+			next(error)
+		}
+	}
+)
+
+
+
+router.get(
 	'^/:address/:uid/raw',
 	sanitizeAddress,
 	async (req, res, next) => {
