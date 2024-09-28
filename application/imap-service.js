@@ -279,9 +279,8 @@ class ImapService extends EventEmitter {
 
 		const messages = await this.connection.search(searchCriteria, fetchOptions)
 		if (messages.length === 0) {
-			return("womp womp")
-		}
-		if (!raw) {
+			return false
+		} else if (!raw) {
 			const fullBody = await _.find(messages[0].parts, {which: ''})
 			return simpleParser(fullBody.body)
 		} else {

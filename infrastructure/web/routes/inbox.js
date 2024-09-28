@@ -32,7 +32,7 @@ router.get(
 				req.params.address,
 				req.params.uid
 			)
-			if (mail && mail != "womp womp") {
+			if (mail) {
 				// Emails are immutable, cache if found
 				res.set('Cache-Control', 'private, max-age=600')
 				res.render('mail', {
@@ -107,7 +107,7 @@ router.get(
 				true
 			)
 			mail = mail.replace(/(?:\r\n|\r|\n)/g, '<br>')
-			if (mail && mail != "womp womp") {
+			if (mail) {
 				// Emails are immutable, cache if found
 				res.set('Cache-Control', 'private, max-age=600')
 				res.render('raw', {
