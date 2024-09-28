@@ -46,7 +46,7 @@ All data is being removed 48hrs after they have reached the mail server.
 <br>
 
 <details>
-<summary>Option 1 - bare-bones install:</summary>
+<summary>Option 1 - bare-metal install:</summary>
 
 - #### Setup:
     - `git clone https://github.com/Crazyco-xyz/48hr.email.git`
