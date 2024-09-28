@@ -38,11 +38,8 @@ All data is being removed 48hrs after they have reached the mail server.
 
 ### How can I set this up myself?
 
-- #### You need:
-    - Mail server with IMAP
-    - One or multiple domains dedicated to this
-    - git & nodejs
-<br><br>
+<details>
+<summary>Option 1 - bare-bones install:</summary>
 
 - #### Setup:
     - `git clone https://github.com/Crazyco-xyz/48hr.email.git`
@@ -74,17 +71,21 @@ RestartSec=5s
 [Install]
 WantedBy=multi-user.target
 ```
+</details>
 
-<br><br>
+<details>
+<summary>Option 2 - Docker:</summary>
 
-- #### Docker:
+- #### Setup:
     - `git clone https://github.com/Crazyco-xyz/48hr.email.git`
     - `cd 48hr.email`
     - Change all settings to the desired values:
         - Either use environmental variables, or modify `application/config.js`
     - `docker compose up -d`
     - If desired, you can also move the config file somewhere else (change volume mount accordingly)
+</details>
 
+<br><br>
 
 -----
 ### TODO:
