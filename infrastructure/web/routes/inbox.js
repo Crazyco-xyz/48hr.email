@@ -62,6 +62,25 @@ router.get(
 )
 
 router.get(
+	'^/:address/delete-all',
+	sanitizeAddress,
+	async (req, res, next) => {
+		try {
+			const mailProcessingService = req.app.get('mailProcessingService')
+			const mailSummaries = await mailProcessingService.getMailSummaries(req.params.address)
+			for (mail in mailSummaries) {
+				await mailProcessingService.deleteSpecificEmail(req.params.address, mailSummaries[mail].uid)
+			}
+			res.redirect(`/inbox/${req.params.address}`)
+		} catch (error) {
+			console.error('error while deleting email', error)
+			next(error)
+		}
+	}
+)
+
+
+router.get(
 	'^/:address/:uid/delete',
 	sanitizeAddress,
 	async (req, res, next) => {
