@@ -113,7 +113,7 @@ router.get(
 						res.set('Content-Disposition', `attachment; filename=${attachment.filename}`);
 						res.set('Content-Type', attachment.contentType);
 						res.send(attachment.content);
-						return; // Add this line to exit the function after sending the response
+						return;
 					} else {
 						res.render(
 							'error',
@@ -124,7 +124,7 @@ router.get(
 								madebysite: config.http.branding[2],
 							}
 						);
-						return; // Add this line to exit the function after rendering the error page
+						return;
 					}
 				} catch (error) {
 					console.error('error while fetching attachment', error);
