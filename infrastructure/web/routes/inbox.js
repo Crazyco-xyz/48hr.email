@@ -33,6 +33,12 @@ router.get(
 				req.params.uid
 			)
 			if (mail) {
+
+				// Set a default subject if none is present
+				if (!mail.subject) {
+					mail.subject = 'No Subject'
+				}
+
 				// Emails are immutable, cache if found
 				res.set('Cache-Control', 'private, max-age=600')
 				res.render('mail', {

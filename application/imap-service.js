@@ -254,6 +254,8 @@ class ImapService extends EventEmitter {
 			.map(addressObj => addressObj.address)
 
 		const from = headerPart.from.flatMap(from => addressparser(from))
+
+		// Specify default subject, in case none exists.
 		let subject = "No Subject"
 		try {
 			subject = headerPart.subject[0]
