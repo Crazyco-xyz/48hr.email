@@ -109,23 +109,10 @@ router.get(
 			const attachment = mail.attachments[index];
 			if (attachment) {
 				try {
-					if (attachment) {
-						res.set('Content-Disposition', `attachment; filename=${attachment.filename}`);
-						res.set('Content-Type', attachment.contentType);
-						res.send(attachment.content);
-						return;
-					} else {
-						res.render(
-							'error',
-							{
-								address: req.params.address,
-								message: 'This attachment could not be found. It either does not exist or has been deleted from our servers!',
-								madeby: config.http.branding[1],
-								madebysite: config.http.branding[2],
-							}
-						);
-						return;
-					}
+					res.set('Content-Disposition', `attachment; filename=${attachment.filename}`);
+					res.set('Content-Type', attachment.contentType);
+					res.send(attachment.content);
+					return;
 				} catch (error) {
 					console.error('error while fetching attachment', error);
 					next(error);
