@@ -225,7 +225,7 @@ class ImapService extends EventEmitter {
 
 		debug(`deleting mails ${uids}`)
 		await this.connection.deleteMessage(uids)
-		toDelete.forEach(uid => this.emit(ImapService.EVENT_DELETED_MAIL, uid))
+		uids.forEach(uid => this.emit(ImapService.EVENT_DELETED_MAIL, uid))
 		console.log(`deleted ${uids.length} old messages.`)
 	}
 
