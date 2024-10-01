@@ -24,7 +24,7 @@ class MailProcessingService extends EventEmitter {
 		this.imapService.once(ImapService.EVENT_INITIAL_LOAD_DONE, () =>
 			this._deleteOldMails()
 		)
-		setInterval(() => this._deleteOldMails(), 1000 * 3600 * 6)
+		setInterval(() => this._deleteOldMails(), 10 * 60 * 1000)
 	}
 
 	getMailSummaries(address) {
