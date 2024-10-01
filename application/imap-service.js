@@ -199,7 +199,7 @@ class ImapService extends EventEmitter {
 	 * @param {Date} deleteMailsBefore delete mails before this date instance
 	 */
 	async deleteOldMails(deleteMailsBefore) {
-		const uids = await this._searchWithoutFetch([
+		let uids = await this._searchWithoutFetch([
 			['!DELETED'],
 			['BEFORE', deleteMailsBefore]
 		])
@@ -207,28 +207,26 @@ class ImapService extends EventEmitter {
 			return
 		}
 
-		debug(`deleting mails ${uids}`)
-
 		const DeleteOlderThan = moment()
 		.subtract(this.config.email.deleteMailsOlderThanDays, 'days')
 		.toDate()
 
-		let toDelete = []
-		const uidwithHeaders = await this._getMailHeaders(uids)
-		uidwithHeaders.forEach(mail => {
-			if (mail['attributes'].date < DeleteOlderThan) {
-				toDelete.push(mail['attributes'].uid)
+		const uidsWithHeaders = await this._getMailHeaders(uids)
+		uidsWithHeaders.forEach(mail => {
+			if (mail['attributes'].date > DeleteOlderThan) {
+				uids.filter(uid => uid !== mail['attributes'].uid)
 			}
 		})
 
-		if (toDelete.length === 0) {
+		if (uids.length === 0) {
 			debug('no mails to delete.')
 			return
 		}
 
-		await this.connection.deleteMessage(toDelete)
+		debug(`deleting mails ${uids}`)
+		await this.connection.deleteMessage(uids)
 		toDelete.forEach(uid => this.emit(ImapService.EVENT_DELETED_MAIL, uid))
-		console.log(`deleted ${toDelete.length} old messages.`)
+		console.log(`deleted ${uids.length} old messages.`)
 	}
 
 	/**
