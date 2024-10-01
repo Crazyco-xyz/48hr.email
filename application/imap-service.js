@@ -6,6 +6,7 @@ const pSeries = require('p-series')
 const retry = require('async-retry')
 const debug = require('debug')('48hr-email:imap')
 const _ = require('lodash')
+const moment = require('moment')
 const Mail = require('../domain/mail')
 
 
@@ -198,7 +199,6 @@ class ImapService extends EventEmitter {
 	 * @param {Date} deleteMailsBefore delete mails before this date instance
 	 */
 	async deleteOldMails(deleteMailsBefore) {
-		debug(`deleting mails before ${deleteMailsBefore}`)
 		const uids = await this._searchWithoutFetch([
 			['!DELETED'],
 			['BEFORE', deleteMailsBefore]
@@ -208,10 +208,27 @@ class ImapService extends EventEmitter {
 		}
 
 		debug(`deleting mails ${uids}`)
-		await this.connection.deleteMessage(uids)
-		console.log(`deleted ${uids.length} old messages.`)
 
-		uids.forEach(uid => this.emit(ImapService.EVENT_DELETED_MAIL, uid))
+		const DeleteOlderThan = moment()
+		.subtract(this.config.email.deleteMailsOlderThanDays, 'days')
+		.toDate()
+
+		let toDelete = []
+		const uidwithHeaders = await this._getMailHeaders(uids)
+		uidwithHeaders.forEach(mail => {
+			if (mail['attributes'].date < DeleteOlderThan) {
+				toDelete.push(mail['attributes'].uid)
+			}
+		})
+
+		if (toDelete.length === 0) {
+			debug('no mails to delete.')
+			return
+		}
+
+		await this.connection.deleteMessage(toDelete)
+		toDelete.forEach(uid => this.emit(ImapService.EVENT_DELETED_MAIL, uid))
+		console.log(`deleted ${toDelete.length} old messages.`)
 	}
 
 	/**

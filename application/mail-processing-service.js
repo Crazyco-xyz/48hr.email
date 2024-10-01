@@ -73,7 +73,11 @@ class MailProcessingService extends EventEmitter {
 		try {
 			await this.imapService.deleteOldMails(
 				moment()
-					.subtract(this.config.email.deleteMailsOlderThanDays, 'days')
+					// Because of how we have to handle the times (IMAP isnt time-aware), we need to subtract one day
+					// to get all mails in their last few hours before technical purge
+					// 
+					// This is a bit of a hack, but it works. See imap-service.js#deleteOldMails (L211-227) for more info
+					.subtract(this.config.email.deleteMailsOlderThanDays - 1, 'days')
 					.toDate()
 			)
 		} catch (error) {
