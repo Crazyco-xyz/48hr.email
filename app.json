@@ -1,18 +1,19 @@
 {
-  "name": "48hr.email | disposable email",
-  "description": "a simple and fast disposable mail service that works directly with your imap server. No database required.",
+  "name": "48hr.email | Disposable email",
+  "description": "A simple and fast disposable mail service that works directly with your already existing imap server. No database required.",
   "repository": "https://github.com/Crazyco-xyz/48hr.email",
-  "logo": "https://github.com/Crazyco-xyz/48hr.email/blobl/main/infrastructure/web/public/images/logo.png",
+  "logo": "https://github.com/Crazyco-xyz/48hr.email/blob/main/infrastructure/web/public/images/logo.png",
   "keywords": [
     "node",
     "disposable-mail"
   ],
   "env": {
     "DOMAINS": {
-      "description": "Email domains."
+      "description": "Email domains"
     },
-    "IMAP_SERVER": {
-      "description": "Hostname of the server (usually imap.example.com)"
+    "DELETE_MAILS_OLDER_THAN_DAYS": {
+      "description": "How many days to to wait before deleting messages",
+      "value": 2
     },
     "IMAP_USER": {
       "description": "Username to login to the imap server"
@@ -20,11 +21,32 @@
     "IMAP_PASSWORD": {
       "description": "Password to login to the imap server"
     },
-    "IMAP_REFRESH_INTERVAL_SECONDS": {
-      "description": "How often to refresh the imap messages manually"
+    "IMAP_SERVER": {
+      "description": "Hostname of the server (usually imap.example.com or mx.example.com)"
     },
-    "DELETE_MAILS_OLDER_THAN_DAYS": {
-      "description": "How many days to to wait before deleting messages."
+    "IMAP_PORT": {
+      "description": "Port of the server (usually 993)",
+      "value": 993
+    },
+    "IMAP_TLS": {
+      "description": "Use tls or not",
+      "value": true
+    },
+    "IMAP_AUTHTIMEOUT": {
+      "description": "Timeout for the auth",
+      "value": 3000
+    },
+    "IMAP_REFRESH_INTERVAL_SECONDS": {
+      "description": "How often to refresh the imap messages manually",
+      "value": 60
+    },
+    "HTTP_PORT": {
+      "description": "Port to listen on",
+      "value": 3000
+    },
+    "HTTP_BRANDING": {
+      "description": "The branding of the site",
+      "value": ["48hr.email", "Crazyco", "https://crazyco.xyz"]
     }
   }
 }

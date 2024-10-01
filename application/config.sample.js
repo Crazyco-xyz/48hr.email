@@ -1,5 +1,3 @@
-// Note: Also update app.json and README.md!
-
 const config = {
 	email: {
 		domains: process.env.EMAIL_DOMAINS,
@@ -12,10 +10,10 @@ const config = {
 		port: process.env.IMAP_PORT || 993,
 		tls: process.env.IMAP_TLS || true,
 		authTimeout: process.env.IMAP_AUTHTIMEOUT || 3000,
-		refreshIntervalSeconds: process.env.IMAP_REFRESH_INTERVAL_SECONDS || 10
+		refreshIntervalSeconds: process.env.IMAP_REFRESH_INTERVAL_SECONDS || 60
 	},
 	http: {
-		port: normalizePort(process.env.HTTP_PORT || '3000'),
+		port: normalizePort(process.env.HTTP_PORT || 3000),
 		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"]
 	},
 }

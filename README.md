@@ -95,13 +95,15 @@ WantedBy=multi-user.target
 <br><br>
 
 -----
-### TODO:
-- Clean up codebase
+### TODO (PRs welcome):
+- Clean up code inside application folder
+- Add user registration:
+    - Optional "premium" domains that arent visible to the public to prevent them from being scraped and flagged
+    - Allow people to set a password for their email (releases X time after last login)
+    - Allow people to set up forwarding 
 
-#### Maybe later (PRs welcome):
-- Allow users to set a password for their email
-- Set up forwarding
-- Sending emails
+#### Unsure:
+- Possible payment integration once registration exists, to lock one or more of these new features behind a paywall (configurable, ofc)
 
 <br><br>
 
