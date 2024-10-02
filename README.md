@@ -12,7 +12,7 @@
 
 All data is being removed 48hrs after they have reached the mail server.
 
-<p align="center"><a href="https://48hr.email" target="_blank">Try now</a> | <a href="https://discord.gg/crazyco" target="_blank">Discord</a></p>
+<p align="center"><a href="https://48hr.email" target="_blank">Try now</a> | <a href="https://48hr.email/inbox/example@48hr.email" target="_blank">Example Inbox</a> | <a href="https://discord.gg/crazyco" target="_blank">Discord</a></p>
 <br><br>
 
 -----
@@ -21,8 +21,11 @@ All data is being removed 48hrs after they have reached the mail server.
 
 - Create a custom inbox with select name and domain, or get a fully randomized one
 - Receive emails with a clean preview in your inbox, with optional browser notifications
-- Read emails, with support for CSS & JS just like you are used to from regular email providers
+- Read emails, with support for HTML, CSS & JS just like you are used to from regular email providers
 - Delete your emails ahead of time by pressing the delete button
+- View the raw email, showing all the headers etc.
+- Download Attachments
+- and more...
 
 <br><br>
 
