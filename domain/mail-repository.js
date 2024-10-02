@@ -30,31 +30,22 @@ class MailRepository {
 		this.mailSummaries.set(to.toLowerCase(), mailSummary)
 	}
 
-	UserRemoveUid(address, uid) {
-		var deleted = false
-		// TODO: make this more efficient, looping through each email is not cool.
-		this.mailSummaries.forEachAssociation((mails, to) => {
-			mails
-				.filter(mail => mail.uid === parseInt(uid) & to == address)
-				.forEach(mail => {
-					this.mailSummaries.remove(to, mail)
-					debug('removed ', mail.date, to, mail.subject)
-					deleted = true
-				})
-		})
-		return deleted
-	}
-
-	removeUid(uid) {
-		// TODO: make this more efficient, looping through each email is not cool.
-		this.mailSummaries.forEachAssociation((mails, to) => {
-			mails
-				.filter(mail => mail.uid === parseInt(uid))
-				.forEach(mail => {
-					this.mailSummaries.remove(to, mail)
-					debug('removed ', mail.date, to, mail.subject)
-				})
-		})
+	removeUid(uid, address) {
+		if (!this.config.http.examples.uids.includes(parseInt(uid))) {
+			var deleted = false
+			// TODO: make this more efficient, looping through each email is not cool.
+			this.mailSummaries.forEachAssociation((mails, to) => {
+				mails
+					.filter(mail => mail.uid === parseInt(uid) && (address ? to == address : true))
+					.forEach(mail => {
+						this.mailSummaries.remove(to, mail)
+						debug('removed ', mail.date, to, mail.subject)
+						deleted = true
+					})
+			})
+			return deleted
+		}
+		return false
 	}
 
 	mailCount() {

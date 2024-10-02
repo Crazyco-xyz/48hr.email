@@ -32,7 +32,7 @@ class MailProcessingService extends EventEmitter {
 	}
 
 	deleteSpecificEmail(adress, uid) {
-		if (this.mailRepository.UserRemoveUid(adress, uid) == true) {
+		if (this.mailRepository.removeUid(uid, adress) == true) {
 			this.imapService.deleteSpecificEmail(uid)
 		}
 	}
