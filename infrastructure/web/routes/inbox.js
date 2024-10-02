@@ -23,7 +23,7 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, (req, res, _next) => {
 })
 
 router.get(
-	'^/:address/:uid([0-9]+$)',
+	'^/:address/:uid([0-9]+)',
 	sanitizeAddress,
 	async (req, res, next) => {
 		try {
@@ -33,7 +33,6 @@ router.get(
 				req.params.uid
 			)
 			if (mail) {
-
 				// Set a default subject if none is present
 				if (!mail.subject) {
 					mail.subject = 'No Subject'
@@ -102,7 +101,7 @@ router.get(
 )
 
 router.get(
-	'^/:address/:uid/:checksum([a-f0-9]+$)',
+	'^/:address/:uid/:checksum([a-f0-9]+)',
 	sanitizeAddress,
 	async (req, res, next) => {
 		try {
@@ -155,8 +154,8 @@ router.get(
 				req.params.uid,
 				true
 			)
-			mail = mail.replace(/(?:\r\n|\r|\n)/g, '<br>')
 			if (mail) {
+				mail = mail.replace(/(?:\r\n|\r|\n)/g, '<br>')
 				// Emails are immutable, cache if found
 				res.set('Cache-Control', 'private, max-age=600')
 				res.render('raw', {

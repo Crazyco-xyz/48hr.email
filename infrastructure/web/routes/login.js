@@ -38,10 +38,10 @@ router.post(
 		const errors = validationResult(req)
 		if (!errors.isEmpty()) {
 			return res.render('login', {
-				title: 'Login',
-				username: req.body.username,
-				domain: req.body.domain,
 				userInputError: true,
+				title: `${config.http.branding[0]} | Your temporary Inbox`,
+				username: randomWord(),
+				domains: config.email.domains,
 				madeby: config.http.branding[1],
 				madebysite: config.http.branding[2]
 			})
