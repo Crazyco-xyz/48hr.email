@@ -17,9 +17,7 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, (req, res, _next) => {
 		title: `${config.http.branding[0]} | ` + req.params.address,
 		address: req.params.address,
 		mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
-		servicename: config.http.branding[0],
-		madeby: config.http.branding[1],
-		madebysite: config.http.branding[2]
+		branding: config.http.branding,
 	})
 })
 
@@ -46,9 +44,7 @@ router.get(
 					address: req.params.address,
 					mail,
 					uid: req.params.uid,
-					servicename: config.http.branding[0],
-					madeby: config.http.branding[1],
-					madebysite: config.http.branding[2]
+					branding: config.http.branding,
 				})
 			} else {
 				res.render(
@@ -56,9 +52,8 @@ router.get(
 					{
 						address: req.params.address,
 						message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
-						servicename: config.http.branding[0],
-						madeby: config.http.branding[1],
-						madebysite: config.http.branding[2],
+						branding: config.http.branding
+
 					}
 				)
 			}
@@ -131,9 +126,7 @@ router.get(
 					{
 						address: req.params.address,
 						message: 'This attachment could not be found. It either does not exist or has been deleted from our servers!',
-						servicename: config.http.branding[0],
-						madeby: config.http.branding[1],
-						madebysite: config.http.branding[2],
+						branding: config.http.branding,
 					}
 				)
 			}
@@ -172,9 +165,7 @@ router.get(
 					{
 						address: req.params.address,
 						message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
-						servicename: config.http.branding[0],
-						madeby: config.http.branding[1],
-						madebysite: config.http.branding[2],
+						branding: config.http.branding,
 					}
 				)
 			}
