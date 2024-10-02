@@ -1,15 +1,23 @@
 const debug = require('debug')('48hr-email:mail-summary-store')
 const MultiMap = require('mnemonist/multi-map')
 const _ = require('lodash')
+const config = require('../application/config')
 
 class MailRepository {
 	constructor() {
 		// MultiMap docs: https://yomguithereal.github.io/mnemonist/multi-map
 		this.mailSummaries = new MultiMap()
+		this.config = config
 	}
 
 	getForRecipient(address) {
-		const mails = this.mailSummaries.get(address) || []
+		let mails = this.mailSummaries.get(address) || []
+		mails.forEach(mail => {
+			if (mail.to == this.config.http.examples.email && !this.config.http.examples.uids.includes(parseInt(mail.uid))) {
+				mails = mails.filter(m => m.uid != mail.uid)
+				console.log('prevent non-example email from being shown', mail.uid)
+			}
+		})
 		return _.orderBy(mails, mail => Date.parse(mail.date), ['desc'])
 	}
 

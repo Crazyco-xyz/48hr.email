@@ -14,7 +14,11 @@ const config = {
 	},
 	http: {
 		port: normalizePort(process.env.HTTP_PORT || 3000),
-		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"]
+		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"],
+		examples: process.env.HTTP_EXAMPLES || {
+			email: "example@48hr.email",
+			ids: [1, 2, 3]
+		}
 	},
 }
 

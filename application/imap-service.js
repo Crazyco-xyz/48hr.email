@@ -213,7 +213,7 @@ class ImapService extends EventEmitter {
 
 		const uidsWithHeaders = await this._getMailHeaders(uids)
 		uidsWithHeaders.forEach(mail => {
-			if (mail['attributes'].date > DeleteOlderThan) {
+			if (mail['attributes'].date > DeleteOlderThan || this.config.http.examples.uids.includes(parseInt(mail['attributes'].id))) {
 				uids.filter(uid => uid !== mail['attributes'].uid)
 			}
 		})
@@ -235,9 +235,11 @@ class ImapService extends EventEmitter {
 	 */
 	async deleteSpecificEmail(uid) {
 		debug(`deleting mails ${uid}`)
-		await this.connection.deleteMessage(uid)
-		console.log(`deleted mail with UID: ${uid}.`)
-		this.emit(ImapService.EVENT_DELETED_MAIL, uid)
+		if (!this.config.http.examples.uids.includes(parseInt(uid))) {
+			await this.connection.deleteMessage(uid)
+			console.log(`deleted mail with UID: ${uid}.`)
+			this.emit(ImapService.EVENT_DELETED_MAIL, uid)
+		}
 	}
 
 	/**
