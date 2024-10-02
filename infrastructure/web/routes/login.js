@@ -4,11 +4,17 @@ const router = new express.Router()
 const randomWord = require('random-word')
 const {check, validationResult} = require('express-validator')
 const config = require('../../../application/config')
+const Helper = require('../../../application/helper')
+const helper = new(Helper)
+
+const purgeTime = config.email.purgeTime.convert ? helper.convertUp(config.email.purgeTime.time, config.email.purgeTime.unit) 
+	: config.email.purgeTime.time +` ${config.email.purgeTime.unit}`;
 
 router.get('/', (req, res, _next) => {
 	res.render('login', {
 		title: `${config.http.branding[0]} | Your temporary Inbox`,
 		username: randomWord(),
+		purgeTime: purgeTime,
 		domains: config.email.domains,
 		branding: config.http.branding,
 	})
@@ -39,6 +45,7 @@ router.post(
 			return res.render('login', {
 				userInputError: true,
 				title: `${config.http.branding[0]} | Your temporary Inbox`,
+				purgeTime: purgeTime,
 				username: randomWord(),
 				branding: config.http.branding,
 			})

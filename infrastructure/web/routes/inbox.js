@@ -3,6 +3,12 @@ const express = require('express')
 const router = new express.Router()
 const {param} = require('express-validator')
 const config = require('../../../application/config')
+const Helper = require('../../../application/helper')
+const helper = new(Helper)
+
+const purgeTime = config.email.purgeTime.convert ? helper.convertUp(config.email.purgeTime.time, config.email.purgeTime.unit) 
+	: config.email.purgeTime.time +` ${config.email.purgeTime.unit}`;
+
 const sanitizeAddress = param('address').customSanitizer(
 	(value, {req}) => {
 		return req.params.address
@@ -15,6 +21,7 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, (req, res, _next) => {
 	const mailProcessingService = req.app.get('mailProcessingService')
 	res.render('inbox', {
 		title: `${config.http.branding[0]} | ` + req.params.address,
+		purgeTime: purgeTime,
 		address: req.params.address,
 		mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
 		branding: config.http.branding,
@@ -41,6 +48,7 @@ router.get(
 				res.set('Cache-Control', 'private, max-age=600')
 				res.render('mail', {
 					title: mail.subject + " | " + req.params.address,
+					purgeTime: purgeTime,
 					address: req.params.address,
 					mail,
 					uid: req.params.uid,
@@ -50,6 +58,7 @@ router.get(
 				res.render(
 					'error',
 					{
+						purgeTime: purgeTime,
 						address: req.params.address,
 						message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
 						branding: config.http.branding
@@ -124,6 +133,7 @@ router.get(
 				res.render(
 					'error',
 					{
+						purgeTime: purgeTime,
 						address: req.params.address,
 						message: 'This attachment could not be found. It either does not exist or has been deleted from our servers!',
 						branding: config.http.branding,
@@ -163,6 +173,7 @@ router.get(
 				res.render(
 					'error',
 					{
+						purgeTime: purgeTime,
 						address: req.params.address,
 						message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
 						branding: config.http.branding,

@@ -28,7 +28,7 @@
     {% block footer %}
     <section class="container footer">
       <hr>
-      <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after 48hrs |  This project is <a href="https://github.com/crazyco-xyz/48hr.email" style="text-decoration:underline" target="_blank">open-source ♥</a></h4>
+      <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime }} |  This project is <a href="https://github.com/crazyco-xyz/48hr.email" style="text-decoration:underline" target="_blank">open-source ♥</a></h4>
     </section>
     {% endblock %}
 

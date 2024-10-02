@@ -8,7 +8,8 @@ const debug = require('debug')('48hr-email:imap')
 const _ = require('lodash')
 const moment = require('moment')
 const Mail = require('../domain/mail')
-
+const Helper = require('./helper')
+const helper = new(Helper)
 
 // Just adding some missing functions to imap-simple... :-)
 
@@ -199,22 +200,30 @@ class ImapService extends EventEmitter {
 	 * @param {Date} deleteMailsBefore delete mails before this date instance
 	 */
 	async deleteOldMails(deleteMailsBefore) {
-		let uids = await this._searchWithoutFetch([
-			['!DELETED'],
-			['BEFORE', deleteMailsBefore]
-		])
+		let uids = []
+		if (helper.moreThanOneDay(moment(), deleteMailsBefore)) {
+			//fetch mails from date -1day (calculated in MS) to avoid wasting resources
+			deleteMailsBefore = deleteMailsBefore - 24 * 60 * 60 * 1000
+			uids = await this._searchWithoutFetch([
+				['!DELETED'],
+				['BEFORE', deleteMailsBefore]
+			])
+		} else {
+			uids = await this._searchWithoutFetch([
+				['!DELETED']
+			])
+		}
+
 		if (uids.length === 0) {
 			return
 		}
 
-		const DeleteOlderThan = moment()
-		.subtract(this.config.email.deleteMailsOlderThanDays, 'days')
-		.toDate()
+		const DeleteOlderThan = helper.purgeTimeStamp()
 
 		const uidsWithHeaders = await this._getMailHeaders(uids)
 		uidsWithHeaders.forEach(mail => {
 			if (mail['attributes'].date > DeleteOlderThan || this.config.http.examples.uids.includes(parseInt(mail['attributes'].id))) {
-				uids.filter(uid => uid !== mail['attributes'].uid)
+				uids = uids.filter(uid => uid !== mail['attributes'].uid)
 			}
 		})
 

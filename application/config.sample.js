@@ -1,7 +1,11 @@
 const config = {
 	email: {
 		domains: process.env.EMAIL_DOMAINS,
-		deleteMailsOlderThanDays: process.env.EMAIL_DELETE_MAILS_OLDER_THAN_DAYS || 2
+		purgeTime: process.env.PURGE_TIME || {
+			time: 48,
+			unit: 'hours', // minutes, hours, days
+			convert: true, // Convert to highest sensible unit
+		}
 	},
 	imap: {
 		user: process.env.IMAP_USER,

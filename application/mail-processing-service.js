@@ -3,6 +3,9 @@ const debug = require('debug')('48hr-email:imap-manager')
 const mem = require('mem')
 const moment = require('moment')
 const ImapService = require('./imap-service')
+const Helper = require('./helper')
+const helper = new(Helper)
+
 
 class MailProcessingService extends EventEmitter {
 	constructor(mailRepository, imapService, clientNotification, config) {
@@ -71,15 +74,7 @@ class MailProcessingService extends EventEmitter {
 
 	async _deleteOldMails() {
 		try {
-			await this.imapService.deleteOldMails(
-				moment()
-					// Because of how we have to handle the times (IMAP isnt time-aware), we need to subtract one day
-					// to get all mails in their last few hours before technical purge
-					// 
-					// This is a bit of a hack, but it works. See imap-service.js#deleteOldMails (L211-227) for more info
-					.subtract(this.config.email.deleteMailsOlderThanDays - 1, 'days')
-					.toDate()
-			)
+			await this.imapService.deleteOldMails(helper.purgeTimeStamp())
 		} catch (error) {
 			console.log('can not delete old messages', error)
 		}
