@@ -11,9 +11,13 @@
     "DOMAINS": {
       "description": "Email domains"
     },
-    "DELETE_MAILS_OLDER_THAN_DAYS": {
-      "description": "How many days to to wait before deleting messages",
-      "value": 2
+    "EMAIL_PURGE_TIME": {
+      "description": "Config for when to purge the emails",
+      "value": {
+        "time": 48,
+        "unit": "hours",
+        "convert": true
+      }
     },
     "IMAP_USER": {
       "description": "Username to login to the imap server"
@@ -47,6 +51,13 @@
     "HTTP_BRANDING": {
       "description": "The branding of the site",
       "value": ["48hr.email", "Crazyco", "https://crazyco.xyz"]
+    },
+    "HTTP_EXAMPLES": {
+      "description": "Examples of the domains",
+      "value": {
+        "email": "example@48hr.email",
+        "ids": [1, 2, 3]
+      }
     }
   }
 }

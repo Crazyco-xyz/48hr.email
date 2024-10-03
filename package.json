@@ -1,6 +1,6 @@
 {
   "name": "48hr.email",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "private": false,
   "scripts": {
     "start": "node --trace-warnings ./app.js",
