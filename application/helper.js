@@ -29,13 +29,30 @@ class Helper {
     }
 
     /**
-     * Convert time to highest possible unit where i > 2
-     * @returns {Date}
+     * Convert time to highest possible unit (minutes, hours, days) where `time > 2` and `Number.isSafeInteger(time)` (whole number)
+     * @param {Number} time
+     * @param {String} unit
+     * @returns {String}
      */
     convertUp(time, unit) {
-        // TODO: Implement
-        return time +` ${unit}`
+        let convertedTime = time;
+        let convertedUnit = unit;
+
+        if (convertedUnit === 'minutes') {
+            if (convertedTime > 120 && Number.isSafeInteger(convertedTime / 60)) {
+                convertedTime = convertedTime / 60;
+                convertedUnit = 'hours';
+            }
+        }
+
+        if (convertedUnit === 'hours') {
+            if (convertedTime > 48 && Number.isSafeInteger(convertedTime / 24)) {
+                convertedTime = convertedTime / 24;
+                convertedUnit = 'days';
+            }
+        }
+        return `${convertedTime} ${convertedUnit}`;
     }
-};
+}
 
 module.exports = Helper
