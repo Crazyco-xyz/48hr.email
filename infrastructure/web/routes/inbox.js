@@ -1,5 +1,5 @@
-const router = new express.Router()
 const express = require('express')
+const router = new express.Router()
 const {param} = require('express-validator')
 
 const config = require('../../../application/config')
