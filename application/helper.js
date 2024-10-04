@@ -29,29 +29,60 @@ class Helper {
     }
 
     /**
-     * Convert time to highest possible unit (minutes, hours, days) where `time > 2` and `Number.isSafeInteger(time)` (whole number)
+     * Convert time to highest possible unit (minutes, hours, days) where `time > 1` and `Number.isSafeInteger(time)` (whole number)
      * @param {Number} time
      * @param {String} unit
      * @returns {String}
      */
-    convertUp(time, unit) {
+    convertAndRound(time, unit) {
         let convertedTime = time;
         let convertedUnit = unit;
+        let rounded = false;
 
         if (convertedUnit === 'minutes') {
-            if (convertedTime > 120 && Number.isSafeInteger(convertedTime / 60)) {
-                convertedTime = convertedTime / 60;
+            if (convertedTime > 60) {
+                convertedTime = convertedTime / 60
                 convertedUnit = 'hours';
-            }
-        }
+        }}
 
         if (convertedUnit === 'hours') {
-            if (convertedTime > 48 && Number.isSafeInteger(convertedTime / 24)) {
+            if (convertedTime > 24) {
                 convertedTime = convertedTime / 24;
                 convertedUnit = 'days';
             }
         }
+
+        if (!convertedTime == Number.isSafeInteger(convertedTime)) {
+            convertedTime = Math.round(convertedTime);
+            rounded = true;
+        }
+
+        if (rounded) {
+            convertedTime = `~${convertedTime}`;
+        }
+
         return `${convertedTime} ${convertedUnit}`;
+    }
+
+    /**
+     * Build a purgeTime html element for the page to keep the clutter outside of the twig template
+     * @returns {String}
+     */
+    purgeTimeElemetBuilder() {
+        let time = `${config.email.purgeTime.time} ${config.email.purgeTime.unit}`
+        let Tooltip = ''
+        if (config.email.purgeTime.convert) {
+            time = this.convertAndRound(config.email.purgeTime.time, config.email.purgeTime.unit)
+            if (time !== `${config.email.purgeTime.time} ${config.email.purgeTime.unit}`) {
+                Tooltip = `Config: ${config.email.purgeTime.time} ${config.email.purgeTime.unit}`
+            }
+        }
+
+        const footer = `<label title="${Tooltip}">
+        <h4 style="display: inline;"><u><i>${time}</i></u></h4>
+        </Label>`
+
+        return footer
     }
 }
 

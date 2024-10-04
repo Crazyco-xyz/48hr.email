@@ -140,3 +140,7 @@ input, textarea, select, select:active, select:focus, select:hover {
     width: 80%;
     padding-left:10%
 }
+
+label {
+    display: inline;
+}

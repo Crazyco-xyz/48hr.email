@@ -1,14 +1,13 @@
-const express = require('express')
-
 const router = new express.Router()
-const randomWord = require('random-word')
+const express = require('express')
 const {check, validationResult} = require('express-validator')
+
+const randomWord = require('random-word')
 const config = require('../../../application/config')
 const Helper = require('../../../application/helper')
 const helper = new(Helper)
 
-const purgeTime = config.email.purgeTime.convert ? helper.convertUp(config.email.purgeTime.time, config.email.purgeTime.unit) 
-	: config.email.purgeTime.time +` ${config.email.purgeTime.unit}`;
+const purgeTime = helper.purgeTimeElemetBuilder()
 
 router.get('/', (req, res, _next) => {
 	res.render('login', {

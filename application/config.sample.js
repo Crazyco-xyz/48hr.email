@@ -1,13 +1,13 @@
 const config = {
-	email: {
+	email: { // Email configuration
 		domains: process.env.EMAIL_DOMAINS, // List object of domains
 		purgeTime: process.env.EMAIL_PURGE_TIME || {
-			time: 48, // Time value to purge
+			time: 48, // Time value for when to purge
 			unit: 'hours', // minutes, hours, days
-			convert: true, // Convert to highest sensible unit
+			convert: true, // Convert to highest sensible unit (and round)
 		}
 	},
-	imap: {
+	imap: { // IMAP configuration
 		user: process.env.IMAP_USER, // imap user
 		password: process.env.IMAP_PASSWORD, // imap password
 		host: process.env.IMAP_SERVER, // imap server
@@ -16,12 +16,12 @@ const config = {
 		authTimeout: process.env.IMAP_AUTHTIMEOUT || 3000, // timeout for auth
 		refreshIntervalSeconds: process.env.IMAP_REFRESH_INTERVAL_SECONDS || 60 // refresh interval
 	},
-	http: {
-		port: normalizePort(process.env.HTTP_PORT || 3000), // http port
+	http: { // HTTP configuration
+		port: normalizePort(process.env.HTTP_PORT || 3000), // http port to listen on
 		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"], // branding
-		examples: process.env.HTTP_EXAMPLES || { 
-			email: "example@48hr.email", // example email
-			ids: [1, 2, 3] // example ids
+		examples: process.env.HTTP_EXAMPLES || { // Examples to use to demonstrate the service
+			email: "example@48hr.email", // example email to keep clean, besides the IDs specified below
+			ids: [1, 2, 3] // example ids to keep
 		}
 	},
 }

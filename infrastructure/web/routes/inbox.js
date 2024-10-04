@@ -1,13 +1,12 @@
-const express = require('express')
-
 const router = new express.Router()
+const express = require('express')
 const {param} = require('express-validator')
+
 const config = require('../../../application/config')
 const Helper = require('../../../application/helper')
 const helper = new(Helper)
 
-const purgeTime = config.email.purgeTime.convert ? helper.convertUp(config.email.purgeTime.time, config.email.purgeTime.unit) 
-	: config.email.purgeTime.time +` ${config.email.purgeTime.unit}`;
+const purgeTime = helper.purgeTimeElemetBuilder()
 
 const sanitizeAddress = param('address').customSanitizer(
 	(value, {req}) => {
