@@ -1,6 +1,6 @@
 const config = {
 	email: { // Email configuration
-		domains: process.env.EMAIL_DOMAINS, // List object of domains
+		domains: process.env.EMAIL_DOMAINS || ['example.com', 'example.net'], // List object of domains
 		purgeTime: process.env.EMAIL_PURGE_TIME || {
 			time: 48, // Time value for when to purge
 			unit: 'hours', // minutes, hours, days
