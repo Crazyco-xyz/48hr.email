@@ -13,7 +13,7 @@
     "compression": "^1.7.4",
     "debug": "^2.6.9",
     "encodings": "^1.0.0",
-    "express": "^4.21.0",
+    "express": "^4.21.1",
     "express-validator": "^7.2.0",
     "helmet": "^3.23.3",
     "http-errors": "~1.6.2",
@@ -29,7 +29,7 @@
     "random-word": "^2.0.0",
     "sanitize-html": "^2.13.0",
     "semver": "^7.6.3",
-    "socket.io": "^4.7.5",
+    "socket.io": "^4.8.0",
     "twig": "^0.10.3"
   },
   "devDependencies": {
