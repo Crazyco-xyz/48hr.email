@@ -46,6 +46,7 @@ router.post(
 				title: `${config.http.branding[0]} | Your temporary Inbox`,
 				purgeTime: purgeTime,
 				username: randomWord(),
+				domains: helper.shuffleArray(config.email.domains),
 				branding: config.http.branding,
 			})
 		}
