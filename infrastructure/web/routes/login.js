@@ -14,7 +14,7 @@ router.get('/', (req, res, _next) => {
 		title: `${config.http.branding[0]} | Your temporary Inbox`,
 		username: randomWord(),
 		purgeTime: purgeTime,
-		domains: config.email.domains,
+		domains: helper.shuffleArray(config.email.domains),
 		branding: config.http.branding,
 	})
 })
