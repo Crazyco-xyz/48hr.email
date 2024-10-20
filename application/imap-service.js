@@ -222,7 +222,7 @@ class ImapService extends EventEmitter {
 
 		const uidsWithHeaders = await this._getMailHeaders(uids)
 		uidsWithHeaders.forEach(mail => {
-			if (mail['attributes'].date > DeleteOlderThan || this.config.http.examples.uids.includes(parseInt(mail['attributes'].uid))) {
+			if (mail['attributes'].date > DeleteOlderThan || this.config.email.examples.uids.includes(parseInt(mail['attributes'].uid))) {
 				uids = uids.filter(uid => uid !== mail['attributes'].uid)
 			}
 		})

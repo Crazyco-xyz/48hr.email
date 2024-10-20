@@ -14,7 +14,7 @@ router.get('/', (req, res, _next) => {
 		title: `${config.http.branding[0]} | Your temporary Inbox`,
 		username: randomWord(),
 		purgeTime: purgeTime,
-		domains: helper.shuffleArray(config.email.domains),
+		domains: helper.getDomains(),
 		branding: config.http.branding,
 	})
 })
@@ -46,7 +46,7 @@ router.post(
 				title: `${config.http.branding[0]} | Your temporary Inbox`,
 				purgeTime: purgeTime,
 				username: randomWord(),
-				domains: helper.shuffleArray(config.email.domains),
+				domains: helper.getDomains(),
 				branding: config.http.branding,
 			})
 		}

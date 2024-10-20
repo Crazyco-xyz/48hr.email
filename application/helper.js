@@ -98,6 +98,40 @@ class Helper {
         }
         return array
     }
+
+    /**
+     * Shuffle first item of array, keeping original order afterwards
+     * @param {Array} array
+     * @returns {Array}
+     */
+
+    shuffleFirstItem(array) {
+        let first = array[Math.floor(Math.random()*array.length)]
+        console.log(first)
+        array = array.filter((value)=>value!=first);
+        console.log(array)
+        array = [first].concat(array)
+        console.log(array)
+        return array
+    }
+
+    /**
+     * Get a domain list from config for use
+     * @returns {Array}
+     */
+
+    getDomains() {
+        switch (config.http.displaySort) {
+            case 0:
+                return config.email.domains // No modification
+            case 1:
+                return config.email.domains.sort() // Sort alphabetically
+            case 2:
+                return this.shuffleFirstItem(config.email.domains.sort()) // Sort alphabetically and shuffle first item
+            case 3:
+                return this.shuffleArray(config.email.domains) // Shuffle all
+        }
+    }
 }
 
 module.exports = Helper

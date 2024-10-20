@@ -13,7 +13,7 @@ class MailRepository {
 	getForRecipient(address) {
 		let mails = this.mailSummaries.get(address) || []
 		mails.forEach(mail => {
-			if (mail.to == this.config.http.examples.email && !this.config.http.examples.uids.includes(parseInt(mail.uid))) {
+			if (mail.to == this.config.email.examples.account && !this.config.email.examples.uids.includes(parseInt(mail.uid))) {
 				mails = mails.filter(m => m.uid != mail.uid)
 				debug('prevented non-example email from being shown in example inbox', mail.uid)
 			}
@@ -31,7 +31,7 @@ class MailRepository {
 	}
 
 	removeUid(uid, address) {
-		if (!this.config.http.examples.uids.includes(parseInt(uid))) {
+		if (!this.config.email.examples.uids.includes(parseInt(uid))) {
 			var deleted = false
 			// TODO: make this more efficient, looping through each email is not cool.
 			this.mailSummaries.forEachAssociation((mails, to) => {

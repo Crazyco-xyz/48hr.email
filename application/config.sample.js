@@ -5,7 +5,11 @@ const config = {
 			time: 48, // Time value for when to purge
 			unit: 'hours', // minutes, hours, days
 			convert: true, // Convert to highest sensible unit (and round)
-		}
+		},
+		examples: process.env.EMAIL_EXAMPLES || { // Examples to use to demonstrate the service
+			account: "example@48hr.email", // example email to keep clean, besides the UIDs specified below
+			uids: [1, 2, 3] // example uids to keep
+		},
 	},
 	imap: { // IMAP configuration
 		user: process.env.IMAP_USER, // imap user
@@ -19,10 +23,7 @@ const config = {
 	http: { // HTTP configuration
 		port: normalizePort(process.env.HTTP_PORT || 3000), // http port to listen on
 		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"], // branding
-		examples: process.env.HTTP_EXAMPLES || { // Examples to use to demonstrate the service
-			email: "example@48hr.email", // example email to keep clean, besides the UIDs specified below
-			uids: [1, 2, 3] // example uids to keep
-		}
+		displaySort: process.env.HTTP_DISPLAY_SHUFFLE || 0, // Sorting logic used for display (0 does not modify, 1 sorts alphabetically, 2 sorts alphabetically and only shuffles the first item, 3 shuffles all)
 	},
 }
 

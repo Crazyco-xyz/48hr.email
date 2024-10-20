@@ -8,7 +8,7 @@
     "disposable-mail"
   ],
   "env": {
-    "DOMAINS": {
+    "EMAIL_DOMAINS": {
       "description": "Email domains"
     },
     "EMAIL_PURGE_TIME": {
@@ -17,6 +17,13 @@
         "time": 48,
         "unit": "hours",
         "convert": true
+      }
+    },
+    "EMAIL_EXAMPLES": {
+      "description": "Examples of the domains",
+      "value": {
+        "account": "example@48hr.email",
+        "uids": [1, 2, 3]
       }
     },
     "IMAP_USER": {
@@ -52,12 +59,8 @@
       "description": "The branding of the site",
       "value": ["48hr.email", "Crazyco", "https://crazyco.xyz"]
     },
-    "HTTP_EXAMPLES": {
-      "description": "Examples of the domains",
-      "value": {
-        "email": "example@48hr.email",
-        "uids": [1, 2, 3]
-      }
+    "HTTP_DISPLAY_SORT": {
+      "description": "Sort the emails for use"
     }
   }
 }
