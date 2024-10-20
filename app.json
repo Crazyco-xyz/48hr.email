@@ -56,7 +56,7 @@
       "description": "Examples of the domains",
       "value": {
         "email": "example@48hr.email",
-        "ids": [1, 2, 3]
+        "uids": [1, 2, 3]
       }
     }
   }

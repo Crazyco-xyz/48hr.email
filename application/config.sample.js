@@ -20,8 +20,8 @@ const config = {
 		port: normalizePort(process.env.HTTP_PORT || 3000), // http port to listen on
 		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"], // branding
 		examples: process.env.HTTP_EXAMPLES || { // Examples to use to demonstrate the service
-			email: "example@48hr.email", // example email to keep clean, besides the IDs specified below
-			ids: [1, 2, 3] // example ids to keep
+			email: "example@48hr.email", // example email to keep clean, besides the UIDs specified below
+			uids: [1, 2, 3] // example uids to keep
 		}
 	},
 }
