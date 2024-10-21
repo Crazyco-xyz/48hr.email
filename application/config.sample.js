@@ -28,6 +28,7 @@ const config = {
 		// 1 sorts alphabetically, 
 		// 2 sorts alphabetically and only shuffles the first item, 
 		// 3 shuffles all
+		hideOther: process.env.HTTP_HIDE_OTHER || false, // Hide other emails in the list and only show first (true) or show all (false)
 	},
 }
 

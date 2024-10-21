@@ -60,7 +60,12 @@
       "value": ["48hr.email", "Crazyco", "https://crazyco.xyz"]
     },
     "HTTP_DISPLAY_SORT": {
-      "description": "Sort the emails for use"
+      "description": "Sort the emails for use",
+      "value": 0
+    },
+    "HTTP_HIDE_OTHER": {
+      "description": "Hide other emails from the list besides the first",
+      "value": false
     }
   }
 }

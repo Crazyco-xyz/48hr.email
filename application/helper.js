@@ -116,6 +116,19 @@ class Helper {
     }
 
     /**
+     * Hide other emails in the list and only show first (true) or show all (false)
+     * @param {Array} array
+     * @returns {Array}
+     */
+    hideOther(array) {
+        if (config.http.hideOther) {
+            return array[0]
+        } else {
+            return array
+        }
+    }
+
+    /**
      * Get a domain list from config for use
      * @returns {Array}
      */
@@ -123,13 +136,13 @@ class Helper {
     getDomains() {
         switch (config.http.displaySort) {
             case 0:
-                return config.email.domains // No modification
+                return this.hideOther(config.email.domains) // No modification
             case 1:
-                return config.email.domains.sort() // Sort alphabetically
+                return this.hideOther(config.email.domains.sort()) // Sort alphabetically
             case 2:
-                return this.shuffleFirstItem(config.email.domains.sort()) // Sort alphabetically and shuffle first item
+                return this.hideOther(this.shuffleFirstItem(config.email.domains.sort())) // Sort alphabetically and shuffle first item
             case 3:
-                return this.shuffleArray(config.email.domains) // Shuffle all
+                return this.hideOther(this.shuffleArray(config.email.domains)) // Shuffle all
         }
     }
 }
