@@ -23,7 +23,7 @@ const config = {
 	http: { // HTTP configuration
 		port: normalizePort(process.env.HTTP_PORT || 3000), // http port to listen on
 		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"], // branding
-		displaySort: process.env.HTTP_DISPLAY_SHUFFLE || 0, // Sorting logic used for display (0 does not modify, 1 sorts alphabetically, 2 sorts alphabetically and only shuffles the first item, 3 shuffles all)
+		displaySort: process.env.HTTP_DISPLAY_SORT || 0, // Sorting logic used for display (0 does not modify, 1 sorts alphabetically, 2 sorts alphabetically and only shuffles the first item, 3 shuffles all)
 	},
 }
 
