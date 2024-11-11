@@ -23,12 +23,12 @@ const config = {
 	http: { // HTTP configuration
 		port: normalizePort(process.env.HTTP_PORT || 3000), // http port to listen on
 		branding: process.env.HTTP_BRANDING || ["48hr.email", "CrazyCo", "https://crazyco.xyz"], // branding [service_title, company_name, company_url]
-		displaySort: process.env.HTTP_DISPLAY_SORT || 0, // Sorting logic used for display:
+		displaySort: process.env.HTTP_DISPLAY_SORT || 0, // Sorting logic used for displaying available email domains:
 		// 0 does not modify, 
 		// 1 sorts alphabetically, 
 		// 2 sorts alphabetically and only shuffles the first item, 
 		// 3 shuffles all
-		hideOther: process.env.HTTP_HIDE_OTHER || false, // Hide other emails in the list and only show first (true) or show all (false)
+		hideOther: process.env.HTTP_HIDE_OTHER || false, // Hide other email domains in the list and only show first (true) or show all (false)
 	},
 }
 
