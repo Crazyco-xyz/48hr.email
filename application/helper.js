@@ -107,11 +107,8 @@ class Helper {
 
     shuffleFirstItem(array) {
         let first = array[Math.floor(Math.random()*array.length)]
-        console.log(first)
         array = array.filter((value)=>value!=first);
-        console.log(array)
         array = [first].concat(array)
-        console.log(array)
         return array
     }
 
