@@ -202,15 +202,16 @@ class ImapService extends EventEmitter {
 	async deleteOldMails(deleteMailsBefore) {
 		let uids = []
 		if (helper.moreThanOneDay(moment(), deleteMailsBefore)) {
-			//fetch mails from date -1day (calculated in MS) to avoid wasting resources
-			deleteMailsBefore = deleteMailsBefore - 24 * 60 * 60 * 1000
 			uids = await this._searchWithoutFetch([
 				['!DELETED'],
 				['BEFORE', deleteMailsBefore]
 			])
 		} else {
+			//fetch mails from date -1day (calculated in MS) to avoid wasting resources
+			deleteMailsBefore = new Date(moment() - 24 * 60 * 60 * 1000)
 			uids = await this._searchWithoutFetch([
-				['!DELETED']
+				['!DELETED'],
+				['BEFORE', deleteMailsBefore]
 			])
 		}
 
