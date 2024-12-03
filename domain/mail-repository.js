@@ -27,7 +27,7 @@ class MailRepository {
 	}
 
 	add(to, mailSummary) {
-		if (to !== 'undefined') {
+		if (to !== undefined) {
 			this.mailSummaries.set(to.toLowerCase(), mailSummary)
 		}
 	}
