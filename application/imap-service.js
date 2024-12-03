@@ -201,17 +201,15 @@ class ImapService extends EventEmitter {
 	 */
 	async deleteOldMails(deleteMailsBefore) {
 		let uids = []
-		if (helper.moreThanOneDay(moment(), deleteMailsBefore)) {
+		//fetch mails from date +1day (calculated in MS) to avoid wasting resources and to fix imaps missing time-awareness
+		if (helper.moreThanOneDay(moment() + 24 * 60 * 60 * 1000, deleteMailsBefore)) {
 			uids = await this._searchWithoutFetch([
 				['!DELETED'],
 				['BEFORE', deleteMailsBefore]
 			])
 		} else {
-			//fetch mails from date -1day (calculated in MS) to avoid wasting resources
-			deleteMailsBefore = new Date(moment() - 24 * 60 * 60 * 1000)
 			uids = await this._searchWithoutFetch([
 				['!DELETED'],
-				['BEFORE', deleteMailsBefore]
 			])
 		}
 
@@ -220,8 +218,8 @@ class ImapService extends EventEmitter {
 		}
 
 		const DeleteOlderThan = helper.purgeTimeStamp()
-
 		const uidsWithHeaders = await this._getMailHeaders(uids)
+
 		uidsWithHeaders.forEach(mail => {
 			if (mail['attributes'].date > DeleteOlderThan || this.config.email.examples.uids.includes(parseInt(mail['attributes'].uid))) {
 				uids = uids.filter(uid => uid !== mail['attributes'].uid)
