@@ -27,7 +27,9 @@ class MailRepository {
 	}
 
 	add(to, mailSummary) {
-		this.mailSummaries.set(to.toLowerCase(), mailSummary)
+		if (to !== 'undefined') {
+			this.mailSummaries.set(to.toLowerCase(), mailSummary)
+		}
 	}
 
 	removeUid(uid, address) {

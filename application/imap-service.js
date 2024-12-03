@@ -347,6 +347,7 @@ class ImapService extends EventEmitter {
 
 	async _getMailHeaders(uids) {
 		const fetchOptions = {
+			envelope: true,
 			bodies: ['HEADER.FIELDS (FROM TO SUBJECT DATE)'],
 			struct: false
 		}
