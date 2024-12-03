@@ -29,6 +29,8 @@ class MailRepository {
 	add(to, mailSummary) {
 		if (to !== undefined) {
 			this.mailSummaries.set(to.toLowerCase(), mailSummary)
+		} else {
+			debug('IMAP reported no recipient for mail, ignoring', mailSummary)
 		}
 	}
 
