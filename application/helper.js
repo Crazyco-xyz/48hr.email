@@ -9,24 +9,25 @@ class Helper {
      */
     purgeTimeStamp() {
         return moment()
-        .subtract(config.email.purgeTime.time, config.email.purgeTime.unit)
-        .toDate()
+            .subtract(config.email.purgeTime.time, config.email.purgeTime.unit)
+            .toDate()
     }
 
     /**
-     * Check if time difference between now and purgeTimeStamp is more than one day 
-     * @param {Date} now
+     * Check if time difference between now and purgeTimeStamp is more than one day
+     * @param {number|Date} now
      * @param {Date} past
      * @returns {Boolean}
      */
     moreThanOneDay(now, past) {
         const DAY_IN_MS = 24 * 60 * 60 * 1000;
-        if((now - past) / DAY_IN_MS >= 1){
-            return  true
-        } else {
-            return false
-        }
+
+        const nowMs = now instanceof Date ? now.getTime() : now;
+        const pastMs = past instanceof Date ? past.getTime() : new Date(past).getTime();
+
+        return (nowMs - pastMs) >= DAY_IN_MS;
     }
+
 
     /**
      * Convert time to highest possible unit (minutes, hours, days) where `time > 1` and `Number.isSafeInteger(time)` (whole number)
@@ -43,7 +44,8 @@ class Helper {
             if (convertedTime > 60) {
                 convertedTime = convertedTime / 60
                 convertedUnit = 'hours';
-        }}
+            }
+        }
 
         if (convertedUnit === 'hours') {
             if (convertedTime > 24) {
@@ -106,8 +108,8 @@ class Helper {
      */
 
     shuffleFirstItem(array) {
-        let first = array[Math.floor(Math.random()*array.length)]
-        array = array.filter((value)=>value!=first);
+        let first = array[Math.floor(Math.random() * array.length)]
+        array = array.filter((value) => value != first);
         array = [first].concat(array)
         return array
     }
