@@ -10,6 +10,8 @@ const moment = require('moment')
 const Mail = require('../domain/mail')
 const Helper = require('./helper')
 const helper = new(Helper)
+const config = require('./config')
+
 
 // Just adding some missing functions to imap-simple... :-)
 
@@ -89,14 +91,12 @@ imaps.ImapSimple.prototype.closeBox = function(autoExpunge = true, callback) {
 class ImapService extends EventEmitter {
     constructor(config) {
         super()
+        if (!config || !config.imap) {
+            throw new Error("ImapService requires a valid config with 'imap' object");
+        }
         this.config = config
 
-        /**
-         * Set of emitted UIDs. Listeners should get each email only once.
-         * @type {Set<any>}
-         */
         this.loadedUids = new Set()
-
         this.connection = null
         this.initialLoadDone = false
     }
