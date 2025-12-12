@@ -55,7 +55,7 @@ class MailProcessingService extends EventEmitter {
         console.log(`Initial load done, got ${this.mailRepository.mailCount()} mails`)
         console.log(`Fetching and deleting mails every ${this.config.imap.refreshIntervalSeconds} seconds`)
         console.log(`Mails older than ${this.config.email.purgeTime.time} ${this.config.email.purgeTime.unit} will be deleted`)
-        console.log(`The example emails are: ${this.config.email.examples.uids.join(', ')}`)
+        console.log(`The example emails are: ${this.config.email.examples.uids.join(', ')}, on the account ${this.config.email.examples.account}`)
     }
 
     onNewMail(mail) {
