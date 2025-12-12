@@ -127,21 +127,18 @@ class ImapService extends EventEmitter {
 
                     this.connection.on('error', err => {
                         // We assume that the app will be restarted after a crash.
-                        console.error(
-                            'got fatal error during imap operation, stop app.',
-                            err
-                        )
+                        console.error('got fatal error during imap operation, stop app.', err)
                         this.emit('error', err)
                     })
 
                     await this.connection.openBox('INBOX')
-                    debug('connected to imap')
+                    debug('Connected to imap')
                 }, {
                     retries: 5
                 }
             )
         } catch (error) {
-            console.error('can not connect, even with retry, stop app', error)
+            console.error('Cant connect, even after retrying, stopping app', error)
             throw error
         }
     }
@@ -226,7 +223,7 @@ class ImapService extends EventEmitter {
         })
 
         if (uids.length === 0) {
-            debug('no mails to delete.')
+            debug('No mails to delete.')
             return
         }
 
@@ -235,7 +232,7 @@ class ImapService extends EventEmitter {
         uids.forEach(uid => {
             this.emit(ImapService.EVENT_DELETED_MAIL, uid)
         })
-        console.log(`deleted ${uids.length} old messages.`)
+        console.log(`Deleted ${uids.length} old messages.`)
     }
 
     /**
@@ -243,10 +240,10 @@ class ImapService extends EventEmitter {
      * @param uid delete specific mail per UID
      */
     async deleteSpecificEmail(uid) {
-        debug(`deleting mails ${uid}`)
+        debug(`Deleting mails ${uid}`)
         if (!this.config.email.examples.uids.includes(parseInt(uid))) {
             await this.connection.deleteMessage(uid)
-            debug(`deleted mail with UID: ${uid}.`)
+            debug(`Deleted mail with UID: ${uid}.`)
             this.emit(ImapService.EVENT_DELETED_MAIL, uid)
         }
     }
@@ -297,10 +294,10 @@ class ImapService extends EventEmitter {
     async fetchOneFullMail(to, uid, raw = false) {
         if (!this.connection) {
             // Here we 'fail fast' instead of waiting for the connection.
-            throw new Error('imap connection not ready')
+            throw new Error('IMAP connection not ready')
         }
 
-        debug(`fetching full message ${uid}`)
+        debug(`Fetching full message ${uid}`)
 
         // For security we also filter TO, so it is harder to just enumerate all messages.
         const searchCriteria = [
@@ -344,7 +341,7 @@ class ImapService extends EventEmitter {
                 }
             })
         } catch (error) {
-            debug('can not fetch', error)
+            debug('Cant fetch', error)
             throw error
         }
     }

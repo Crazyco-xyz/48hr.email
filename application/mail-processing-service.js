@@ -54,13 +54,13 @@ class MailProcessingService extends EventEmitter {
 
     onInitialLoadDone() {
         this.initialLoadDone = true
-        console.log(`initial load done, got ${this.mailRepository.mailCount()} mails`)
+        console.log(`Initial load done, got ${this.mailRepository.mailCount()} mails`)
     }
 
     onNewMail(mail) {
         if (this.initialLoadDone) {
             // For now, only log messages if they arrive after the initial load
-            debug('new mail for', mail.to[0])
+            debug('New mail for', mail.to[0])
         }
 
         mail.to.forEach(to => {
@@ -70,7 +70,7 @@ class MailProcessingService extends EventEmitter {
     }
 
     onMailDeleted(uid) {
-        debug('mail deleted with uid', uid)
+        debug('Mail deleted with uid', uid)
         this.mailRepository.removeUid(uid)
     }
 
@@ -78,7 +78,7 @@ class MailProcessingService extends EventEmitter {
         try {
             await this.imapService.deleteOldMails(helper.purgeTimeStamp())
         } catch (error) {
-            console.log('can not delete old messages', error)
+            console.log('Cant delete old messages', error)
         }
     }
 
@@ -86,7 +86,7 @@ class MailProcessingService extends EventEmitter {
         const fs = require('fs')
         fs.writeFile(filename, JSON.stringify(mails), err => {
             if (err) {
-                console.error('can not save mails to file', err)
+                console.error('Cant save mails to file', err)
             }
         })
     }

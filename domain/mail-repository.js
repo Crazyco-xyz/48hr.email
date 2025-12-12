@@ -15,7 +15,7 @@ class MailRepository {
         mails.forEach(mail => {
             if (mail.to == this.config.email.examples.account && !this.config.email.examples.uids.includes(parseInt(mail.uid))) {
                 mails = mails.filter(m => m.uid != mail.uid)
-                debug('prevented non-example email from being shown in example inbox', mail.uid)
+                debug('Prevented non-example email from being shown in example inbox', mail.uid)
             }
         })
         return _.orderBy(mails, mail => Date.parse(mail.date), ['desc'])
@@ -43,7 +43,7 @@ class MailRepository {
                     .filter(mail => mail.uid === parseInt(uid) && (address ? to == address : true))
                     .forEach(mail => {
                         this.mailSummaries.remove(to, mail)
-                        debug('removed ', mail.date, to, mail.subject)
+                        debug('Removed ', mail.date, to, mail.subject)
                         deleted = true
                     })
             })
