@@ -57,7 +57,6 @@ All data is being removed 48hrs after they have reached the mail server.
     - `npm i`
     - Change all settings to the desired values:
         - Either use environmental variables, or modify `.env` (see `.env.example`)
-        - For a list of values, check `.env.example`.
     - `npm run start`
 
 - #### Service file example:
@@ -68,8 +67,8 @@ After=network-online.target
 
 [Service]
 Type=exec
-User=clara
-Group=clara
+User=user
+Group=user
 
 WorkingDirectory=/opt/48hr-email
 ExecStart=npm run start
