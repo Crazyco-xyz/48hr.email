@@ -15,7 +15,7 @@ class MailRepository {
         mails.forEach(mail => {
             if (mail.to == this.config.email.examples.account && !this.config.email.examples.uids.includes(parseInt(mail.uid))) {
                 mails = mails.filter(m => m.uid != mail.uid)
-                console.log('prevented non-example email from being shown in example inbox', mail.uid)
+                debug('prevented non-example email from being shown in example inbox', mail.uid)
             }
         })
         return _.orderBy(mails, mail => Date.parse(mail.date), ['desc'])

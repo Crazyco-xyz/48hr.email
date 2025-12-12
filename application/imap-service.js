@@ -202,13 +202,11 @@ class ImapService extends EventEmitter {
         let uids = []
             //fetch mails from date +1day (calculated in MS) to avoid wasting resources and to fix imaps missing time-awareness
         if (helper.moreThanOneDay(moment(), deleteMailsBefore)) {
-            console.log("Deleting mails older than one day");
             uids = await this._searchWithoutFetch([
                 ['!DELETED'],
                 ['BEFORE', deleteMailsBefore]
             ])
         } else {
-            console.log("Deleting mails without date filter");
             uids = await this._searchWithoutFetch([
                 ['!DELETED'],
             ])
@@ -220,17 +218,14 @@ class ImapService extends EventEmitter {
 
         const DeleteOlderThan = helper.purgeTimeStamp()
         const uidsWithHeaders = await this._getMailHeaders(uids)
-        console.log(`Fetched ${uidsWithHeaders.length} mails for deletion check.`);
 
         uidsWithHeaders.forEach(mail => {
             if (mail['attributes'].date > DeleteOlderThan || this.config.email.examples.uids.includes(parseInt(mail['attributes'].uid))) {
                 uids = uids.filter(uid => uid !== mail['attributes'].uid)
-                console.log(mail['attributes'].date > DeleteOlderThan ? `Mail UID: ${mail['attributes'].uid} is newer than purge time.` : `Mail UID: ${mail['attributes'].uid} is an example mail.`);
             }
         })
 
         if (uids.length === 0) {
-            console.log("Length 0")
             debug('no mails to delete.')
             return
         }
@@ -239,7 +234,6 @@ class ImapService extends EventEmitter {
         await this.connection.deleteMessage(uids)
         uids.forEach(uid => {
             this.emit(ImapService.EVENT_DELETED_MAIL, uid)
-            console.log(`UID deleted: ${uid}`);
         })
         console.log(`deleted ${uids.length} old messages.`)
     }
@@ -252,7 +246,7 @@ class ImapService extends EventEmitter {
         debug(`deleting mails ${uid}`)
         if (!this.config.email.examples.uids.includes(parseInt(uid))) {
             await this.connection.deleteMessage(uid)
-            console.log(`deleted mail with UID: ${uid}.`)
+            debug(`deleted mail with UID: ${uid}.`)
             this.emit(ImapService.EVENT_DELETED_MAIL, uid)
         }
     }

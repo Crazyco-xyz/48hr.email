@@ -1,9 +1,9 @@
 const EventEmitter = require('events')
 const debug = require('debug')('48hr-email:imap-manager')
 const mem = require('mem')
-const moment = require('moment')
 const ImapService = require('./imap-service')
 const Helper = require('./helper')
+const config = require('./config')
 const helper = new(Helper)
 
 
@@ -26,9 +26,12 @@ class MailProcessingService extends EventEmitter {
         this.imapService.once(ImapService.EVENT_INITIAL_LOAD_DONE, () =>
             this._deleteOldMails()
         )
+
+        console.log(`Running old mail deletion every ${this.config.imap.refreshIntervalSeconds} seconds`)
+
         setInterval(() => {
             this._deleteOldMails()
-        }, 60 * 1000)
+        }, this.config.imap.refreshIntervalSeconds * 1000)
     }
 
     getMailSummaries(address) {
@@ -51,9 +54,7 @@ class MailProcessingService extends EventEmitter {
 
     onInitialLoadDone() {
         this.initialLoadDone = true
-        console.log(
-            `initial load done, got ${this.mailRepository.mailCount()} mails`
-        )
+        console.log(`initial load done, got ${this.mailRepository.mailCount()} mails`)
     }
 
     onNewMail(mail) {
