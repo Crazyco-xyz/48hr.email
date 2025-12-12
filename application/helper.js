@@ -30,40 +30,35 @@ class Helper {
 
 
     /**
-     * Convert time to highest possible unit (minutes, hours, days) where `time > 1` and `Number.isSafeInteger(time)` (whole number)
-     * @param {Number} time
-     * @param {String} unit
-     * @returns {String}
+     * Convert time to highest possible unit (minutes → hours → days),
+     * rounding if necessary and prefixing "~" when rounded.
+     *
+     * @param {number} time
+     * @param {string} unit  "minutes" | "hours" | "days"
+     * @returns {string}
      */
     convertAndRound(time, unit) {
-        let convertedTime = time;
-        let convertedUnit = unit;
-        let rounded = false;
+        let value = time;
+        let u = unit;
 
-        if (convertedUnit === 'minutes') {
-            if (convertedTime > 60) {
-                convertedTime = convertedTime / 60
-                convertedUnit = 'hours';
+        // upgrade units
+        const units = [
+            ["minutes", 60, "hours"],
+            ["hours", 24, "days"]
+        ];
+
+        for (const [from, factor, to] of units) {
+            if (u === from && value > factor) {
+                value = value / factor;
+                u = to;
             }
         }
 
-        if (convertedUnit === 'hours') {
-            if (convertedTime > 24) {
-                convertedTime = convertedTime / 24;
-                convertedUnit = 'days';
-            }
-        }
+        // determine if rounding is needed
+        const rounded = !Number.isSafeInteger(value);
+        if (rounded) value = Math.round(value);
 
-        if (!convertedTime == Number.isSafeInteger(convertedTime)) {
-            convertedTime = Math.round(convertedTime);
-            rounded = true;
-        }
-
-        if (rounded) {
-            convertedTime = `~${convertedTime}`;
-        }
-
-        return `${convertedTime} ${convertedUnit}`;
+        return `${rounded ? "~" : ""}${value} ${u}`;
     }
 
     /**

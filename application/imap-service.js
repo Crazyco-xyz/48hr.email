@@ -196,44 +196,52 @@ class ImapService extends EventEmitter {
      * @param {Date} deleteMailsBefore delete mails before this date instance
      */
     async deleteOldMails(deleteMailsBefore) {
-        let uids = []
-            //fetch mails from date +1day (calculated in MS) to avoid wasting resources and to fix imaps missing time-awareness
-        if (helper.moreThanOneDay(moment(), deleteMailsBefore)) {
-            uids = await this._searchWithoutFetch([
-                ['!DELETED'],
-                ['BEFORE', deleteMailsBefore]
-            ])
-        } else {
-            uids = await this._searchWithoutFetch([
-                ['!DELETED'],
-            ])
+        let uids;
+
+        // Only do heavy IMAP date filtering if the cutoff is older than 1 day
+        const useDateFilter = helper.moreThanOneDay(moment(), deleteMailsBefore);
+
+        const searchQuery = useDateFilter ? [
+            ['!DELETED'],
+            ['BEFORE', deleteMailsBefore]
+        ] : [
+            ['!DELETED']
+        ];
+
+        uids = await this._searchWithoutFetch(searchQuery);
+
+        if (uids.length === 0) return;
+
+        const deleteOlderThan = helper.purgeTimeStamp();
+        const exampleUids = this.config.email.examples.uids.map(x => parseInt(x));
+        const headers = await this._getMailHeaders(uids);
+
+        // Filter out mails that are too new or whitelisted
+        const toDelete = headers
+            .filter(mail => {
+                const date = mail.attributes.date;
+                const uid = parseInt(mail.attributes.uid);
+
+                if (exampleUids.includes(uid)) return false;
+                return date <= deleteOlderThan;
+            })
+            .map(mail => parseInt(mail.attributes.uid));
+
+        if (toDelete.length === 0) {
+            debug('No mails to delete.');
+            return;
         }
 
-        if (uids.length === 0) {
-            return
-        }
+        debug(`Deleting mails ${toDelete}`);
+        await this.connection.deleteMessage(toDelete);
 
-        const DeleteOlderThan = helper.purgeTimeStamp()
-        const uidsWithHeaders = await this._getMailHeaders(uids)
+        toDelete.forEach(uid => {
+            this.emit(ImapService.EVENT_DELETED_MAIL, uid);
+        });
 
-        uidsWithHeaders.forEach(mail => {
-            if (mail['attributes'].date > DeleteOlderThan || this.config.email.examples.uids.includes(parseInt(mail['attributes'].uid))) {
-                uids = uids.filter(uid => uid !== mail['attributes'].uid)
-            }
-        })
-
-        if (uids.length === 0) {
-            debug('No mails to delete.')
-            return
-        }
-
-        debug(`deleting mails ${uids}`)
-        await this.connection.deleteMessage(uids)
-        uids.forEach(uid => {
-            this.emit(ImapService.EVENT_DELETED_MAIL, uid)
-        })
-        console.log(`Deleted ${uids.length} old messages.`)
+        console.log(`Deleted ${toDelete.length} old messages.`);
     }
+
 
     /**
      *
