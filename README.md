@@ -99,7 +99,6 @@ WantedBy=multi-user.target
 
 -----
 ### TODO (PRs welcome):
-- Clean up code inside application folder
 - Add user registration:
     - Optional "premium" domains that arent visible to the public to prevent them from being scraped and flagged
     - Allow people to set a password for their email (releases X time after last login)
