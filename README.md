@@ -56,8 +56,8 @@ All data is being removed 48hrs after they have reached the mail server.
     - `cd 48hr.email`
     - `npm i`
     - Change all settings to the desired values:
-        - Either use environmental variables, or modify `application/config.sample.js` (Rename to `config.js` after)
-        - For a list of values, check `application/config.sample.js`.
+        - Either use environmental variables, or modify `.env` (see `.env.example`)
+        - For a list of values, check `.env.example`.
     - `npm run start`
 
 - #### Service file example:
@@ -90,7 +90,7 @@ WantedBy=multi-user.target
     - `git clone https://github.com/Crazyco-xyz/48hr.email.git`
     - `cd 48hr.email`
     - Change all settings to the desired values:
-        - Either use environmental variables, or modify `application/config.js`
+        - Either use environmental variables, or modify `.env`, see `.env.example`
     - `docker compose up -d`
     - If desired, you can also move the config file somewhere else (change volume mount accordingly)
 </details>
