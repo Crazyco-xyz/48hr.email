@@ -27,7 +27,7 @@ class MailProcessingService extends EventEmitter {
             this._deleteOldMails()
         )
 
-        console.log(`Running old mail deletion every ${this.config.imap.refreshIntervalSeconds} seconds`)
+        console.log(`Fetching and deleting mails every ${this.config.imap.refreshIntervalSeconds} seconds`)
 
         setInterval(() => {
             this._deleteOldMails()

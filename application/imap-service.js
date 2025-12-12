@@ -127,7 +127,7 @@ class ImapService extends EventEmitter {
 
                     this.connection.on('error', err => {
                         // We assume that the app will be restarted after a crash.
-                        console.error('got fatal error during imap operation, stop app.', err)
+                        console.error('Got fatal error during imap operation, stop app.', err)
                         this.emit('error', err)
                     })
 
