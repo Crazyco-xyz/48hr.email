@@ -7,11 +7,9 @@
         });
     </script>
 
-    <div style="float: right; text-align: end;">
-        <a href="/inbox/{{ address }}/delete-all">
-            Wipe Inbox</a><br>
-        <a href="/logout">
-            Logout</a>
+    <div class="action-links">
+        <a href="/inbox/{{ address }}/delete-all">Wipe Inbox</a>
+        <a href="/logout">Logout</a>
     </div>
     <h1>{{ address }}</h1>
     {% for mail in mailSummaries %}

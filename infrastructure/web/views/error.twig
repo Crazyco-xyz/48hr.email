@@ -1,12 +1,9 @@
 {% extends 'layout.twig' %}
 
 {% block body %}
-    <div style="float: right; text-align: end;">
-	    <a href="/inbox/{{ address }}">
-	        ← Return to inbox</a>
-	    <br>
-        <a href="/logout">
-            Logout</a>
+    <div class="action-links">
+        <a href="/inbox/{{ address }}">← Return to inbox</a>
+        <a href="/logout">Logout</a>
     </div>
   <h1>{{message}}</h1>
   <h2>{{error.status}}</h2>

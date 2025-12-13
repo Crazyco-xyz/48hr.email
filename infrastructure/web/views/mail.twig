@@ -2,18 +2,11 @@
 
 {% block body %}
 
-    <div style="float: right; text-align: end;">
-	    <a href="/inbox/{{ address }}">
-	        ← Return to inbox</a>
-	    <br>
-        <a href="/inbox/{{ address }}/{{ uid }}/delete">
-            Delete Email</a>
-	    <br>
-        <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank">
-            View Raw</a>
-	    <br>
-        <a href="/logout">
-            Logout</a>
+    <div class="action-links">
+        <a href="/inbox/{{ address }}">← Return to inbox</a>
+        <a href="/inbox/{{ address }}/{{ uid }}/delete">Delete Email</a>
+        <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank">View Raw</a>
+        <a href="/logout">Logout</a>
     </div>
     <hr>
 	<div class="mail_body" style="padding-left:10%;">

@@ -69,6 +69,15 @@ text-muted {
     margin-top: -2rem
 }
 
+.action-links {
+    float: right;
+    text-align: end;
+}
+
+.action-links a {
+    display: block;
+}
+
 
 /* Reset apple form styles */
 
@@ -96,6 +105,10 @@ select:hover {
 #login h1,
 #login h4 {
     text-align: center;
+}
+
+#login h4 {
+    margin-bottom: 6rem;
 }
 
 #login fieldset {
