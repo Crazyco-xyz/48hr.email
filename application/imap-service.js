@@ -175,8 +175,6 @@ class ImapService extends EventEmitter {
         }
         this.loadingInProgress = true
         debug('Starting load of mail summaries')
-            // UID: Unique id of a message.
-
         const uids = await this._getAllUids()
         const newUids = uids.filter(uid => !this.loadedUids.has(uid))
         debug(`UIDs on server: ${uids.length}, new UIDs to fetch: ${newUids.length}, already loaded: ${this.loadedUids.size}`)
@@ -189,17 +187,17 @@ class ImapService extends EventEmitter {
         const uidChunks = _.chunk(newUids, chunkSize)
         debug(`Chunk size: ${chunkSize}, concurrency: ${concurrency}, chunks to process: ${uidChunks.length}`)
 
-        // Limited-concurrency runner
+        // Limited-concurrency worker
         const pool = []
-        let idx = 0
+        let workerId = 0
         const runNext = async() => {
-            if (idx >= uidChunks.length) return
-            const myIdx = idx++
-                const chunk = uidChunks[myIdx]
+            if (workerId >= uidChunks.length) return
+            const chunkId = workerId++
+                const chunk = uidChunks[chunkId]
             try {
-                debug(`Worker processing chunk ${myIdx + 1}/${uidChunks.length} (size: ${chunk.length})`)
+                debug(`Worker processing chunk ${chunkId + 1}/${uidChunks.length} (size: ${chunk.length})`)
                 await this._getMailHeadersAndEmitAsEvents(chunk)
-                debug(`Completed chunk ${myIdx + 1}/${uidChunks.length}; loadedUids size now: ${this.loadedUids.size}`)
+                debug(`Completed chunk ${chunkId + 1}/${uidChunks.length}; loadedUids size now: ${this.loadedUids.size}`)
             } finally {
                 await runNext()
             }
