@@ -17,12 +17,12 @@
     </div>
     <hr>
 	<div class="mail_body" style="padding-left:10%;">
-    <h1 style="text-align:left;">
+    <h3 style="text-align:left;">
         {{ mail.subject }}
         <span style="float:right; padding-right:10vw;" >
             From: {{ mail.from.text }} at {{ mail.date| date }}
         </span>
-    </p>
+    </h3>
     </div>
     {% if mail.html %}
     <div>

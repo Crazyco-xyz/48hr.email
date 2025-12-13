@@ -33,6 +33,10 @@ a.no-link-color {
     color: #cccccc;
 }
 
+p {
+    margin-bottom: unset;
+}
+
 .email:hover {
     color: black;
     background-color: #9b4cda;
