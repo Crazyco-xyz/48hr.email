@@ -99,6 +99,7 @@ class ImapService extends EventEmitter {
         this.loadedUids = new Set()
         this.connection = null
         this.initialLoadDone = false
+        this.loadingInProgress = false
     }
 
     async connectAndLoadMessages() {
@@ -167,28 +168,60 @@ class ImapService extends EventEmitter {
     }
 
     async _loadMailSummariesAndEmitAsEvents() {
-        // UID: Unique id of a message.
+        // Prevent overlapping loads which can inflate counts
+        if (this.loadingInProgress) {
+            debug('Load skipped: another load already in progress')
+            return
+        }
+        this.loadingInProgress = true
+        debug('Starting load of mail summaries')
+            // UID: Unique id of a message.
 
         const uids = await this._getAllUids()
         const newUids = uids.filter(uid => !this.loadedUids.has(uid))
+        debug(`UIDs on server: ${uids.length}, new UIDs to fetch: ${newUids.length}, already loaded: ${this.loadedUids.size}`)
 
-        // Optimize by fetching several messages (but not all) with one 'search' call.
-        // fetching all at once might be more efficient, but then it takes long until we see any messages
-        // in the frontend. With a small chunk size we ensure that we see the newest emails after a few seconds after
-        // restart.
-        const uidChunks = _.chunk(newUids, 20)
+        // Tuneable chunk size & concurrency for faster initial loads
+        const chunkSize = this.config.imap.fetchChunkSize
+        const concurrency = this.config.imap.fetchConcurrency
 
-        // Creates an array of functions. We do not start the search now, we just create the function.
-        const fetchFunctions = uidChunks.map(uidChunk => () =>
-            this._getMailHeadersAndEmitAsEvents(uidChunk)
-        )
+        // Chunk newest-first UIDs to balance speed and first-paint
+        const uidChunks = _.chunk(newUids, chunkSize)
+        debug(`Chunk size: ${chunkSize}, concurrency: ${concurrency}, chunks to process: ${uidChunks.length}`)
 
-        await pSeries(fetchFunctions)
+        // Limited-concurrency runner
+        const pool = []
+        let idx = 0
+        const runNext = async() => {
+            if (idx >= uidChunks.length) return
+            const myIdx = idx++
+                const chunk = uidChunks[myIdx]
+            try {
+                debug(`Worker processing chunk ${myIdx + 1}/${uidChunks.length} (size: ${chunk.length})`)
+                await this._getMailHeadersAndEmitAsEvents(chunk)
+                debug(`Completed chunk ${myIdx + 1}/${uidChunks.length}; loadedUids size now: ${this.loadedUids.size}`)
+            } finally {
+                await runNext()
+            }
+        }
 
+        // Start workers
+        const workers = Math.min(concurrency, uidChunks.length)
+        for (let i = 0; i < workers; i++) {
+            pool.push(runNext())
+        }
+        await Promise.all(pool)
+        debug(`All chunks processed. Final loadedUids size: ${this.loadedUids.size}`)
+
+        // Mark initial load done only after all chunks complete to avoid double-runs
         if (!this.initialLoadDone) {
             this.initialLoadDone = true
             this.emit(ImapService.EVENT_INITIAL_LOAD_DONE)
+            debug('Emitted initial load done')
         }
+
+        this.loadingInProgress = false
+        debug('Load finished')
     }
 
     /**
@@ -341,6 +374,7 @@ class ImapService extends EventEmitter {
     async _getMailHeadersAndEmitAsEvents(uids) {
         try {
             const mails = await this._getMailHeaders(uids)
+            debug(`Fetched headers for ${uids.length} UIDs; server returned ${mails.length} messages`)
             mails.forEach(mail => {
                 this.loadedUids.add(mail.attributes.uid)
                     // Some broadcast messages have no TO field. We have to ignore those messages.

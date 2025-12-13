@@ -49,7 +49,9 @@ const config = {
         port: Number(process.env.IMAP_PORT),
         tls: parseBool(process.env.IMAP_TLS),
         authTimeout: Number(process.env.IMAP_AUTH_TIMEOUT),
-        refreshIntervalSeconds: Number(process.env.IMAP_REFRESH_INTERVAL_SECONDS)
+        refreshIntervalSeconds: Number(process.env.IMAP_REFRESH_INTERVAL_SECONDS),
+        fetchChunkSize: Number(process.env.IMAP_FETCH_CHUNK) || 100,
+        fetchConcurrency: Number(process.env.IMAP_CONCURRENCY) || 6
     },
 
     http: {

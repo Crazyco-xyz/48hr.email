@@ -2,6 +2,5 @@
 .idea
 .vscode
 .DS_Store
-
+copilot-instructions.md
 node_modules
-
