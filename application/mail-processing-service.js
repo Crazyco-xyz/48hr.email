@@ -50,6 +50,10 @@ class MailProcessingService extends EventEmitter {
         return this.mailRepository.getAll()
     }
 
+    getCount() {
+        return this.mailRepository.mailCount()
+    }
+
     onInitialLoadDone() {
         this.initialLoadDone = true
         console.log(`Initial load done, got ${this.mailRepository.mailCount()} mails`)

@@ -16,12 +16,14 @@ const sanitizeAddress = param('address').customSanitizer(
     }
 )
 
-router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, (req, res, _next) => {
+router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, async(req, res, _next) => {
     const mailProcessingService = req.app.get('mailProcessingService')
+    const count = await mailProcessingService.getCount()
     res.render('inbox', {
         title: `${config.http.branding[0]} | ` + req.params.address,
         purgeTime: purgeTime,
         address: req.params.address,
+        count: count,
         mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
         branding: config.http.branding,
     })
@@ -33,6 +35,7 @@ router.get(
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
+            const count = await mailProcessingService.getCount()
             const mail = await mailProcessingService.getOneFullMail(
                 req.params.address,
                 req.params.uid
@@ -49,6 +52,7 @@ router.get(
                     title: mail.subject + " | " + req.params.address,
                     purgeTime: purgeTime,
                     address: req.params.address,
+                    count: count,
                     mail,
                     uid: req.params.uid,
                     branding: config.http.branding,
@@ -58,6 +62,7 @@ router.get(
                     'error', {
                         purgeTime: purgeTime,
                         address: req.params.address,
+                        count: count,
                         message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
                         branding: config.http.branding
 
@@ -117,6 +122,7 @@ router.get(
             )
             var index = mail.attachments.findIndex(attachment => attachment.checksum === req.params.checksum);
             const attachment = mail.attachments[index];
+            const count = await mailProcessingService.getCount()
             if (attachment) {
                 try {
                     res.set('Content-Disposition', `attachment; filename=${attachment.filename}`);
@@ -132,6 +138,7 @@ router.get(
                     'error', {
                         purgeTime: purgeTime,
                         address: req.params.address,
+                        count: count,
                         message: 'This attachment could not be found. It either does not exist or has been deleted from our servers!',
                         branding: config.http.branding,
                     }
@@ -153,6 +160,7 @@ router.get(
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
+            const count = await mailProcessingService.getCount()
             mail = await mailProcessingService.getOneFullMail(
                 req.params.address,
                 req.params.uid,
@@ -171,6 +179,7 @@ router.get(
                     'error', {
                         purgeTime: purgeTime,
                         address: req.params.address,
+                        count: count,
                         message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
                         branding: config.http.branding,
                     }

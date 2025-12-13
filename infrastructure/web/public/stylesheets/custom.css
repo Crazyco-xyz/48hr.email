@@ -6,7 +6,6 @@ body {
     min-height: 100vh;
     background-color: #131516;
     color: #cccccc;
-    
 }
 
 body::-webkit-scrollbar {
@@ -14,18 +13,20 @@ body::-webkit-scrollbar {
 }
 
 main {
-    flex: 1; /* keep footer at the bottom */
+    flex: 1;
+    /* keep footer at the bottom */
 }
+
 a {
     color: #cccccc;
 }
 
 h1 {
-	font-size: 3rem;
+    font-size: 3rem;
 }
 
 h3 {
-	font-size: 2rem;
+    font-size: 2rem;
 }
 
 a.no-link-color {
@@ -60,23 +61,36 @@ text-muted {
     text-align: center
 }
 
+.footer-two {
+    margin-top: -2rem
+}
+
+
 /* Reset apple form styles */
-input, textarea, select, select:active, select:focus, select:hover {
+
+input,
+textarea,
+select,
+select:active,
+select:focus,
+select:hover {
     -webkit-appearance: none;
     -moz-appearance: none;
-    appearance: none; border-radius: 0;
+    appearance: none;
+    border-radius: 0;
     background-image: none;
 }
 
 #login {
-	padding-top: 15vh;
+    padding-top: 15vh;
     display: flex;
     flex-direction: column;
     max-width: 600px;
     margin: auto;
 }
 
-#login h1, #login h4 {
+#login h1,
+#login h4 {
     text-align: center;
 }
 
@@ -97,7 +111,8 @@ input, textarea, select, select:active, select:focus, select:hover {
     z-index: 999;
 }
 
-#login input[type="text"], #login select {
+#login input[type="text"],
+#login select {
     border-radius: 0.4rem;
     color: #cccccc;
     font-size: 1.6rem;
@@ -130,7 +145,7 @@ input, textarea, select, select:active, select:focus, select:hover {
     flex-wrap: wrap;
 }
 
-#login .buttons > * {
+#login .buttons>* {
     width: 100%;
     flex: 1;
     font-size: 1.3rem;
@@ -138,7 +153,7 @@ input, textarea, select, select:active, select:focus, select:hover {
 
 .mail_attachments {
     width: 80%;
-    padding-left:10%
+    padding-left: 10%
 }
 
 label {

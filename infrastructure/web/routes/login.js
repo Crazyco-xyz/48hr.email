@@ -9,12 +9,14 @@ const helper = new(Helper)
 
 const purgeTime = helper.purgeTimeElemetBuilder()
 
-router.get('/', (req, res, _next) => {
+router.get('/', async(req, res, _next) => {
+    const count = await req.app.get('mailProcessingService').getCount()
     res.render('login', {
         title: `${config.http.branding[0]} | Your temporary Inbox`,
         username: randomWord(),
         purgeTime: purgeTime,
         domains: helper.getDomains(),
+        count: count,
         branding: config.http.branding,
         example: config.email.examples.account,
     })
@@ -38,8 +40,9 @@ router.post(
         check('username').isLength({ min: 1 }),
         check('domain').isIn(config.email.domains)
     ],
-    (req, res) => {
+    async(req, res) => {
         const errors = validationResult(req)
+        const count = await req.app.get('mailProcessingService').getCount()
         if (!errors.isEmpty()) {
             return res.render('login', {
                 userInputError: true,
@@ -47,6 +50,7 @@ router.post(
                 purgeTime: purgeTime,
                 username: randomWord(),
                 domains: helper.getDomains(),
+                count: count,
                 branding: config.http.branding,
             })
         }
