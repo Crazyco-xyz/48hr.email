@@ -116,13 +116,42 @@ router.get(
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
+            const uid = parseInt(req.params.uid, 10)
+            const count = await mailProcessingService.getCount()
+
+            // Validate UID is a valid integer
+            if (isNaN(uid) || uid <= 0) {
+                return res.render(
+                    'error', {
+                        purgeTime: purgeTime,
+                        address: req.params.address,
+                        count: count,
+                        message: 'Invalid/Malformed UID provided.',
+                        branding: config.http.branding,
+                    }
+                )
+            }
+
             const mail = await mailProcessingService.getOneFullMail(
                 req.params.address,
-                req.params.uid
+                uid
             )
+
+            if (!mail || !mail.attachments) {
+                return res.render(
+                    'error', {
+                        purgeTime: purgeTime,
+                        address: req.params.address,
+                        count: count,
+                        message: 'This email could not be found. It either does not exist or has been deleted from our servers!',
+                        branding: config.http.branding,
+                    }
+                )
+            }
+
             var index = mail.attachments.findIndex(attachment => attachment.checksum === req.params.checksum);
             const attachment = mail.attachments[index];
-            const count = await mailProcessingService.getCount()
+
             if (attachment) {
                 try {
                     res.set('Content-Disposition', `attachment; filename=${attachment.filename}`);
@@ -132,9 +161,10 @@ router.get(
                 } catch (error) {
                     console.error('Error while fetching attachment', error);
                     next(error);
+                    return;
                 }
             } else {
-                res.render(
+                return res.render(
                     'error', {
                         purgeTime: purgeTime,
                         address: req.params.address,
@@ -144,9 +174,8 @@ router.get(
                     }
                 )
             }
-            res.redirect(`/inbox/${req.params.address}`)
         } catch (error) {
-            console.error('Error while deleting email', error)
+            console.error('Error while fetching attachment', error)
             next(error)
         }
     }
@@ -160,10 +189,25 @@ router.get(
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
+            const uid = parseInt(req.params.uid, 10)
             const count = await mailProcessingService.getCount()
+
+            // Validate UID is a valid integer
+            if (isNaN(uid) || uid <= 0) {
+                return res.render(
+                    'error', {
+                        purgeTime: purgeTime,
+                        address: req.params.address,
+                        count: count,
+                        message: 'Invalid/Malformed UID provided.',
+                        branding: config.http.branding,
+                    }
+                )
+            }
+
             mail = await mailProcessingService.getOneFullMail(
                 req.params.address,
-                req.params.uid,
+                uid,
                 true
             )
             if (mail) {

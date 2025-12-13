@@ -13,6 +13,10 @@ const inboxRouter = require('./routes/inbox')
 const loginRouter = require('./routes/login')
 const { sanitizeHtmlTwigFilter } = require('./views/twig-filters')
 
+const Helper = require('../../application/helper')
+const helper = new(Helper)
+const purgeTime = helper.purgeTimeElemetBuilder()
+
 // Init express middleware
 const app = express()
 app.use(helmet())
@@ -66,14 +70,23 @@ app.use((req, res, next) => {
 })
 
 // Error handler
-app.use((err, req, res, _next) => {
+app.use(async(err, req, res, _next) => {
+    const mailProcessingService = req.app.get('mailProcessingService')
+    const count = await mailProcessingService.getCount()
+
     // Set locals, only providing error in development
     res.locals.message = err.message
     res.locals.error = req.app.get('env') === 'development' ? err : {}
 
     // Render the error page
     res.status(err.status || 500)
-    res.render('error')
+    res.render('error', {
+        purgeTime: purgeTime,
+        address: req.params.address,
+        count: count,
+        branding: config.http.branding
+
+    })
 })
 
 /**
