@@ -25,7 +25,17 @@ app.set('socketio', io)
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-    // View engine setup
+
+// Remove trailing slash middleware (except for root)
+app.use((req, res, next) => {
+    if (req.path.length > 1 && req.path.endsWith('/')) {
+        const query = req.url.slice(req.path.length) // preserve query string
+        return res.redirect(301, req.path.slice(0, -1) + query)
+    }
+    next()
+})
+
+// View engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'twig')
 app.set('twig options', {
