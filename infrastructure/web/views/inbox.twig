@@ -1,11 +1,8 @@
 {% extends 'layout.twig' %}
 
 {% block body %}
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            enableNewMessageNotifications('{{ address }}', true)
-        });
-    </script>
+    <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}"></script>
+    <script src="/javascripts/lock-modals.js" defer></script>
 
     <div class="action-links">
         <a href="/inbox/{{ address }}/delete-all">Wipe Inbox</a>
