@@ -58,21 +58,23 @@ router.get(
                     branding: config.http.branding,
                 })
             } else {
-                res.render(
-                    'error', {
-                        purgeTime: purgeTime,
-                        address: req.params.address,
-                        count: count,
-                        message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
-                        branding: config.http.branding
-
-                    }
-                )
+                req.session.errorMessage = 'This mail could not be found. It either does not exist or has been deleted from our servers!'
+                res.redirect(`/error/${req.params.address}/404`)
             }
         } catch (error) {
             console.error('Error while fetching email', error)
             next(error)
         }
+    }
+)
+
+// Catch-all for invalid UIDs (non-numeric)
+router.get(
+    '^/:address/:uid',
+    sanitizeAddress,
+    async(req, res) => {
+        req.session.errorMessage = 'Invalid/Malformed UID provided.'
+        res.redirect(`/error/${req.params.address}/400`)
     }
 )
 
@@ -121,15 +123,8 @@ router.get(
 
             // Validate UID is a valid integer
             if (isNaN(uid) || uid <= 0) {
-                return res.render(
-                    'error', {
-                        purgeTime: purgeTime,
-                        address: req.params.address,
-                        count: count,
-                        message: 'Invalid/Malformed UID provided.',
-                        branding: config.http.branding,
-                    }
-                )
+                req.session.errorMessage = 'Invalid/Malformed UID provided.'
+                return res.redirect(`/error/${req.params.address}/400`)
             }
 
             const mail = await mailProcessingService.getOneFullMail(
@@ -138,15 +133,8 @@ router.get(
             )
 
             if (!mail || !mail.attachments) {
-                return res.render(
-                    'error', {
-                        purgeTime: purgeTime,
-                        address: req.params.address,
-                        count: count,
-                        message: 'This email could not be found. It either does not exist or has been deleted from our servers!',
-                        branding: config.http.branding,
-                    }
-                )
+                req.session.errorMessage = 'This email could not be found. It either does not exist or has been deleted from our servers!'
+                return res.redirect(`/error/${req.params.address}/404`)
             }
 
             var index = mail.attachments.findIndex(attachment => attachment.checksum === req.params.checksum);
@@ -164,15 +152,8 @@ router.get(
                     return;
                 }
             } else {
-                return res.render(
-                    'error', {
-                        purgeTime: purgeTime,
-                        address: req.params.address,
-                        count: count,
-                        message: 'This attachment could not be found. It either does not exist or has been deleted from our servers!',
-                        branding: config.http.branding,
-                    }
-                )
+                req.session.errorMessage = 'This attachment could not be found. It either does not exist or has been deleted from our servers!'
+                return res.redirect(`/error/${req.params.address}/404`)
             }
         } catch (error) {
             console.error('Error while fetching attachment', error)
@@ -194,15 +175,8 @@ router.get(
 
             // Validate UID is a valid integer
             if (isNaN(uid) || uid <= 0) {
-                return res.render(
-                    'error', {
-                        purgeTime: purgeTime,
-                        address: req.params.address,
-                        count: count,
-                        message: 'Invalid/Malformed UID provided.',
-                        branding: config.http.branding,
-                    }
-                )
+                req.session.errorMessage = 'Invalid/Malformed UID provided.'
+                return res.redirect(`/error/${req.params.address}/400`)
             }
 
             mail = await mailProcessingService.getOneFullMail(
@@ -219,15 +193,8 @@ router.get(
                     mail
                 })
             } else {
-                res.render(
-                    'error', {
-                        purgeTime: purgeTime,
-                        address: req.params.address,
-                        count: count,
-                        message: 'This mail could not be found. It either does not exist or has been deleted from our servers!',
-                        branding: config.http.branding,
-                    }
-                )
+                req.session.errorMessage = 'This mail could not be found. It either does not exist or has been deleted from our servers!'
+                res.redirect(`/error/${req.params.address}/404`)
             }
         } catch (error) {
             console.error('Error while fetching raw email', error)

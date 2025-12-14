@@ -2,6 +2,7 @@ const path = require('path')
 const http = require('http')
 const debug = require('debug')('48hr-email:server')
 const express = require('express')
+const session = require('express-session')
 const logger = require('morgan')
 const Twig = require('twig')
 const compression = require('compression')
@@ -11,6 +12,7 @@ const socketio = require('socket.io')
 const config = require('../../application/config')
 const inboxRouter = require('./routes/inbox')
 const loginRouter = require('./routes/login')
+const errorRouter = require('./routes/error')
 const { sanitizeHtmlTwigFilter } = require('./views/twig-filters')
 
 const Helper = require('../../application/helper')
@@ -29,6 +31,14 @@ app.set('socketio', io)
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+
+// Session middleware
+app.use(session({
+    secret: '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', // They will hate me for this
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 hours
+}))
 
 // Remove trailing slash middleware (except for root)
 app.use((req, res, next) => {
@@ -63,6 +73,7 @@ app.get('/', (req, res, _next) => {
 
 app.use('/', loginRouter)
 app.use('/inbox', inboxRouter)
+app.use('/error', errorRouter)
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
