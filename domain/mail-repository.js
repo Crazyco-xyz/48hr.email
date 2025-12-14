@@ -12,12 +12,22 @@ class MailRepository {
 
     getForRecipient(address) {
         let mails = this.mailSummaries.get(address) || []
+        const mailsToDelete = []
+
         mails.forEach(mail => {
             if (mail.to == this.config.email.examples.account && !this.config.email.examples.uids.includes(parseInt(mail.uid))) {
-                mails = mails.filter(m => m.uid != mail.uid)
-                debug('Prevented non-example email from being shown in example inbox', mail.uid)
+                mailsToDelete.push(mail.uid)
+                debug('Marking non-example email for deletion from example inbox', mail.uid)
             }
         })
+
+        // Delete the non-example mails
+        mailsToDelete.forEach(uid => {
+            this.removeUid(uid, address)
+        })
+
+        // Get fresh list after deletions
+        mails = this.mailSummaries.get(address) || []
         return _.orderBy(mails, mail => Date.parse(mail.date), ['desc'])
     }
 
