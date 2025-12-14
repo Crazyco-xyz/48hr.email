@@ -4,3 +4,5 @@
 .DS_Store
 copilot-instructions.md
 node_modules
+db/*
+package-lock.json
