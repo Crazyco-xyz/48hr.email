@@ -70,15 +70,6 @@ router.get(
 
 // Catch-all for invalid UIDs (non-numeric)
 router.get(
-    '^/:address/:uid',
-    sanitizeAddress,
-    async(req, res) => {
-        req.session.errorMessage = 'Invalid/Malformed UID provided.'
-        res.redirect(`/error/${req.params.address}/400`)
-    }
-)
-
-router.get(
     '^/:address/delete-all',
     sanitizeAddress,
     async(req, res, next) => {
@@ -95,6 +86,7 @@ router.get(
         }
     }
 )
+
 
 
 router.get(
@@ -200,6 +192,16 @@ router.get(
             console.error('Error while fetching raw email', error)
             next(error)
         }
+    }
+)
+
+// Final catch-all for invalid UIDs (non-numeric or unmatched patterns)
+router.get(
+    '^/:address/:uid',
+    sanitizeAddress,
+    async(req, res) => {
+        req.session.errorMessage = 'Invalid/Malformed UID provided.'
+        res.redirect(`/error/${req.params.address}/400`)
     }
 )
 
