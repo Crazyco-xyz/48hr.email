@@ -47,16 +47,28 @@ class MailRepository {
     removeUid(uid, address) {
         if (!this.config.email.examples.uids.includes(parseInt(uid))) {
             var deleted = false
-                // TODO: make this more efficient, looping through each email is not cool.
-            this.mailSummaries.forEachAssociation((mails, to) => {
-                mails
-                    .filter(mail => mail.uid === parseInt(uid) && (address ? to == address : true))
-                    .forEach(mail => {
-                        this.mailSummaries.remove(to, mail)
-                        debug('Removed ', mail.date, to, mail.subject)
-                        deleted = true
-                    })
-            })
+
+            if (address) {
+                // Efficient path: only search the specific address's emails
+                const mails = this.mailSummaries.get(address) || []
+                const mailToDelete = mails.find(mail => mail.uid === parseInt(uid))
+                if (mailToDelete) {
+                    this.mailSummaries.remove(address, mailToDelete)
+                    debug('Removed ', mailToDelete.date, address, mailToDelete.subject)
+                    deleted = true
+                }
+            } else {
+                // Fallback: search all emails (needed when address is unknown)
+                this.mailSummaries.forEachAssociation((mails, to) => {
+                    mails
+                        .filter(mail => mail.uid === parseInt(uid))
+                        .forEach(mail => {
+                            this.mailSummaries.remove(to, mail)
+                            debug('Removed ', mail.date, to, mail.subject)
+                            deleted = true
+                        })
+                })
+            }
             return deleted
         }
         return false
