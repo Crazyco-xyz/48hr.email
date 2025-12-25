@@ -1,7 +1,25 @@
 {
   "name": "48hr.email",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "private": false,
+  "description": "48hr.email is your favorite open-source tempmail client. ",
+  "keywords": [
+    "tempmail",
+    "48hr.email",
+    "disposable-email"
+  ],
+  "homepage": "https://48hr.email/",
+  "bugs": {
+    "url": "https://github.com/Crazyco-xyz/48hr.email/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Crazyco-xyz/48hr.email.git"
+  },
+  "license": "GPL-3.0",
+  "author": "ClaraCrazy",
+  "type": "commonjs",
+  "main": "app.js",
   "scripts": {
     "start": "node --trace-warnings ./app.js",
     "test": "xo",
@@ -15,17 +33,18 @@
     "dotenv": "^17.2.3",
     "encodings": "^1.0.0",
     "express": "^4.21.1",
+    "express-session": "^1.18.2",
     "express-validator": "^7.2.0",
     "helmet": "^3.23.3",
     "http-errors": "~1.6.2",
-    "imap-simple": "^4.3.0",
+    "imap-simple": "^1.6.3",
     "lodash": "^4.17.21",
     "mailparser": "^3.7.1",
     "mem": "^4.3.0",
     "mnemonist": "^0.27.2",
     "moment": "^2.30.1",
-    "morgan": "~1.9.0",
-    "nodemailer": "^6.9.15",
+    "morgan": "^1.10.1",
+    "nodemailer": "^7.0.11",
     "p-series": "^2.1.0",
     "random-word": "^2.0.0",
     "sanitize-html": "^2.13.0",
@@ -35,6 +54,9 @@
   },
   "devDependencies": {
     "xo": "^0.59.3"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "xo": {
     "semicolon": false,
@@ -59,25 +81,5 @@
         ]
       }
     ]
-  },
-  "engines": {
-    "node": "22.x"
-  },
-  "description": "48hr.email is your favorite open-source tempmail client. ",
-  "main": "app.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Crazyco-xyz/48hr.email.git"
-  },
-  "keywords": [
-    "tempmail",
-    "48hr.email",
-    "disposable-email"
-  ],
-  "author": "ClaraCrazy",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/Crazyco-xyz/48hr.email/issues"
-  },
-  "homepage": "https://48hr.email/"
+  }
 }
