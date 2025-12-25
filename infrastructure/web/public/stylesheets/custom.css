@@ -83,8 +83,7 @@ text-muted {
 }
 
 .action-links {
-    display: flex;
-    gap: 12px;
+    float: right;
     justify-content: flex-end;
     /* aligns all links to the right */
     flex-wrap: nowrap;
@@ -94,8 +93,10 @@ text-muted {
 
 .action-links a {
     display: inline-block;
+    margin-bottom: 0.5rem;
     padding: 10px 16px;
     border-radius: 16px;
+    text-align: center;
     background: rgba(155, 77, 202, 0.2);
     border: 1px solid rgba(155, 77, 202, 0.35);
     color: #fff;
@@ -103,7 +104,7 @@ text-muted {
     backdrop-filter: blur(12px) saturate(120%);
     -webkit-backdrop-filter: blur(12px) saturate(120%);
     box-shadow: 0 5px 15px rgba(155, 77, 202, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .action-links a:hover {
