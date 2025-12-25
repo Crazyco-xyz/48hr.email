@@ -1,11 +1,15 @@
 body {
     margin: 0;
-    display: flex;
-    padding: 10px 10px 0px;
-    flex-direction: column;
     min-height: 100vh;
-    background-color: #131516;
+    padding: 20px 20px 0;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient( 135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), #131516;
     color: #cccccc;
+    backdrop-filter: blur(18px) saturate(120%);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 body::-webkit-scrollbar {
@@ -19,6 +23,11 @@ main {
 
 a {
     color: #cccccc;
+}
+
+a:hover {
+    color: #9b4cda;
+    text-decoration: none;
 }
 
 h1 {
@@ -43,10 +52,14 @@ p {
 }
 
 iframe {
+    background-color: #1D2021;
+    color: white;
     width: 80%;
     height: 60vh;
-    border: 1px dotted black;
-    margin-left: 10%;
+    margin: 2rem auto;
+    display: block;
+    border: none;
+    border-radius: 30px;
 }
 
 blockquote {
@@ -70,12 +83,33 @@ text-muted {
 }
 
 .action-links {
-    float: right;
-    text-align: end;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    /* aligns all links to the right */
+    flex-wrap: nowrap;
+    /* ensures they stay in one line */
+    text-align: right;
 }
 
 .action-links a {
-    display: block;
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 16px;
+    background: rgba(155, 77, 202, 0.2);
+    border: 1px solid rgba(155, 77, 202, 0.35);
+    color: #fff;
+    text-decoration: none;
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    box-shadow: 0 5px 15px rgba(155, 77, 202, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-links a:hover {
+    background: rgba(155, 77, 202, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(155, 77, 202, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 
@@ -100,6 +134,13 @@ select:hover {
     flex-direction: column;
     max-width: 600px;
     margin: auto;
+    background: linear-gradient( 135deg, rgba(155, 77, 202, 0.12), rgba(155, 77, 202, 0.04)), rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px) saturate(125%);
+    -webkit-backdrop-filter: blur(20px) saturate(125%);
+    border-radius: 22px;
+    border: 1px solid rgba(155, 77, 202, 0.25);
+    padding: 40px 36px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(155, 77, 202, 0.08) inset;
 }
 
 #login h1,
@@ -124,7 +165,7 @@ select:hover {
     line-height: 1;
     padding: 0 6px;
     font-size: 1.4rem;
-    background-color: #131516;
+    background: linear-gradient( 135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), #131516;
     z-index: 999;
 }
 
@@ -156,16 +197,32 @@ select:hover {
 }
 
 #login .buttons {
-    margin-top: 1.5rem;
     display: flex;
-    gap: 20px;
+    gap: 16px;
     flex-wrap: wrap;
+    justify-content: flex-end;
+    /* keeps them aligned right like action-links */
+    margin-top: 1.5rem;
 }
 
 #login .buttons>* {
-    width: 100%;
-    flex: 1;
-    font-size: 1.3rem;
+    flex: 1 1 auto;
+    min-width: 120px;
+    border-radius: 20px;
+    color: #fff;
+    background: rgba(155, 77, 202, 0.2);
+    border: 1px solid rgba(155, 77, 202, 0.35);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    box-shadow: 0 8px 20px rgba(155, 77, 202, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+#login .buttons>*:hover {
+    background: rgba(155, 77, 202, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(155, 77, 202, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .mail_attachments {
