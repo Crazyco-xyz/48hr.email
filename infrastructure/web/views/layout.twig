@@ -18,9 +18,12 @@
   </head>
   <body>
   <main>
-    <a href="/">
-      <img src="/images/logo.png" class="logo" style="max-width: 75px">
-    </a>
+    <div class="header">
+      <a href="/">
+        <img src="/images/logo.png" class="logo" style="max-width: 75px">
+      </a>
+      {% block header %}{% endblock %}
+    </div>
     {% block body %}{% endblock %}
   </main>
 

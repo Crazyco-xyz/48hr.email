@@ -359,7 +359,25 @@ class ImapService extends EventEmitter {
             return false
         } else if (!raw) {
             const fullBody = await _.find(messages[0].parts, { which: '' })
-            return simpleParser(fullBody.body)
+            if (!fullBody || !fullBody.body) {
+                throw new Error('Unable to find message body')
+            }
+            try {
+                // Try to parse the email, fallback to raw if parsing fails
+                const bodyString = fullBody.body.toString()
+                return await simpleParser(bodyString)
+            } catch (parseError) {
+                debug('Failed to parse email, returning raw data:', parseError.message)
+                    // Return raw data as fallback
+                return {
+                    subject: 'Unable to parse email',
+                    text: fullBody.body.toString(),
+                    html: `<pre>${fullBody.body.toString()}</pre>`,
+                    from: { text: 'Unknown' },
+                    to: { text: to },
+                    date: new Date()
+                }
+            }
         } else {
             return messages[0].parts[1].body
         }

@@ -1,49 +1,52 @@
 {% extends 'layout.twig' %}
 
-{% block body %}
-
+{% block header %}
     <div class="action-links">
         <a href="/inbox/{{ address }}">← Return to inbox</a>
         <a href="/inbox/{{ address }}/{{ uid }}/delete">Delete Email</a>
         <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank">View Raw</a>
         <a href="/logout">Logout</a>
     </div>
-    <hr>
-	<div class="mail_body" style="padding-left:10%;">
-    <h3 style="text-align:left;">
-        {{ mail.subject }}
-        <span style="float:right; padding-right:10vw;" >
-            From: {{ mail.from.text }} at {{ mail.date| date }}
-        </span>
-    </h3>
+{% endblock %}
+
+{% block body %}
+    <div class="mail-container">
+        <div class="mail-header">
+            <h1 class="mail-subject">{{ mail.subject }}</h1>
+            <div class="mail-meta">
+                <div class="mail-from">From: {{ mail.from.text }}</div>
+                <div class="mail-date">{{ mail.date | date }}</div>
+            </div>
+        </div>
+
+        <div class="mail-content">
+            {% if mail.html %}
+                <div class="mail-html-content">
+                    <iframe sandbox="allow-popups allow-popups-to-escape-sandbox" csp="script-src 'none'" srcdoc='{{ mail.html }}'></iframe>
+                </div>
+            {% elseif mail.textAsHtml %}
+                <div class="mail-text-content">
+                    {{ mail.textAsHtml|raw }}
+                </div>
+            {% else %}
+                <div class="mail-empty-content">
+                    <p>No content available</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if mail.attachments %}
+            <div class="mail-attachments">
+                <h4>Attachments</h4>
+                <div class="attachments-list">
+                    {% for attachment in mail.attachments %}
+                        <a href="/inbox/{{ address }}/{{ uid }}/{{ attachment.checksum }}" class="attachment-link">
+                            📎 {{ attachment.filename }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
     </div>
-    {% if mail.html %}
-    <div>
-
-        {# TODO: 
-            Find a better solution for this monstrocity.
-            Replaces clean html tag with styled one for readabbility. 
-            Realistically, the entire iFrame or even website itself might be vulnerable.
-            srcdoc='html' seems like a very, very unsafe method to me, unfortunately I havent found a better solution.
-        #}
-
-		<iframe sandbox="allow-popups allow-popups-to-escape-sandbox" csp="script-src 'none'" srcdoc='{{ mail.html|replace({'<html>': '<html style="color: white"'}) }}'></iframe>
-	</div>
-    {% elseif mail.textAsHtml %}
-    <div class="mail_body">
-        {{ mail.textAsHtml|raw }}
-	</div>
-    {% else %}
-        <div class="mail_body"></div>
-    {% endif %}
-    {% if mail.attachments %}
-    <div class="mail_attachments" >
-    <p>
-        {% for attachment in mail.attachments %}
-            <a href="/inbox/{{ address }}/{{ uid }}/{{ attachment.checksum }}"><u>📎 {{ attachment.filename }}</u></a>
-        {% endfor %}
-    </p>
-	</div>
-    {% endif %}
 
 {% endblock %}

@@ -1,7 +1,7 @@
 body {
     margin: 0;
     min-height: 100vh;
-    padding: 20px 20px 0;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     background: linear-gradient( 135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), #131516;
@@ -19,6 +19,13 @@ body::-webkit-scrollbar {
 main {
     flex: 1;
     /* keep footer at the bottom */
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 a {
@@ -52,9 +59,10 @@ p {
 }
 
 iframe {
-    background-color: #1D2021;
-    color: white;
-    width: 80%;
+    /*    background-color: #1D2021; */
+    background-color: white;
+    min-width: 75%;
+    max-width: 1500px;
     height: 60vh;
     margin: 2rem auto;
     display: block;
@@ -93,24 +101,42 @@ text-muted {
 
 .action-links a {
     display: inline-block;
-    margin-bottom: 0.5rem;
-    padding: 10px 16px;
-    border-radius: 16px;
-    text-align: center;
-    background: rgba(155, 77, 202, 0.2);
-    border: 1px solid rgba(155, 77, 202, 0.35);
-    color: #fff;
+    padding: 12px 24px;
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
     text-decoration: none;
-    backdrop-filter: blur(12px) saturate(120%);
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
-    box-shadow: 0 5px 15px rgba(155, 77, 202, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    transition: transform 0.2s ease, background 0.2s ease;
+    color: #e0e0e0;
+}
+
+.action-links a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.action-links a:hover::before {
+    left: 100%;
 }
 
 .action-links a:hover {
-    background: rgba(155, 77, 202, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(155, 77, 202, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(155, 77, 202, 0.4);
+    border-color: rgba(155, 77, 202, 0.3);
+    text-decoration: none;
+    color: #ffffff;
 }
 
 
@@ -233,4 +259,286 @@ select:hover {
 
 label {
     display: inline;
+}
+
+
+/* Modern Inbox Styles */
+
+.inbox-container {
+    min-width: 75%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.inbox-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.inbox-title {
+    background: linear-gradient(135deg, #9b4dca, #b366e6, #6c5ce7);
+    font-size: 2.8rem;
+    font-weight: 300;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(155, 77, 202, 0.3);
+}
+
+.emails-container {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 62vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: transparent;
+    border: 2px solid rgba(155, 77, 202, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    /* Hide scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.emails-container::-webkit-scrollbar {
+    display: none;
+}
+
+.email-link {
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.email-link:hover {
+    transform: translateY(-4px);
+}
+
+.email-card {
+    backdrop-filter: blur(20px);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 24px;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.email-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.email-card:hover::before {
+    opacity: 1;
+}
+
+.email-card:hover {
+    box-shadow: 0 15px 50px rgba(155, 77, 202, 0.15);
+    transform: translateY(-2px);
+}
+
+.email-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.email-sender {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sender-name {
+    font-weight: 600;
+    font-size: 1.35rem;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.sender-email {
+    font-size: 1rem;
+    color: #888;
+    opacity: 0.8;
+}
+
+.email-date {
+    font-size: 0.85rem;
+    color: #666;
+    white-space: nowrap;
+    opacity: 0.7;
+}
+
+.email-subject {
+    font-size: 1.25rem;
+    color: #e0e0e0;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.empty-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 50px;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+}
+
+.empty-card h3 {
+    color: #9b4dca;
+    margin-bottom: 20px;
+    font-weight: 400;
+    font-size: 2.2rem;
+}
+
+.empty-card p {
+    color: #888;
+    font-size: 1.3rem;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+
+/* Modern Mail View Styles */
+
+.mail-container {
+    min-width: 75%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 20px 20px;
+}
+
+.mail-header {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.mail-subject {
+    font-size: 2.2rem;
+    font-weight: 300;
+    margin: 0 0 20px 0;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+.mail-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.mail-from {
+    font-size: 1.1rem;
+    color: #b366e6;
+    font-weight: 500;
+}
+
+.mail-date {
+    font-size: 0.95rem;
+    color: #888;
+    opacity: 0.8;
+}
+
+.mail-content {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(15px);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+}
+
+.mail-html-content iframe {
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    height: 60vh;
+    backdrop-filter: blur(10px);
+}
+
+.mail-text-content {
+    color: #e0e0e0;
+    line-height: 1.6;
+    font-size: 1rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.mail-empty-content {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 40px;
+}
+
+.mail-attachments {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 25px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mail-attachments h4 {
+    color: #9b4dca;
+    margin: 0 0 20px 0;
+    font-weight: 400;
+    font-size: 1.4rem;
+}
+
+.attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.attachment-link {
+    color: #b366e6;
+    text-decoration: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(155, 77, 202, 0.1);
+    border: 1px solid rgba(155, 77, 202, 0.2);
+    transition: all 0.3s ease;
+    display: inline-block;
+    max-width: fit-content;
+}
+
+.attachment-link:hover {
+    background: rgba(155, 77, 202, 0.15);
+    border-color: rgba(155, 77, 202, 0.3);
+    transform: translateX(5px);
+    text-decoration: none;
 }

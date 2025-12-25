@@ -1,10 +1,12 @@
 {% extends 'layout.twig' %}
 
-{% block body %}
+{% block header %}
+    <div class="action-links">
+        <a href="/inbox/{{ example }}">Example Inbox</a>
+    </div>
+{% endblock %}
 
-<div class="action-links">
-    <a href="/inbox/{{ example }}">Example Inbox</a>
-</div>
+{% block body %}
 <div id="login">
     <h1>Welcome!</h1>
     <h4>Here you can either create a new Inbox, or access your old one</h4>

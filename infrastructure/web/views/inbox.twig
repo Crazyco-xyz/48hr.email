@@ -1,34 +1,45 @@
 {% extends 'layout.twig' %}
 
-{% block body %}
-    <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}"></script>
-
+{% block header %}
     <div class="action-links">
         <a href="/inbox/{{ address }}/delete-all">Wipe Inbox</a>
         <a href="/logout">Logout</a>
     </div>
-    <h1>{{ address }}</h1>
-    {% for mail in mailSummaries %}
-        <a href="{{ mail.to[0] }}/{{ mail.uid }}" class="no-link-color">
-            <blockquote class="email">
-                <h6 class="list-group-item-heading">
-                    {{ mail.from[0].name }}
-                    <span class="text-muted">{{ mail.from[0].address }}</span>
-                    <small class="float-right">{{ mail.date |date }}</small>
-                </h6>
-                <p class="list-group-item-text text-truncate" style="width: 75%">
-                    {{ mail.subject }} </p>
+{% endblock %}
+
+{% block body %}
+    <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}"></script>
+
+    <div class="inbox-container">
+        <div class="inbox-header">
+            <h1 class="inbox-title">{{ address }}</h1>
+        </div>
+
+        <div class="emails-container">
+            {% for mail in mailSummaries %}
+                <a href="{{ mail.to[0] }}/{{ mail.uid }}" class="email-link">
+                    <div class="email-card">
+                        <div class="email-header">
+                            <div class="email-sender">
+                                <div class="sender-name">{{ mail.from[0].name }}</div>
+                                <div class="sender-email">{{ mail.from[0].address }}</div>
+                            </div>
+                            <div class="email-date">{{ mail.date | date }}</div>
+                        </div>
+                        <div class="email-subject">{{ mail.subject }}</div>
+                    </div>
+                </a>
+            {% endfor %}
+
+            {% if not mailSummaries %}
+                <div class="empty-state">
+                    <div class="empty-card">
+                        <h3>Inbox Empty</h3>
+                        <p>Your emails will appear here once they arrive.</p>
+                    </div>
                 </div>
-
-            </blockquote>
-        </a>
-    {% endfor %}
-
-    {% if not mailSummaries %}
-        <blockquote>
-            There are no mails yet.
-        </blockquote>
-    {% endif %}
-
+            {% endif %}
+        </div>
+    </div>
 
 {% endblock %}
