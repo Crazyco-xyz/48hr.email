@@ -19,6 +19,13 @@ const Helper = require('../../application/helper')
 const helper = new(Helper)
 const purgeTime = helper.purgeTimeElemetBuilder()
 
+// Utility function for consistent error handling in routes
+const handleRouteError = (error, req, res, next, context = 'route') => {
+    debug(`Error in ${context}:`, error.message)
+    console.error(`Error in ${context}`, error)
+    next(error)
+}
+
 // Init express middleware
 const app = express()
 app.use(helmet())
@@ -34,7 +41,7 @@ app.use(express.urlencoded({ extended: false }))
 
 // Session middleware
 app.use(session({
-    secret: '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', // They will hate me for this
+    secret: '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', // They will hate me for this, its temporary tho, I swear!
     resave: false,
     saveUninitialized: true,
     cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 hours
@@ -82,22 +89,29 @@ app.use((req, res, next) => {
 
 // Error handler
 app.use(async(err, req, res, _next) => {
-    const mailProcessingService = req.app.get('mailProcessingService')
-    const count = await mailProcessingService.getCount()
+    try {
+        debug('Error handler triggered:', err.message)
+        const mailProcessingService = req.app.get('mailProcessingService')
+        const count = await mailProcessingService.getCount()
 
-    // Set locals, only providing error in development
-    res.locals.message = err.message
-    res.locals.error = req.app.get('env') === 'development' ? err : {}
+        // Set locals, only providing error in development
+        res.locals.message = err.message
+        res.locals.error = req.app.get('env') === 'development' ? err : {}
 
-    // Render the error page
-    res.status(err.status || 500)
-    res.render('error', {
-        purgeTime: purgeTime,
-        address: req.params.address,
-        count: count,
-        branding: config.http.branding
-
-    })
+        // Render the error page
+        res.status(err.status || 500)
+        res.render('error', {
+            purgeTime: purgeTime,
+            address: req.params && req.params.address,
+            count: count,
+            branding: config.http.branding
+        })
+    } catch (renderError) {
+        debug('Error in error handler:', renderError.message)
+        console.error('Critical error in error handler', renderError)
+            // Fallback: send plain text error if rendering fails
+        res.status(500).send('Internal Server Error')
+    }
 })
 
 /**

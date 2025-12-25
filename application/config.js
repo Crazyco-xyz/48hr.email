@@ -1,5 +1,6 @@
 // config.js
 require("dotenv").config({ quiet: true });
+const debug = require('debug')('48hr-email:config')
 
 /**
  * Safely parse a value from env.
@@ -63,12 +64,17 @@ const config = {
 };
 
 // validation
+debug('Validating configuration...')
 if (!config.imap.user || !config.imap.password || !config.imap.host) {
+    debug('IMAP configuration validation failed: missing user, password, or host')
     throw new Error("IMAP is not configured. Check IMAP_* env vars.");
 }
 
 if (!config.email.domains.length) {
+    debug('Email domains validation failed: no domains configured')
     throw new Error("No EMAIL_DOMAINS configured.");
 }
+
+debug(`Configuration validated successfully: ${config.email.domains.length} domains, IMAP host: ${config.imap.host}`)
 
 module.exports = config;

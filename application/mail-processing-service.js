@@ -1,5 +1,5 @@
 const EventEmitter = require('events')
-const debug = require('debug')('48hr-email:imap-manager')
+const debug = require('debug')('48hr-email:imap-processor')
 const mem = require('mem')
 const ImapService = require('./imap-service')
 const Helper = require('./helper')
@@ -33,29 +33,36 @@ class MailProcessingService extends EventEmitter {
     }
 
     getMailSummaries(address) {
+        debug('Getting mail summaries for', address)
         return this.mailRepository.getForRecipient(address)
     }
 
     deleteSpecificEmail(adress, uid) {
+        debug('Deleting specific email', adress, uid)
         if (this.mailRepository.removeUid(uid, adress) == true) {
             this.imapService.deleteSpecificEmail(uid)
         }
     }
 
     getOneFullMail(address, uid, raw = false) {
+        debug('Cache lookup for', address + ':' + uid, raw ? '(raw)' : '(parsed)')
         return this.cachedFetchFullMail(address, uid, raw)
     }
 
     getAllMailSummaries() {
+        debug('Getting all mail summaries')
         return this.mailRepository.getAll()
     }
 
     getCount() {
-        return this.mailRepository.mailCount()
+        const count = this.mailRepository.mailCount()
+        debug('Mail count requested:', count)
+        return count
     }
 
     onInitialLoadDone() {
         this.initialLoadDone = true
+        debug('Initial load completed, total mails:', this.mailRepository.mailCount())
         console.log(`Initial load done, got ${this.mailRepository.mailCount()} mails`)
         console.log(`Fetching and deleting mails every ${this.config.imap.refreshIntervalSeconds} seconds`)
         console.log(`Mails older than ${this.config.email.purgeTime.time} ${this.config.email.purgeTime.unit} will be deleted`)
@@ -69,7 +76,9 @@ class MailProcessingService extends EventEmitter {
         }
 
         mail.to.forEach(to => {
+            debug('Adding mail to repository for recipient:', to)
             this.mailRepository.add(to, mail)
+            debug('Emitting notification for:', to)
             return this.clientNotification.emit(to)
         })
     }
@@ -81,8 +90,11 @@ class MailProcessingService extends EventEmitter {
 
     async _deleteOldMails() {
         try {
+            debug('Starting deletion of old mails')
             await this.imapService.deleteOldMails(helper.purgeTimeStamp())
+            debug('Completed deletion of old mails')
         } catch (error) {
+            debug('Error deleting old messages:', error.message)
             console.log('Cant delete old messages', error)
         }
     }

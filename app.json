@@ -1,71 +1,84 @@
 {
-  "name": "48hr.email | Disposable email",
-  "description": "A simple and fast disposable mail service that works directly with your already existing imap server. No database required.",
-  "repository": "https://github.com/Crazyco-xyz/48hr.email",
-  "logo": "https://github.com/Crazyco-xyz/48hr.email/blob/main/infrastructure/web/public/images/logo.png",
-  "keywords": [
-    "node",
-    "disposable-mail"
-  ],
-  "env": {
-    "EMAIL_DOMAINS": {
-      "description": "Email domains"
-    },
-    "EMAIL_PURGE_TIME": {
-      "description": "Config for when to purge the emails",
-      "value": {
-        "time": 48,
-        "unit": "hours",
-        "convert": true
-      }
-    },
-    "EMAIL_EXAMPLES": {
-      "description": "Examples of the domains",
-      "value": {
-        "account": "example@48hr.email",
-        "uids": [1, 2, 3]
-      }
-    },
-    "IMAP_USER": {
-      "description": "Username to login to the imap server"
-    },
-    "IMAP_PASSWORD": {
-      "description": "Password to login to the imap server"
-    },
-    "IMAP_SERVER": {
-      "description": "Hostname of the server (usually imap.example.com or mx.example.com)"
-    },
-    "IMAP_PORT": {
-      "description": "Port of the server (usually 993)",
-      "value": 993
-    },
-    "IMAP_TLS": {
-      "description": "Use tls or not",
-      "value": true
-    },
-    "IMAP_AUTHTIMEOUT": {
-      "description": "Timeout for the auth",
-      "value": 3000
-    },
-    "IMAP_REFRESH_INTERVAL_SECONDS": {
-      "description": "How often to refresh the imap messages manually",
-      "value": 60
-    },
-    "HTTP_PORT": {
-      "description": "Port to listen on",
-      "value": 3000
-    },
-    "HTTP_BRANDING": {
-      "description": "The branding of the site",
-      "value": ["48hr.email", "Crazyco", "https://crazyco.xyz"]
-    },
-    "HTTP_DISPLAY_SORT": {
-      "description": "Sort the emails for use",
-      "value": 0
-    },
-    "HTTP_HIDE_OTHER": {
-      "description": "Hide other emails from the list besides the first",
-      "value": false
+    "name": "48hr.email | Disposable email",
+    "description": "A simple and fast disposable mail service that works directly with your already existing imap server. No database required.",
+    "repository": "https://github.com/Crazyco-xyz/48hr.email",
+    "logo": "https://github.com/Crazyco-xyz/48hr.email/blob/main/infrastructure/web/public/images/logo.png",
+    "keywords": [
+        "node",
+        "disposable-mail"
+    ],
+    "env": {
+        "EMAIL_DOMAINS": {
+            "description": "List of domains your service handles"
+        },
+        "EMAIL_PURGE_TIME": {
+            "description": "Time value for when to purge",
+            "value": 48
+        },
+        "EMAIL_PURGE_UNIT": {
+            "description": "Time unit for purging (minutes, hours, days)",
+            "value": "hours"
+        },
+        "EMAIL_PURGE_CONVERT": {
+            "description": "Convert to highest sensible unit and round",
+            "value": true
+        },
+        "EMAIL_EXAMPLE_ACCOUNT": {
+            "description": "Example email account to preserve",
+            "value": "example@48hr.email"
+        },
+        "EMAIL_EXAMPLE_UIDS": {
+            "description": "Example UIDs to preserve",
+            "value": [1, 2, 3]
+        },
+        "IMAP_USER": {
+            "description": "Username to login to the imap server"
+        },
+        "IMAP_PASSWORD": {
+            "description": "Password to login to the imap server"
+        },
+        "IMAP_SERVER": {
+            "description": "Hostname of the server (usually imap.example.com or mx.example.com)"
+        },
+        "IMAP_PORT": {
+            "description": "Port of the server (usually 993)",
+            "value": 993
+        },
+        "IMAP_TLS": {
+            "description": "Use tls or not",
+            "value": true
+        },
+        "IMAP_AUTH_TIMEOUT": {
+            "description": "Timeout for the auth in milliseconds",
+            "value": 3000
+        },
+        "IMAP_REFRESH_INTERVAL_SECONDS": {
+            "description": "How often to refresh the imap messages manually",
+            "value": 60
+        },
+        "IMAP_FETCH_CHUNK": {
+            "description": "Number of UIDs per fetch chunk during initial load",
+            "value": 200
+        },
+        "IMAP_CONCURRENCY": {
+            "description": "Number of concurrent fetch workers during initial load",
+            "value": 6
+        },
+        "HTTP_PORT": {
+            "description": "Port to listen on",
+            "value": 3000
+        },
+        "HTTP_BRANDING": {
+            "description": "The branding of the site",
+            "value": ["48hr.email", "Crazyco", "https://crazyco.xyz"]
+        },
+        "HTTP_DISPLAY_SORT": {
+            "description": "Domain display sorting: 0 = no change, 1 = alphabetical, 2 = alphabetical + first item shuffled, 3 = shuffle all",
+            "value": 2
+        },
+        "HTTP_HIDE_OTHER": {
+            "description": "Hide other emails from the list besides the first",
+            "value": false
+        }
     }
-  }
 }

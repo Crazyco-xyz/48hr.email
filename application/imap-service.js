@@ -4,7 +4,7 @@ const { simpleParser } = require('mailparser')
 const addressparser = require('nodemailer/lib/addressparser')
 const pSeries = require('p-series')
 const retry = require('async-retry')
-const debug = require('debug')('48hr-email:imap')
+const debug = require('debug')('48hr-email:imap-manager')
 const _ = require('lodash')
 const moment = require('moment')
 const Mail = require('../domain/mail')
@@ -133,7 +133,7 @@ class ImapService extends EventEmitter {
                     })
 
                     await this.connection.openBox('INBOX')
-                    debug('Connected to imap')
+                    debug('Connected to imap Server at ' + this.config.imap.host)
                 }, {
                     retries: 5
                 }
@@ -173,8 +173,14 @@ class ImapService extends EventEmitter {
             debug('Load skipped: another load already in progress')
             return
         }
+
         this.loadingInProgress = true
-        debug('Starting load of mail summaries')
+        if (this.initialLoadDone) {
+            debug('Updating mail summaries from server...')
+        } else {
+            debug('Fetching mail summaries from server...')
+        }
+
         const uids = await this._getAllUids()
         const newUids = uids.filter(uid => !this.loadedUids.has(uid))
         debug(`UIDs on server: ${uids.length}, new UIDs to fetch: ${newUids.length}, already loaded: ${this.loadedUids.size}`)
@@ -219,7 +225,7 @@ class ImapService extends EventEmitter {
         }
 
         this.loadingInProgress = false
-        debug('Load finished')
+        debug('Finished updating mail summary list')
     }
 
     /**

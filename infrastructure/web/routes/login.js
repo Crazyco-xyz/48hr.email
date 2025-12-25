@@ -1,6 +1,7 @@
 const express = require('express')
 const router = new express.Router()
 const { check, validationResult } = require('express-validator')
+const debug = require('debug')('48hr-email:routes')
 
 const randomWord = require('random-word')
 const config = require('../../../application/config')
@@ -9,21 +10,36 @@ const helper = new(Helper)
 
 const purgeTime = helper.purgeTimeElemetBuilder()
 
-router.get('/', async(req, res, _next) => {
-    const count = await req.app.get('mailProcessingService').getCount()
-    res.render('login', {
-        title: `${config.http.branding[0]} | Your temporary Inbox`,
-        username: randomWord(),
-        purgeTime: purgeTime,
-        domains: helper.getDomains(),
-        count: count,
-        branding: config.http.branding,
-        example: config.email.examples.account,
-    })
+router.get('/', async(req, res, next) => {
+    try {
+        const mailProcessingService = req.app.get('mailProcessingService')
+        if (!mailProcessingService) {
+            throw new Error('Mail processing service not available')
+        }
+        debug('Login page requested')
+        const count = await mailProcessingService.getCount()
+        debug(`Rendering login page with ${count} total mails`)
+        res.render('login', {
+            title: `${config.http.branding[0]} | Your temporary Inbox`,
+            username: randomWord(),
+            purgeTime: purgeTime,
+            domains: helper.getDomains(),
+            count: count,
+            branding: config.http.branding,
+            example: config.email.examples.account,
+        })
+    } catch (error) {
+        debug('Error loading login page:', error.message)
+        console.error('Error while loading login page', error)
+        next(error)
+    }
 })
 
 router.get('/inbox/random', (req, res, _next) => {
-    res.redirect(`/inbox/${randomWord()}@${config.email.domains[Math.floor(Math.random() * config.email.domains.length)]}`)
+    const randomDomain = config.email.domains[Math.floor(Math.random() * config.email.domains.length)]
+    const inbox = `${randomWord()}@${randomDomain}`
+    debug(`Generated random inbox: ${inbox}`)
+    res.redirect(`/inbox/${inbox}`)
 })
 
 router.get('/logout', (req, res, _next) => {
@@ -40,22 +56,35 @@ router.post(
         check('username').isLength({ min: 1 }),
         check('domain').isIn(config.email.domains)
     ],
-    async(req, res) => {
-        const errors = validationResult(req)
-        const count = await req.app.get('mailProcessingService').getCount()
-        if (!errors.isEmpty()) {
-            return res.render('login', {
-                userInputError: true,
-                title: `${config.http.branding[0]} | Your temporary Inbox`,
-                purgeTime: purgeTime,
-                username: randomWord(),
-                domains: helper.getDomains(),
-                count: count,
-                branding: config.http.branding,
-            })
-        }
+    async(req, res, next) => {
+        try {
+            const mailProcessingService = req.app.get('mailProcessingService')
+            if (!mailProcessingService) {
+                throw new Error('Mail processing service not available')
+            }
+            const errors = validationResult(req)
+            const count = await mailProcessingService.getCount()
+            if (!errors.isEmpty()) {
+                debug(`Login validation failed for ${req.body.username}@${req.body.domain}: ${errors.array().map(e => e.msg).join(', ')}`)
+                return res.render('login', {
+                    userInputError: true,
+                    title: `${config.http.branding[0]} | Your temporary Inbox`,
+                    purgeTime: purgeTime,
+                    username: randomWord(),
+                    domains: helper.getDomains(),
+                    count: count,
+                    branding: config.http.branding,
+                })
+            }
 
-        res.redirect(`/inbox/${req.body.username}@${req.body.domain}`)
+            const inbox = `${req.body.username}@${req.body.domain}`
+            debug(`Login successful, redirecting to inbox: ${inbox}`)
+            res.redirect(`/inbox/${inbox}`)
+        } catch (error) {
+            debug('Error processing login:', error.message)
+            console.error('Error while processing login', error)
+            next(error)
+        }
     }
 )
 

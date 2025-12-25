@@ -1,5 +1,6 @@
 const config = require('./config')
 const moment = require('moment')
+const debug = require('debug')('48hr-email:helper')
 
 class Helper {
 
@@ -8,9 +9,11 @@ class Helper {
      * @returns {Date}
      */
     purgeTimeStamp() {
-        return moment()
+        const cutoff = moment()
             .subtract(config.email.purgeTime.time, config.email.purgeTime.unit)
             .toDate()
+        debug(`Purge cutoff calculated: ${cutoff} (${config.email.purgeTime.time} ${config.email.purgeTime.unit} ago)`)
+        return cutoff
     }
 
     /**
@@ -25,9 +28,11 @@ class Helper {
         const nowMs = now instanceof Date ? now.getTime() : now;
         const pastMs = past instanceof Date ? past.getTime() : new Date(past).getTime();
 
-        return (nowMs - pastMs) >= DAY_IN_MS;
+        const diffMs = nowMs - pastMs;
+        const result = diffMs >= DAY_IN_MS;
+        debug(`Time difference check: ${diffMs}ms >= ${DAY_IN_MS}ms = ${result}`)
+        return result;
     }
-
 
     /**
      * Convert time to highest possible unit (minutes → hours → days),
@@ -76,9 +81,8 @@ class Helper {
         }
 
         const footer = `<label title="${Tooltip}">
-        <h4 style="display: inline;"><u><i>${time}</i></u></h4>
-        </Label>`
-
+		<h4 style="display: inline;"><u><i>${time}</i></u></h4>
+		</Label>`
         return footer
     }
 
@@ -87,7 +91,6 @@ class Helper {
      * @param {Array} array
      * @returns {Array}
      */
-
     shuffleArray(array) {
         for (let i = array.length - 1; i >= 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -101,7 +104,6 @@ class Helper {
      * @param {Array} array
      * @returns {Array}
      */
-
     shuffleFirstItem(array) {
         let first = array[Math.floor(Math.random() * array.length)]
         array = array.filter((value) => value != first);
@@ -126,17 +128,26 @@ class Helper {
      * Get a domain list from config for use
      * @returns {Array}
      */
-
     getDomains() {
+        debug(`Getting domains with displaySort: ${config.http.displaySort}`)
+        let result;
         switch (config.http.displaySort) {
             case 0:
-                return this.hideOther(config.email.domains) // No modification
+                result = this.hideOther(config.email.domains) // No modification
+                debug(`Domain sort 0: no modification, ${result.length} domains`)
+                return result
             case 1:
-                return this.hideOther(config.email.domains.sort()) // Sort alphabetically
+                result = this.hideOther(config.email.domains.sort()) // Sort alphabetically
+                debug(`Domain sort 1: alphabetical sort, ${result.length} domains`)
+                return result
             case 2:
-                return this.hideOther(this.shuffleFirstItem(config.email.domains.sort())) // Sort alphabetically and shuffle first item
+                result = this.hideOther(this.shuffleFirstItem(config.email.domains.sort())) // Sort alphabetically and shuffle first item
+                debug(`Domain sort 2: alphabetical + shuffle first, ${result.length} domains`)
+                return result
             case 3:
-                return this.hideOther(this.shuffleArray(config.email.domains)) // Shuffle all
+                result = this.hideOther(this.shuffleArray(config.email.domains)) // Shuffle all
+                debug(`Domain sort 3: shuffle all, ${result.length} domains`)
+                return result
         }
     }
 }

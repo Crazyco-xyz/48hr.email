@@ -71,7 +71,7 @@ User=user
 Group=user
 
 WorkingDirectory=/opt/48hr-email
-ExecStart=npm run start
+ExecStart=npm run prod
 
 Restart=on-failure
 TimeoutStartSec=0
@@ -113,13 +113,13 @@ WantedBy=multi-user.target
 ### Screenshots:
 
 - #### Inbox:
-<img align="center" src="https://i.imgur.com/JJmSe7S.png">
+<img align="center" src=".github/assets/inbox.png">
 
-- #### Email with CSS:
-<img align="center" src="https://i.imgur.com/x8OBoI7.png">
+- #### Email using HTML and CSS:
+<img align="center" src=".github/assets/html.png">
 
 - #### Email without CSS:
-<img align="center" src="https://i.imgur.com/VPZ8IG6.png">
+<img align="center" src=".github/assets/raw.png">
 
 <br><br>
 
