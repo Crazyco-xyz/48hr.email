@@ -421,7 +421,17 @@ class ImapService extends EventEmitter {
         ]
         return this.connection.search(searchCriteria, fetchOptions)
     }
+
+    /* 
+     * Get the largest UID from all messages in the mailbox.
+     */
+    async getLargestUid() {
+        const uids = await this._getAllUids();
+        return uids.length > 0 ? Math.max(...uids) : null;
+    }
+
 }
+
 
 // Consumers should use these constants:
 ImapService.EVENT_NEW_MAIL = 'mail'

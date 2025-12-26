@@ -18,6 +18,8 @@ router.get('/', async(req, res, next) => {
         }
         debug('Login page requested')
         const count = await mailProcessingService.getCount()
+        const largestUid = await req.app.locals.imapService.getLargestUid()
+        const totalcount = helper.countElementBuilder(count, largestUid)
         debug(`Rendering login page with ${count} total mails`)
         res.render('login', {
             title: `${config.http.branding[0]} | Your temporary Inbox`,
@@ -25,6 +27,7 @@ router.get('/', async(req, res, next) => {
             purgeTime: purgeTime,
             domains: helper.getDomains(),
             count: count,
+            totalcount: totalcount,
             branding: config.http.branding,
             example: config.email.examples.account,
         })

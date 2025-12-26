@@ -150,6 +150,17 @@ class Helper {
                 return result
         }
     }
+
+    async getLargestUid(imapService) {
+        return await imapService.getLargestUid();
+    }
+
+    countElementBuilder(count = 0, largestUid = 0) {
+        const handling = `<label title="Historically managed ${largestUid} email${largestUid === 1 ? '' : 's'}">
+        <h4 style="display: inline;"><u><i>${count}</i></u> mail${count === 1 ? '' : 's'}</h4>
+        </label>`
+        return handling
+    }
 }
 
 module.exports = Helper

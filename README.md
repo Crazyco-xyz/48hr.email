@@ -71,7 +71,7 @@ User=user
 Group=user
 
 WorkingDirectory=/opt/48hr-email
-ExecStart=npm run prod
+ExecStart=npm run start
 
 Restart=on-failure
 TimeoutStartSec=0

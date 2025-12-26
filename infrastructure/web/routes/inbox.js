@@ -9,6 +9,7 @@ const helper = new(Helper)
 
 const purgeTime = helper.purgeTimeElemetBuilder()
 
+
 const sanitizeAddress = param('address').customSanitizer(
     (value, { req }) => {
         return req.params.address
@@ -25,12 +26,15 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, async(req, res, next) =
         }
         debug(`Inbox request for ${req.params.address}`)
         const count = await mailProcessingService.getCount()
+        const largestUid = await req.app.locals.imapService.getLargestUid()
+        const totalcount = helper.countElementBuilder(count, largestUid)
         debug(`Rendering inbox with ${count} total mails`)
         res.render('inbox', {
             title: `${config.http.branding[0]} | ` + req.params.address,
             purgeTime: purgeTime,
             address: req.params.address,
             count: count,
+            totalcount: totalcount,
             mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
             branding: config.http.branding,
         })
@@ -49,6 +53,8 @@ router.get(
             const mailProcessingService = req.app.get('mailProcessingService')
             debug(`Viewing email ${req.params.uid} for ${req.params.address}`)
             const count = await mailProcessingService.getCount()
+            const largestUid = await req.app.locals.imapService.getLargestUid()
+            const totalcount = helper.countElementBuilder(count, largestUid)
             const mail = await mailProcessingService.getOneFullMail(
                 req.params.address,
                 req.params.uid
@@ -67,6 +73,7 @@ router.get(
                     purgeTime: purgeTime,
                     address: req.params.address,
                     count: count,
+                    totalcount: totalcount,
                     mail,
                     uid: req.params.uid,
                     branding: config.http.branding,
@@ -194,6 +201,8 @@ router.get(
             debug(`Fetching raw email ${req.params.uid} for ${req.params.address}`)
             const uid = parseInt(req.params.uid, 10)
             const count = await mailProcessingService.getCount()
+            const largestUid = await req.app.locals.imapService.getLargestUid()
+            const totalcount = helper.countElementBuilder(count, largestUid)
 
             // Validate UID is a valid integer
             if (isNaN(uid) || uid <= 0) {
@@ -214,7 +223,8 @@ router.get(
                 debug(`Rendering raw email view for UID ${req.params.uid}`)
                 res.render('raw', {
                     title: req.params.uid + " | raw | " + req.params.address,
-                    mail
+                    mail,
+                    totalcount: totalcount
                 })
             } else {
                 debug(`Raw email ${uid} not found for ${req.params.address}`)

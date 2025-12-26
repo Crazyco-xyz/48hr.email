@@ -56,6 +56,9 @@ imapService.on(ImapService.EVENT_ERROR, error => {
 
 app.set('mailProcessingService', mailProcessingService)
 
+app.locals.imapService = imapService
+app.locals.mailProcessingService = mailProcessingService
+
 debug('Starting IMAP connection and message loading')
 imapService.connectAndLoadMessages().catch(error => {
     debug('Failed to connect to IMAP:', error.message)
