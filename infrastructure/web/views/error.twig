@@ -1,10 +1,13 @@
 {% extends 'layout.twig' %}
 
-{% block body %}
+{% block header %}
     <div class="action-links">
         <a href="/inbox/{{ address }}">← Return to inbox</a>
         <a href="/logout">Logout</a>
     </div>
+{% endblock %}
+
+{% block body %}
   <h1>{{message}}</h1>
   <h2>{{error.status}}</h2>
   <pre>{{error.stack}}</pre>
