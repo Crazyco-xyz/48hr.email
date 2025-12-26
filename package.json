@@ -1,11 +1,15 @@
 {
     "name": "48hr.email",
-    "version": "1.6.3",
+    "version": "1.7.0",
     "private": false,
-    "description": "48hr.email is your favorite open-source tempmail client. ",
+    "description": "48hr.email is your favorite open-source tempmail client.",
     "keywords": [
+        "node",
+        "mail",
+        "email",
         "tempmail",
         "48hr.email",
+        "temporary-email",
         "disposable-email"
     ],
     "homepage": "https://48hr.email/",
@@ -71,17 +75,15 @@
                 }
             ]
         },
-        "overrides": [
-            {
-                "files": "public/javascripts/*.js",
-                "esnext": false,
-                "env": [
-                    "browser"
-                ],
-                "globals": [
-                    "io"
-                ]
-            }
-        ]
+        "overrides": [{
+            "files": "public/javascripts/*.js",
+            "esnext": false,
+            "env": [
+                "browser"
+            ],
+            "globals": [
+                "io"
+            ]
+        }]
     }
 }
