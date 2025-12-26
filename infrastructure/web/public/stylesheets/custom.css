@@ -192,7 +192,7 @@ select:hover {
     line-height: 1;
     padding: 0 6px;
     font-size: 1.4rem;
-    background: linear-gradient( 135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), #131516;
+    background: #2F2B36;
     z-index: 999;
 }
 
