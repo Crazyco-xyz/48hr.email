@@ -458,13 +458,13 @@ label {
 }
 
 .mail-from {
-    font-size: 1.1rem;
+    font-size: 1.5rem;
     color: #b366e6;
     font-weight: 500;
 }
 
 .mail-date {
-    font-size: 0.95rem;
+    font-size: 1.4rem;
     color: #888;
     opacity: 0.8;
 }
@@ -520,7 +520,8 @@ label {
 
 .attachments-list {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 12px;
 }
 
