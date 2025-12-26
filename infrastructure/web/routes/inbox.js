@@ -54,6 +54,7 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, checkLockAccess, async(
             isLocked: isLocked,
             hasAccess: hasAccess,
             unlockError: unlockErrorSession,
+            locktimer: config.lock.releaseHours,
             error: lockError,
             redirectTo: req.originalUrl
         })

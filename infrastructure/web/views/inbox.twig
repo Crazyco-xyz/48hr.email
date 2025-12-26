@@ -56,7 +56,7 @@
         <div class="modal-content">
             <span class="close" id="closeLock">&times;</span>
             <h3>Protect Inbox</h3>
-            <p class="modal-description">Password-protect this inbox. Locked emails won't be deleted.</p>
+            <p class="modal-description">Password-protect this inbox. Locked emails won't be deleted. Protection active for {{ locktimer }}hrs after last login.</p>
             {% if error and error == 'locking_disabled_for_example' %}
                 <p id="lockServerError" class="unlock-error">Locking is disabled for the example inbox.</p>
             {% endif %}
