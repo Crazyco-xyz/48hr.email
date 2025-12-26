@@ -5,7 +5,11 @@
         <a href="/inbox/{{ address }}">← Return to inbox</a>
         <a href="/inbox/{{ address }}/{{ uid }}/delete">Delete Email</a>
         <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank">View Raw</a>
-        <a href="/logout">Logout</a>
+        {% if lockEnabled and isLocked and hasAccess %}
+            <a href="/lock/logout">Logout</a>
+        {% else %}
+            <a href="/logout">Logout</a>
+        {% endif %}
     </div>
 {% endblock %}
 

@@ -60,6 +60,13 @@ const config = {
         branding: parseValue(process.env.HTTP_BRANDING),
         displaySort: Number(process.env.HTTP_DISPLAY_SORT),
         hideOther: parseBool(process.env.HTTP_HIDE_OTHER)
+    },
+
+    lock: {
+        enabled: parseBool(process.env.LOCK_ENABLED) || false,
+        sessionSecret: parseValue(process.env.LOCK_SESSION_SECRET) || 'change-me-in-production',
+        dbPath: parseValue(process.env.LOCK_DATABASE_PATH) || './db/locked-inboxes.db',
+        releaseHours: Number(process.env.LOCK_RELEASE_HOURS) || 720 // 30 days default
     }
 };
 

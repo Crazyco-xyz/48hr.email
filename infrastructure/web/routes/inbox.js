@@ -6,6 +6,7 @@ const debug = require('debug')('48hr-email:routes')
 const config = require('../../../application/config')
 const Helper = require('../../../application/helper')
 const helper = new(Helper)
+const { checkLockAccess } = require('../middleware/lock')
 
 const purgeTime = helper.purgeTimeElemetBuilder()
 
@@ -18,17 +19,29 @@ const sanitizeAddress = param('address').customSanitizer(
     }
 )
 
-router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, async(req, res, next) => {
+router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, checkLockAccess, async(req, res, next) => {
     try {
         const mailProcessingService = req.app.get('mailProcessingService')
         if (!mailProcessingService) {
             throw new Error('Mail processing service not available')
         }
         debug(`Inbox request for ${req.params.address}`)
+        const inboxLock = req.app.get('inboxLock')
         const count = await mailProcessingService.getCount()
         const largestUid = await req.app.locals.imapService.getLargestUid()
         const totalcount = helper.countElementBuilder(count, largestUid)
         debug(`Rendering inbox with ${count} total mails`)
+        const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
+        const hasAccess = req.session && req.session.lockedInbox === req.params.address
+
+        // Pull any lock error from session and clear it after reading
+        const lockError = req.session ? req.session.lockError : undefined
+        const unlockErrorSession = req.session ? req.session.unlockError : undefined
+        if (req.session) {
+            delete req.session.lockError
+            delete req.session.unlockError
+        }
+
         res.render('inbox', {
             title: `${config.http.branding[0]} | ` + req.params.address,
             purgeTime: purgeTime,
@@ -37,6 +50,12 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, async(req, res, next) =
             totalcount: totalcount,
             mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
             branding: config.http.branding,
+            lockEnabled: config.lock.enabled,
+            isLocked: isLocked,
+            hasAccess: hasAccess,
+            unlockError: unlockErrorSession,
+            error: lockError,
+            redirectTo: req.originalUrl
         })
     } catch (error) {
         debug(`Error loading inbox for ${req.params.address}:`, error.message)
@@ -48,6 +67,7 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, async(req, res, next) =
 router.get(
     '^/:address/:uid([0-9]+)',
     sanitizeAddress,
+    checkLockAccess,
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
@@ -67,6 +87,11 @@ router.get(
 
                 // Emails are immutable, cache if found
                 res.set('Cache-Control', 'private, max-age=600')
+
+                const inboxLock = req.app.get('inboxLock')
+                const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
+                const hasAccess = req.session && req.session.lockedInbox === req.params.address
+
                 debug(`Rendering email view for UID ${req.params.uid}`)
                 res.render('mail', {
                     title: mail.subject + " | " + req.params.address,
@@ -77,6 +102,9 @@ router.get(
                     mail,
                     uid: req.params.uid,
                     branding: config.http.branding,
+                    lockEnabled: config.lock.enabled,
+                    isLocked: isLocked,
+                    hasAccess: hasAccess
                 })
             } else {
                 debug(`Email ${req.params.uid} not found for ${req.params.address}`)
@@ -95,6 +123,7 @@ router.get(
 router.get(
     '^/:address/delete-all',
     sanitizeAddress,
+    checkLockAccess,
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
@@ -118,6 +147,7 @@ router.get(
 router.get(
     '^/:address/:uid/delete',
     sanitizeAddress,
+    checkLockAccess,
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
@@ -136,6 +166,7 @@ router.get(
 router.get(
     '^/:address/:uid/:checksum([a-f0-9]+)',
     sanitizeAddress,
+    checkLockAccess,
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
@@ -195,6 +226,7 @@ router.get(
 router.get(
     '^/:address/:uid/raw',
     sanitizeAddress,
+    checkLockAccess,
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')

@@ -2,14 +2,27 @@
 
 {% block header %}
     <div class="action-links">
+        {% if lockEnabled %}
+            {% if isLocked and hasAccess %}
+                <a href="#" id="removeLockBtn">Remove Lock</a>
+            {% elseif isLocked %}
+                <a href="#" id="unlockBtn">Unlock</a>
+            {% else %}
+                <a href="#" id="lockBtn">Protect Inbox</a>
+            {% endif %}
+        {% endif %}
         <a href="/inbox/{{ address }}/delete-all">Wipe Inbox</a>
-        <a href="/logout">Logout</a>
+        {% if lockEnabled and hasAccess %}
+            <a href="/lock/logout">Logout</a>
+        {% else %}
+            <a href="/logout">Logout</a>
+        {% endif %}
     </div>
 {% endblock %}
 
 {% block body %}
     <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}"></script>
-
+    <script src="/javascripts/lock-modals.js" defer></script>
     <div class="inbox-container">
         <div class="inbox-header">
             <h1 class="inbox-title">{{ address }}</h1>
@@ -31,15 +44,90 @@
                 </a>
             {% endfor %}
 
-            {% if not mailSummaries %}
-                <div class="empty-state">
-                    <div class="empty-card">
-                        <h3>Inbox Empty</h3>
-                        <p>Your emails will appear here once they arrive.</p>
-                    </div>
-                </div>
+    {% if not mailSummaries %}
+        <blockquote>
+            There are no mails yet.
+        </blockquote>
+    {% endif %}
+
+    {% if lockEnabled and not isLocked %}
+    <!-- Lock Modal -->
+    <div id="lockModal" class="modal" style="display: none;" data-lock-error="{{ error|default('') }}">
+        <div class="modal-content">
+            <span class="close" id="closeLock">&times;</span>
+            <h3>Protect Inbox</h3>
+            <p class="modal-description">Password-protect this inbox. Locked emails won't be deleted.</p>
+            {% if error and error == 'locking_disabled_for_example' %}
+                <p id="lockServerError" class="unlock-error">Locking is disabled for the example inbox.</p>
             {% endif %}
+            <p id="lockErrorInline" class="unlock-error" style="display:none"></p>
+            <form method="POST" action="/lock/lock">
+                <input type="hidden" name="address" value="{{ address }}">
+                <fieldset>
+                    <label for="lockPassword" class="floating-label">Password (min 8 characters)</label>
+                    <input type="password" id="lockPassword" name="password" placeholder="Password" required minlength="8" class="modal-input">
+                    
+                    <label for="lockConfirm" class="floating-label">Confirm Password</label>
+                    <input type="password" id="lockConfirm" placeholder="Confirm" required minlength="8" class="modal-input">
+                    
+                    <button type="submit" class="button-primary modal-button">Lock Inbox</button>
+                </fieldset>
+            </form>
         </div>
     </div>
+    
+    {% endif %}
+
+    {% if lockEnabled and isLocked and not hasAccess %}
+    <!-- Unlock Modal -->
+    <div id="unlockModal" class="modal" style="display: none;" data-unlock-error="{{ unlockError|default('') }}">
+        <div class="modal-content">
+            <span class="close" id="closeUnlock">&times;</span>
+            <h3>Unlock Inbox</h3>
+            <p class="modal-description">Enter password to access this locked inbox.</p>
+            {% if unlockError %}
+                <p class="unlock-error">
+                    {% if unlockError == 'invalid_password' %}
+                        Invalid password. Please try again.
+                    {% elseif unlockError == 'missing_fields' %}
+                        Please provide a password.
+                    {% else %}
+                        An error occurred. Please try again.
+                    {% endif %}
+                </p>
+            {% endif %}
+            <form method="POST" action="/lock/unlock">
+                <input type="hidden" name="address" value="{{ address }}">
+                <input type="hidden" name="redirectTo" value="{{ redirectTo }}">
+                <fieldset>
+                    <label for="unlockPassword" class="floating-label">Password</label>
+                    <input type="password" id="unlockPassword" name="password" placeholder="Password" required class="modal-input">
+                    <button type="submit" class="button-primary modal-button">Unlock</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+    
+    {% endif %}
+
+    {% if lockEnabled and isLocked and hasAccess %}
+    <!-- Remove Lock Modal -->
+    <div id="removeLockModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeRemoveLock">&times;</span>
+            <h3>Remove Password Lock</h3>
+            <p class="modal-description">Are you sure you want to remove the password lock from this inbox? This cannot be undone.</p>
+            <form method="POST" action="/lock/remove">
+                <input type="hidden" name="address" value="{{ address }}">
+                <fieldset>
+                    <button type="submit" class="button-primary modal-button modal-button-danger">Remove Lock</button>
+                    <button type="button" class="button modal-button modal-button-cancel" id="cancelRemoveLock">Cancel</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+    
+    {# JS handled in /javascripts/lock-modals.js #}
+    {% endif %}
 
 {% endblock %}

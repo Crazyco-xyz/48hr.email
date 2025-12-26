@@ -542,3 +542,113 @@ label {
     transform: translateX(5px);
     text-decoration: none;
 }
+
+
+/* Modal Styles */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    background-color: #131516;
+    margin: 10% auto;
+    padding: 2rem;
+    border: 1px solid #9b4dca;
+    border-radius: 0.4rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #cccccc;
+}
+
+.modal-description {
+    color: #999;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+}
+
+.close {
+    float: right;
+    font-size: 2.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #cccccc;
+    line-height: 20px;
+    transition: color 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #9b4dca;
+}
+
+.floating-label {
+    position: relative;
+    top: 12px;
+    left: 12px;
+    width: fit-content;
+    line-height: 1;
+    padding: 0 6px;
+    font-size: 1.4rem;
+    background-color: #131516;
+    z-index: 999;
+    color: #cccccc;
+}
+
+.modal-input {
+    border-radius: 0.4rem;
+    color: #cccccc;
+    font-size: 1.6rem;
+    height: 4.2rem;
+    padding: 0 1.4rem;
+    margin-bottom: 1rem;
+    background-color: transparent;
+    border: 1px solid #444;
+    width: 100%;
+}
+
+.modal-input:focus {
+    border-color: #9b4dca;
+    outline: none;
+}
+
+.modal-button {
+    width: 100%;
+    margin-top: 1rem;
+    background-color: #9b4dca;
+}
+
+
+/* Lock Error Messages */
+
+.unlock-error {
+    color: #ff8c00;
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: rgba(255, 140, 0, 0.1);
+    border-left: 3px solid #ff8c00;
+}
+
+
+/* Remove Lock Button Styles */
+
+.modal-button-danger {
+    background-color: #e74c3c;
+}
+
+.modal-button-cancel {
+    background-color: #555;
+}

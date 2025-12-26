@@ -2,8 +2,10 @@
 
 {% block header %}
     <div class="action-links">
-        <a href="/inbox/{{ address }}">← Return to inbox</a>
-        <a href="/logout">Logout</a>
+        {% if showUnlockButton %}
+            <a href="#" id="unlockBtn">Unlock</a>
+        {% endif %}
+        <a href="/">Logout</a>
     </div>
 {% endblock %}
 
@@ -11,4 +13,48 @@
   <h1>{{message}}</h1>
   <h2>{{error.status}}</h2>
   <pre>{{error.stack}}</pre>
+  
+  {% if showUnlockButton %}
+  <div id="unlockModal" class="modal" style="display: none;">
+      <div class="modal-content">
+          <span class="close" id="closeUnlock">&times;</span>
+          <h3>Unlock Inbox</h3>
+          <p class="modal-description">Enter password to access this locked inbox.</p>
+          {% if unlockError %}
+              <p class="unlock-error">
+                  {% if unlockError == 'invalid_password' %}
+                      Invalid password. Please try again.
+                  {% elseif unlockError == 'missing_fields' %}
+                      Please provide a password.
+                  {% else %}
+                      An error occurred. Please try again.
+                  {% endif %}
+              </p>
+          {% endif %}
+          <form method="POST" action="/lock/unlock">
+              <input type="hidden" name="address" value="{{ address }}">
+              <input type="hidden" name="redirectTo" value="{{ redirectTo|default(address) }}">
+              <fieldset>
+                  <label for="unlockPassword" class="floating-label">Password</label>
+                  <input type="password" id="unlockPassword" name="password" required class="modal-input">
+                  <button type="submit" class="button-primary modal-button">Unlock</button>
+              </fieldset>
+          </form>
+      </div>
+  </div>
+  
+  <script>
+      const modal = document.getElementById('unlockModal');
+      const btn = document.getElementById('unlockBtn');
+      const close = document.getElementById('closeUnlock');
+      if (btn) btn.onclick = (e) => { e.preventDefault(); modal.style.display = 'block'; };
+      if (close) close.onclick = () => modal.style.display = 'none';
+      window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
+      
+      // Auto-open modal if there's an unlock error
+      if ('{{ unlockError|default("") }}') {
+          modal.style.display = 'block';
+      }
+  </script>
+  {% endif %}
 {% endblock %}

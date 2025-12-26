@@ -13,6 +13,7 @@ const ClientNotification = require('./infrastructure/web/client-notification')
 const ImapService = require('./application/imap-service')
 const MailProcessingService = require('./application/mail-processing-service')
 const MailRepository = require('./domain/mail-repository')
+const InboxLock = require('./domain/inbox-lock')
 
 const clientNotification = new ClientNotification()
 debug('Client notification service initialized')
@@ -55,6 +56,23 @@ imapService.on(ImapService.EVENT_ERROR, error => {
 })
 
 app.set('mailProcessingService', mailProcessingService)
+app.set('config', config)
+
+// Initialize inbox locking if enabled
+if (config.lock.enabled) {
+    const inboxLock = new InboxLock(config.lock.dbPath)
+    app.set('inboxLock', inboxLock)
+    console.log(`Inbox locking enabled (auto-release after ${config.lock.releaseHours} hours)`)
+
+    // Check for inactive locked inboxes
+    setInterval(() => {
+        const inactive = inboxLock.getInactive(config.lock.releaseHours)
+        if (inactive.length > 0) {
+            console.log(`Releasing ${inactive.length} inactive locked inbox(es)`)
+            inactive.forEach(address => inboxLock.release(address))
+        }
+    }, config.imap.refreshIntervalSeconds * 1000)
+}
 
 app.locals.imapService = imapService
 app.locals.mailProcessingService = mailProcessingService

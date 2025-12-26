@@ -13,6 +13,7 @@ const config = require('../../application/config')
 const inboxRouter = require('./routes/inbox')
 const loginRouter = require('./routes/login')
 const errorRouter = require('./routes/error')
+const lockRouter = require('./routes/lock')
 const { sanitizeHtmlTwigFilter } = require('./views/twig-filters')
 
 const Helper = require('../../application/helper')
@@ -39,13 +40,25 @@ app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
-// Session middleware
-app.use(session({
-    secret: '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', // They will hate me for this, its temporary tho, I swear!
-    resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 hours
-}))
+// Session support for inbox locking
+if (config.lock.enabled) {
+    const session = require('express-session')
+    app.use(session({
+        secret: config.lock.sessionSecret,
+        resave: false,
+        saveUninitialized: false,
+        cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    }))
+}
+
+// Clear session when user goes Home so locked inboxes require password again
+app.get('/', (req, res, next) => {
+    if (config.lock.enabled && req.session) {
+        req.session.destroy(() => next())
+    } else {
+        next()
+    }
+})
 
 // Remove trailing slash middleware (except for root)
 app.use((req, res, next) => {
@@ -72,15 +85,12 @@ app.use(
 )
 Twig.extendFilter('sanitizeHtml', sanitizeHtmlTwigFilter)
 
-/**
-app.get('/', (req, res, _next) => {
-	res.redirect('/login')
-})
-**/
-
 app.use('/', loginRouter)
 app.use('/inbox', inboxRouter)
 app.use('/error', errorRouter)
+if (config.lock.enabled) {
+    app.use('/lock', lockRouter)
+}
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
