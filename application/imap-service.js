@@ -253,19 +253,39 @@ class ImapService extends EventEmitter {
         const exampleUids = this.config.email.examples.uids.map(x => parseInt(x));
         const headers = await this._getMailHeaders(uids);
 
-        // Filter out mails that are too new or whitelisted
+        // Get locked inboxes if available
+        let lockedAddresses = [];
+        if (typeof this.config.lock !== 'undefined' && this.config.lock.enabled && this.config.lock.dbPath) {
+            try {
+                // Try to get the app instance and inboxLock
+                const app = require('../app');
+                const inboxLock = app.get('inboxLock');
+                if (inboxLock && typeof inboxLock.getAllLocked === 'function') {
+                    lockedAddresses = inboxLock.getAllLocked().map(addr => addr.toLowerCase());
+                    debug(`Locked inboxes (excluded from purge): ${lockedAddresses.join(', ')}`);
+                }
+            } catch (err) {
+                debug('Could not get locked inboxes for purge:', err.message);
+            }
+        }
+
+        // Filter out mails that are too new, whitelisted, or belong to locked inboxes
         const toDelete = headers
             .filter(mail => {
                 const date = mail.attributes.date;
                 const uid = parseInt(mail.attributes.uid);
+                const toAddresses = Array.isArray(mail.parts[0].body.to) ?
+                    mail.parts[0].body.to.map(a => a.toLowerCase()) :
+                    [String(mail.parts[0].body.to).toLowerCase()];
 
                 if (exampleUids.includes(uid)) return false;
+                if (toAddresses.some(addr => lockedAddresses.includes(addr))) return false;
                 return date <= deleteOlderThan;
             })
             .map(mail => parseInt(mail.attributes.uid));
 
         if (toDelete.length === 0) {
-            debug('No mails to delete.');
+            debug('No mails to delete. (after locked inbox exclusion)');
             return;
         }
 
