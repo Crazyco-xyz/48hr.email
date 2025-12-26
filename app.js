@@ -19,7 +19,24 @@ const clientNotification = new ClientNotification()
 debug('Client notification service initialized')
 clientNotification.use(io)
 
-const imapService = new ImapService(config)
+let inboxLock = null
+    // Initialize inbox locking if enabled
+if (config.lock.enabled) {
+    inboxLock = new InboxLock(config.lock.dbPath)
+    app.set('inboxLock', inboxLock)
+    console.log(`Inbox locking enabled (auto-release after ${config.lock.releaseHours} hours)`)
+
+    // Check for inactive locked inboxes
+    setInterval(() => {
+        const inactive = inboxLock.getInactive(config.lock.releaseHours)
+        if (inactive.length > 0) {
+            console.log(`Releasing ${inactive.length} inactive locked inbox(es)`)
+            inactive.forEach(address => inboxLock.release(address))
+        }
+    }, config.imap.refreshIntervalSeconds * 1000)
+}
+
+const imapService = new ImapService(config, inboxLock)
 debug('IMAP service initialized')
 const mailProcessingService = new MailProcessingService(
     new MailRepository(),
@@ -57,22 +74,6 @@ imapService.on(ImapService.EVENT_ERROR, error => {
 
 app.set('mailProcessingService', mailProcessingService)
 app.set('config', config)
-
-// Initialize inbox locking if enabled
-if (config.lock.enabled) {
-    const inboxLock = new InboxLock(config.lock.dbPath)
-    app.set('inboxLock', inboxLock)
-    console.log(`Inbox locking enabled (auto-release after ${config.lock.releaseHours} hours)`)
-
-    // Check for inactive locked inboxes
-    setInterval(() => {
-        const inactive = inboxLock.getInactive(config.lock.releaseHours)
-        if (inactive.length > 0) {
-            console.log(`Releasing ${inactive.length} inactive locked inbox(es)`)
-            inactive.forEach(address => inboxLock.release(address))
-        }
-    }, config.imap.refreshIntervalSeconds * 1000)
-}
 
 app.locals.imapService = imapService
 app.locals.mailProcessingService = mailProcessingService

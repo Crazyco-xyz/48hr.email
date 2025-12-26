@@ -89,13 +89,13 @@ imaps.ImapSimple.prototype.closeBox = function(autoExpunge = true, callback) {
  * With this abstraction it would be easy to replace this with any inbound mail service like mailgun.com.
  */
 class ImapService extends EventEmitter {
-    constructor(config) {
+    constructor(config, inboxLock = null) {
         super()
         if (!config || !config.imap) {
             throw new Error("ImapService requires a valid config with 'imap' object");
         }
         this.config = config
-
+        this.inboxLock = inboxLock
         this.loadedUids = new Set()
         this.connection = null
         this.initialLoadDone = false
@@ -255,15 +255,10 @@ class ImapService extends EventEmitter {
 
         // Get locked inboxes if available
         let lockedAddresses = [];
-        if (typeof this.config.lock !== 'undefined' && this.config.lock.enabled && this.config.lock.dbPath) {
+        if (this.inboxLock && typeof this.inboxLock.getAllLocked === 'function') {
             try {
-                // Try to get the app instance and inboxLock
-                const app = require('../app');
-                const inboxLock = app.get('inboxLock');
-                if (inboxLock && typeof inboxLock.getAllLocked === 'function') {
-                    lockedAddresses = inboxLock.getAllLocked().map(addr => addr.toLowerCase());
-                    debug(`Locked inboxes (excluded from purge): ${lockedAddresses.join(', ')}`);
-                }
+                lockedAddresses = this.inboxLock.getAllLocked().map(addr => addr.toLowerCase());
+                debug(`Locked inboxes (excluded from purge): ${lockedAddresses.length > 0 ? lockedAddresses.join(', ') : '0'}`);
             } catch (err) {
                 debug('Could not get locked inboxes for purge:', err.message);
             }
@@ -275,8 +270,7 @@ class ImapService extends EventEmitter {
                 const date = mail.attributes.date;
                 const uid = parseInt(mail.attributes.uid);
                 const toAddresses = Array.isArray(mail.parts[0].body.to) ?
-                    mail.parts[0].body.to.map(a => a.toLowerCase()) :
-                    [String(mail.parts[0].body.to).toLowerCase()];
+                    mail.parts[0].body.to.map(a => a.toLowerCase()) : [String(mail.parts[0].body.to).toLowerCase()];
 
                 if (exampleUids.includes(uid)) return false;
                 if (toAddresses.some(addr => lockedAddresses.includes(addr))) return false;

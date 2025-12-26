@@ -70,6 +70,7 @@ class MailProcessingService extends EventEmitter {
     }
 
     onNewMail(mail) {
+        debug('onNewMail called for:', mail.to)
         if (this.initialLoadDone) {
             // For now, only log messages if they arrive after the initial load
             debug('New mail for', mail.to[0])
@@ -79,7 +80,9 @@ class MailProcessingService extends EventEmitter {
             debug('Adding mail to repository for recipient:', to)
             this.mailRepository.add(to, mail)
             debug('Emitting notification for:', to)
-            return this.clientNotification.emit(to)
+            const emitResult = this.clientNotification.emit(to)
+            debug('clientNotification.emit result:', emitResult)
+            return emitResult
         })
     }
 
