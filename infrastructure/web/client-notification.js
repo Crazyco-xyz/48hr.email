@@ -6,9 +6,21 @@ require('events').defaultMaxListeners = 50;
  * Receives sign-ins from users and notifies them when new mails are available.
  */
 class ClientNotification extends EventEmitter {
+    constructor() {
+        super();
+        this.pendingNotifications = new Map(); // address -> count
+    }
+
     use(io) {
         io.on('connection', socket => {
-            socket.on('sign in', address => this._signIn(socket, address))
+            debug(`[SOCKET] New connection: id=${socket.id}`);
+            socket.on('sign in', address => {
+                debug(`[SOCKET] sign in received for address: ${address}, socket id: ${socket.id}`);
+                this._signIn(socket, address.toLowerCase())
+            });
+            socket.on('disconnect', reason => {
+                debug(`[SOCKET] Disconnected: id=${socket.id}, reason=${reason}`);
+            });
         })
     }
 
@@ -23,10 +35,32 @@ class ClientNotification extends EventEmitter {
 
         this.on(address, newMailListener)
 
+        // Deliver any pending notifications
+        const pending = this.pendingNotifications.get(address) || 0;
+        if (pending > 0) {
+            debug(`Delivering ${pending} pending notifications to ${address}`);
+            for (let i = 0; i < pending; i++) {
+                socket.emit('new emails');
+            }
+            this.pendingNotifications.delete(address);
+        }
+
         socket.on('disconnect', reason => {
             debug(`client disconnect: ${address} (${reason})`)
             this.removeListener(address, newMailListener)
         })
+    }
+
+    emit(address) {
+        address = address.toLowerCase();
+        const hadListeners = super.emit(address);
+        if (!hadListeners) {
+            // Queue notification for later delivery
+            const prev = this.pendingNotifications.get(address) || 0;
+            this.pendingNotifications.set(address, prev + 1);
+            debug(`No listeners for ${address}, queued notification (${prev + 1} pending)`);
+        }
+        return hadListeners;
     }
 }
 
