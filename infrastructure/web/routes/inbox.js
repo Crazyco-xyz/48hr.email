@@ -252,13 +252,33 @@ router.get(
                 true
             )
             if (mail) {
-                mail = mail.replace(/(?:\r\n|\r|\n)/g, '<br>')
-                    // Emails are immutable, cache if found
+                const decodeQuotedPrintable = (input) => {
+                    if (!input) return '';
+                    // Remove soft line breaks
+                    let cleaned = input.replace(/=\r?\n/g, '');
+                    // Decode =XX hex escapes
+                    cleaned = cleaned.replace(/=([0-9A-Fa-f]{2})/g, (_, hex) => {
+                        try {
+                            return String.fromCharCode(parseInt(hex, 16));
+                        } catch {
+                            return '=' + hex;
+                        }
+                    });
+                    return cleaned;
+                };
+
+                const decodedMail = decodeQuotedPrintable(mail);
+
+                // Keep raw content but add literal newlines after <br> tags for readability
+                const rawMail = mail.replace(/<br\s*\/?\s*>/gi, '<br>\n');
+
+                // Emails are immutable, cache if found
                 res.set('Cache-Control', 'private, max-age=600')
                 debug(`Rendering raw email view for UID ${req.params.uid}`)
                 res.render('raw', {
                     title: req.params.uid + " | raw | " + req.params.address,
-                    mail,
+                    mail: rawMail,
+                    decoded: decodedMail,
                     totalcount: totalcount
                 })
             } else {

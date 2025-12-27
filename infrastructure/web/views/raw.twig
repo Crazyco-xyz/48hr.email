@@ -1,19 +1,31 @@
+{% extends 'layout.twig' %}
+
+{% block header %}{% endblock %}
+
 {% block body %}
-    <head>
-        <title>{{ title }}</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui">
-        <meta name="darkreader-lock">
-        <meta name="description" content="Dont give shady companies your real email. Use 48hr.email to protect your privacy!">
-        <meta property="og:image" content="/images/logo.png">
-
-        <link rel="shortcut icon" href="/images/logo.ico">
-        <link rel='stylesheet' href='/dependencies/milligram.css' />
-        <link rel='stylesheet' href='/stylesheets/custom.css' />
-
-        <script src="/socket.io/socket.io.js" defer="true"></script>
-        <script src="/javascripts/notifications.js" defer="true"></script>
-
-    </head>
-    {{ mail | raw }}
+    <div class="raw-container">
+        <div class="raw-tabs">
+            <button class="raw-tab-button active" data-target="raw">Raw (escaped)</button>
+            <button class="raw-tab-button" data-target="decoded">Decoded (quoted-printable)</button>
+        </div>
+        <div class="raw-panels">
+            <pre class="raw-mail" data-panel="raw">{{ mail | e }}</pre>
+            <pre class="raw-mail hidden" data-panel="decoded">{{ decoded | e }}</pre>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('.raw-tab-button');
+            const panels = document.querySelectorAll('.raw-mail[data-panel]');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const target = btn.dataset.target;
+                    buttons.forEach(b => b.classList.toggle('active', b === btn));
+                    panels.forEach(p => p.classList.toggle('hidden', p.dataset.panel !== target));
+                });
+            });
+        });
+    </script>
 {% endblock %}
+
+{% block footer %}{% endblock %}

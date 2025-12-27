@@ -680,3 +680,59 @@ label {
 .email-expiry .expiry-timer[style*="color: #b00"] {
     color: #b00 !important;
 }
+
+
+/* Raw mail view */
+
+.raw-container {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.raw-mail {
+    background: rgba(0, 0, 0, 0.35);
+    color: #e0e0e0;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 0.95rem;
+}
+
+.raw-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.raw-tab-button {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.raw-tab-button.active {
+    background: rgba(155, 77, 202, 0.25);
+    border-color: rgba(155, 77, 202, 0.4);
+    color: #fff;
+}
+
+.raw-tab-button:hover {
+    border-color: rgba(155, 77, 202, 0.5);
+}
+
+.raw-panels {
+    position: relative;
+}
+
+.raw-mail.hidden {
+    display: none;
+}
