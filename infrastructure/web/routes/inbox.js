@@ -56,7 +56,9 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, checkLockAccess, async(
             unlockError: unlockErrorSession,
             locktimer: config.lock.releaseHours,
             error: lockError,
-            redirectTo: req.originalUrl
+            redirectTo: req.originalUrl,
+            expiryTime: config.email.purgeTime.time,
+            expiryUnit: config.email.purgeTime.unit
         })
     } catch (error) {
         debug(`Error loading inbox for ${req.params.address}:`, error.message)

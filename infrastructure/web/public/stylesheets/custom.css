@@ -375,7 +375,8 @@ label {
     opacity: 0.8;
 }
 
-.email-date {
+.email-date,
+.email-expiry {
     font-size: 0.85rem;
     color: #666;
     white-space: nowrap;
@@ -387,6 +388,23 @@ label {
     color: #e0e0e0;
     line-height: 1.5;
     font-weight: 400;
+}
+
+
+/* Subject row with right-bound expiry */
+
+.email-subject-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.email-date {
+    color: #666;
+    margin-left: auto;
+    text-align: right;
+    white-space: nowrap;
 }
 
 .empty-state {
@@ -446,14 +464,6 @@ label {
     margin: 0 0 20px 0;
     color: #ffffff;
     line-height: 1.3;
-}
-
-.mail-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
 }
 
 .mail-from {
@@ -651,4 +661,22 @@ label {
 
 .modal-button-cancel {
     background-color: #555;
+}
+
+
+/* Copy address feedback */
+
+#copyAddress {
+    cursor: pointer;
+}
+
+#copyFeedback {
+    display: none;
+    color: #9b4cda;
+    font-size: 0.9em;
+    margin-left: 10px;
+}
+
+.email-expiry .expiry-timer[style*="color: #b00"] {
+    color: #b00 !important;
 }

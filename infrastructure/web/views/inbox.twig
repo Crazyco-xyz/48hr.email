@@ -21,11 +21,12 @@
 {% endblock %}
 
 {% block body %}
-    <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}"></script>
+    <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}" data-expiry-time="{{ expiryTime }}" data-expiry-unit="{{ expiryUnit }}"></script>
     <script src="/javascripts/lock-modals.js" defer></script>
     <div class="inbox-container">
         <div class="inbox-header">
-            <h1 class="inbox-title">{{ address }}</h1>
+            <h1 class="inbox-title" id="copyAddress" title="Click to copy address">{{ address }}</h1>
+            <span id="copyFeedback">Copied!</span>
         </div>
 
         <div class="emails-container">
@@ -39,7 +40,12 @@
                             </div>
                             <div class="email-date">{{ mail.date | date }}</div>
                         </div>
-                        <div class="email-subject">{{ mail.subject }}</div>
+                        <div class="email-subject-row">
+                            <div class="email-subject">{{ mail.subject }}</div>
+                            <div class="email-expiry">
+                                <span class="expiry-timer" data-date="{{ mail.date|date('Y-m-d\TH:i:s\Z') }}">Expires in ...</span>
+                            </div>
+                        </div>
                     </div>
                 </a>
             {% endfor %}
