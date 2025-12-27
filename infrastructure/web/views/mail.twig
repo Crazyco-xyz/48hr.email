@@ -14,12 +14,13 @@
 {% endblock %}
 
 {% block body %}
+    <script src="/javascripts/utils.js" defer></script>
     <div class="mail-container">
         <div class="mail-header">
             <h1 class="mail-subject">{{ mail.subject }}</h1>
             <div class="mail-meta">
                 <div class="mail-from">From: {{ mail.from.text }}</div>
-                <div class="mail-date">{{ mail.date | date }}</div>
+                <div class="mail-date" data-date="{{ mail.date|date('c') }}"></div>
             </div>
         </div>
 
