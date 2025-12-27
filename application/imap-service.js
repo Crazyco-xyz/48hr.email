@@ -344,7 +344,14 @@ class ImapService extends EventEmitter {
         } catch {
             // Do nothing
         }
-        const date = headerPart.date[0]
+        const rawDate = headerPart.date && headerPart.date[0] ? headerPart.date[0] : undefined
+        let date
+        if (rawDate) {
+            const m = moment.parseZone(rawDate)
+            date = m.toDate()
+        } else {
+            date = new Date()
+        }
         const { uid } = message.attributes
 
         return Mail.create(to, from, date, subject, uid)
