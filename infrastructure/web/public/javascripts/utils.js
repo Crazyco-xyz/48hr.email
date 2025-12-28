@@ -14,8 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initExpiryTimers(expiryTime, expiryUnit) {
+        // Cache timer elements on init instead of querying every second
+        let timers = document.querySelectorAll('.expiry-timer');
+        if (timers.length === 0) return; // Don't set interval if no timers exist
+
         function updateExpiryTimers() {
-            const timers = document.querySelectorAll('.expiry-timer');
             const now = new Date();
             timers.forEach(el => {
                 const dateStr = el.dataset.date;
@@ -37,8 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.textContent = `Expires in ${hours}h ${minutes}m ${seconds}s`;
             });
         }
-        setInterval(updateExpiryTimers, 1000);
-        updateExpiryTimers();
+        updateExpiryTimers(); // Call once immediately
+        setInterval(updateExpiryTimers, 1000); // Then every second
     }
 
     function formatEmailDates() {

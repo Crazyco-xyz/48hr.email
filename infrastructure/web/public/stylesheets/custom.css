@@ -6,8 +6,6 @@ body {
     flex-direction: column;
     background: linear-gradient( 135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), #131516;
     color: #cccccc;
-    backdrop-filter: blur(18px) saturate(120%);
-    -webkit-backdrop-filter: blur(18px) saturate(120%);
     border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
@@ -91,6 +89,7 @@ text-muted {
 }
 
 .action-links {
+    margin-bottom: 15px;
     float: right;
     justify-content: flex-end;
     /* aligns all links to the right */
@@ -109,7 +108,6 @@ text-muted {
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
     position: relative;
     overflow: hidden;
     text-decoration: none;
@@ -162,8 +160,6 @@ select:hover {
     max-width: 600px;
     margin: auto;
     background: linear-gradient( 135deg, rgba(155, 77, 202, 0.12), rgba(155, 77, 202, 0.04)), rgba(255, 255, 255, 0.04);
-    backdrop-filter: blur(20px) saturate(125%);
-    -webkit-backdrop-filter: blur(20px) saturate(125%);
     border-radius: 22px;
     border: 1px solid rgba(155, 77, 202, 0.25);
     padding: 40px 36px;
@@ -239,8 +235,6 @@ select:hover {
     color: #fff;
     background: rgba(155, 77, 202, 0.2);
     border: 1px solid rgba(155, 77, 202, 0.35);
-    backdrop-filter: blur(12px) saturate(120%);
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
     box-shadow: 0 8px 20px rgba(155, 77, 202, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     cursor: pointer;
     transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
@@ -319,7 +313,6 @@ label {
 }
 
 .email-card {
-    backdrop-filter: blur(20px);
     border-radius: 18px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 24px;
@@ -416,7 +409,6 @@ label {
 
 .empty-card {
     background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 50px;
@@ -450,7 +442,6 @@ label {
 
 .mail-header {
     background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 30px;
@@ -480,7 +471,6 @@ label {
 
 .mail-content {
     background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(15px);
     border-radius: 18px;
     border: 1px solid rgba(255, 255, 255, 0.06);
     padding: 30px;
@@ -493,7 +483,6 @@ label {
     border: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
     min-height: 40vh;
-    backdrop-filter: blur(10px);
 }
 
 .mail-text-content {
@@ -513,7 +502,6 @@ label {
 
 .mail-attachments {
     background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
     border-radius: 18px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 25px;
