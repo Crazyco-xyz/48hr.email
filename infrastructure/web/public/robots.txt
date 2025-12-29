@@ -1,0 +1,8 @@
+# 48hr.email - Temporary Email Service
+User-agent: *
+Allow: /
+Disallow: /inbox/
+Disallow: /lock/
+
+Sitemap: https://48hr.email/sitemap.xml
+

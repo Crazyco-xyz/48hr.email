@@ -1,17 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>{{ title }}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <title>{{ title }}</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Your temporary Inbox. Create instant throwaway email addresses to protect your privacy. No registration required. Emails auto-delete after 48 hours.">
+    <meta name="keywords" content="temporary email, disposable email, throwaway email, fake email, temp mail, anonymous email, 48hr email, privacy protection, burner email">
+    <meta name="author" content="CrazyCo">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="https://48hr.email/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://48hr.email/">
+    <meta property="og:title" content="48hr.email - Your temporary Inbox">
+    <meta property="og:description" content="Protect your privacy with free temporary email addresses. No registration required. Emails auto-delete after 48 hours.">
+    <meta property="og:image" content="https://48hr.email/images/logo.png">
+    <meta property="og:site_name" content="48hr.email">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:url" content="https://48hr.email/">
+    <meta name="twitter:title" content="48hr.email - Your temporary Inbox">
+    <meta name="twitter:description" content="Free temporary email service. Protect your privacy with disposable email addresses.">
+    <meta name="twitter:image" content="https://48hr.email/images/logo.png">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="theme-color" content="#9b4dca">
     <meta name="darkreader-lock">
-    <meta name="description" content="Dont give shady companies your real email. Use 48hr.email to protect your privacy!">
-    <meta property="og:image" content="/images/logo.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="48hr.email">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/images/logo.ico">
     <link rel="shortcut icon" href="/images/logo.ico">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    
+    <!-- Stylesheets -->
     <link rel='stylesheet' href='/dependencies/milligram.css' />
     <link rel='stylesheet' href='/stylesheets/custom.css' />
+    
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "48hr.email",
+      "url": "https://48hr.email",
+      "description": "Your temporary Inbox service for privacy protection",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "CrazyCo",
+        "url": "https://crazyco.xyz"
+      }
+    }
+    </script>
 
+    <!-- Scripts -->
     <script src="/socket.io/socket.io.js" defer="true"></script>
     <script src="/javascripts/notifications.js" defer="true"></script>
 
