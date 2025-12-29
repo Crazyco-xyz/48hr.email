@@ -239,10 +239,54 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initQrModal() {
+        const qrBtn = document.getElementById('qrCodeBtn');
+        const qrModal = document.getElementById('qrModal');
+        const closeQr = document.getElementById('closeQr');
+        const qrContainer = document.getElementById('qrcode');
+        const copyAddress = document.getElementById('copyAddress');
+
+        if (!qrBtn || !qrModal || !qrContainer) return;
+
+        let qrGenerated = false;
+
+        qrBtn.onclick = function() {
+            qrModal.style.display = 'block';
+
+            // Generate QR code only once
+            if (!qrGenerated && copyAddress) {
+                const address = copyAddress.textContent.trim();
+                qrContainer.innerHTML = ''; // Clear any previous QR
+                new QRCode(qrContainer, {
+                    text: address,
+                    width: 256,
+                    height: 256,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                qrGenerated = true;
+            }
+        };
+
+        if (closeQr) {
+            closeQr.onclick = function() {
+                qrModal.style.display = 'none';
+            };
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === qrModal) {
+                qrModal.style.display = 'none';
+            }
+        });
+    }
+
     // Expose utilities and run them
-    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers };
+    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal };
     formatEmailDates();
     formatMailDate();
     initLockModals();
     initCopyAddress();
+    initQrModal();
 });

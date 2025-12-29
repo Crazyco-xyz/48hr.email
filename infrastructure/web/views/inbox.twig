@@ -21,11 +21,20 @@
 {% endblock %}
 
 {% block body %}
+    <script src="/javascripts/qrcode.js"></script>
     <script src="/javascripts/utils.js" defer></script>
     <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}" data-expiry-time="{{ expiryTime }}" data-expiry-unit="{{ expiryUnit }}"></script>
     <div class="inbox-container">
         <div class="inbox-header">
             <h1 class="inbox-title" id="copyAddress" title="Click to copy address">{{ address }}</h1>
+            <button id="qrCodeBtn" class="qr-icon-btn" title="Show QR Code" aria-label="Show QR Code">
+                <svg class="qr-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+            </button>
             <span id="copyFeedback">Copied!</span>
         </div>
 
@@ -135,5 +144,15 @@
     
     {# JS handled in /javascripts/lock-modals.js #}
     {% endif %}
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content qr-modal-content">
+            <span class="close" id="closeQr">&times;</span>
+            <h3>Scan Email Address</h3>
+            <div id="qrcode" class="qr-code-container"></div>
+            <p class="qr-address-label">{{ address }}</p>
+        </div>
+    </div>
 
 {% endblock %}
