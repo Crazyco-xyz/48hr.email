@@ -1,13 +1,67 @@
+:root {
+    /* Base colors */
+    --color-bg-dark: #131516;
+    --color-bg-medium: #2F2B36;
+    --color-text-primary: #cccccc;
+    --color-text-light: #e0e0e0;
+    --color-text-dim: #888;
+    --color-text-dimmer: #666;
+    --color-text-gray: #999;
+    --color-text-white: #ffffff;
+    --color-text-white-alt: #fff;
+    /* Accent colors */
+    --color-accent-purple: #9b4dca;
+    --color-accent-purple-alt: #9b4cda;
+    --color-accent-purple-light: #b366e6;
+    --color-accent-purple-bright: #6c5ce7;
+    --color-accent-orange: #ca5414;
+    --color-warning: #ff8c00;
+    --color-danger: #e74c3c;
+    --color-error: #b00;
+    /* UI colors */
+    --color-border-dark: #444;
+    --color-button-cancel: #555;
+    /* Transparent overlays */
+    --overlay-white-15: rgba(255, 255, 255, 0.15);
+    --overlay-white-12: rgba(255, 255, 255, 0.12);
+    --overlay-white-10: rgba(255, 255, 255, 0.1);
+    --overlay-white-08: rgba(255, 255, 255, 0.08);
+    --overlay-white-06: rgba(255, 255, 255, 0.06);
+    --overlay-white-05: rgba(255, 255, 255, 0.05);
+    --overlay-white-04: rgba(255, 255, 255, 0.04);
+    --overlay-white-03: rgba(255, 255, 255, 0.03);
+    --overlay-white-02: rgba(255, 255, 255, 0.02);
+    --overlay-black-80: rgba(0, 0, 0, 0.8);
+    --overlay-black-45: rgba(0, 0, 0, 0.45);
+    --overlay-black-40: rgba(0, 0, 0, 0.4);
+    --overlay-black-35: rgba(0, 0, 0, 0.35);
+    --overlay-black-30: rgba(0, 0, 0, 0.3);
+    /* Purple overlays */
+    --overlay-purple-50: rgba(155, 77, 202, 0.5);
+    --overlay-purple-40: rgba(155, 77, 202, 0.4);
+    --overlay-purple-35: rgba(155, 77, 202, 0.35);
+    --overlay-purple-30: rgba(155, 77, 202, 0.3);
+    --overlay-purple-25: rgba(155, 77, 202, 0.25);
+    --overlay-purple-20: rgba(155, 77, 202, 0.2);
+    --overlay-purple-15: rgba(155, 77, 202, 0.15);
+    --overlay-purple-12: rgba(155, 77, 202, 0.12);
+    --overlay-purple-10: rgba(155, 77, 202, 0.1);
+    --overlay-purple-08: rgba(155, 77, 202, 0.08);
+    --overlay-purple-04: rgba(155, 77, 202, 0.04);
+    /* Warning overlay */
+    --overlay-warning-10: rgba(255, 140, 0, 0.1);
+}
+
 body {
     margin: 0;
     min-height: 100vh;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    background: linear-gradient( 135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), #131516;
-    color: #cccccc;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    background: linear-gradient( 135deg, var(--overlay-white-08), var(--overlay-white-02)), var(--color-bg-dark);
+    color: var(--color-text-primary);
+    border: 1px solid var(--overlay-white-12);
+    box-shadow: 0 10px 30px var(--overlay-black-45), inset 0 1px 0 var(--overlay-white-06);
 }
 
 body::-webkit-scrollbar {
@@ -27,12 +81,19 @@ main {
 }
 
 a {
-    color: #cccccc;
+    color: var(--color-text-primary);
+}
+
+a:hover,
+.action-links a:hover,
+.email-link,
+.attachment-link,
+.attachment-link:hover {
+    text-decoration: none;
 }
 
 a:hover {
-    color: #9b4cda;
-    text-decoration: none;
+    color: var(--color-accent-purple-alt);
 }
 
 h1 {
@@ -44,7 +105,7 @@ h3 {
 }
 
 a.no-link-color {
-    color: #cccccc;
+    color: var(--color-text-primary);
 }
 
 p {
@@ -53,7 +114,7 @@ p {
 
 .email:hover {
     color: black;
-    background-color: #9b4cda;
+    background-color: var(--color-accent-purple-alt);
 }
 
 iframe {
@@ -69,11 +130,11 @@ iframe {
 }
 
 blockquote {
-    border-left: .3rem solid #9b4dca;
+    border-left: .3rem solid var(--color-accent-purple);
 }
 
 blockquote.warning {
-    border-left: .3rem solid #ca5414;
+    border-left: .3rem solid var(--color-accent-orange);
 }
 
 text-muted {
@@ -107,11 +168,11 @@ text-muted {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--overlay-white-15);
     position: relative;
     overflow: hidden;
     text-decoration: none;
-    color: #e0e0e0;
+    color: var(--color-text-light);
 }
 
 .action-links a::before {
@@ -121,7 +182,7 @@ text-muted {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background: linear-gradient(90deg, transparent, var(--overlay-white-10), transparent);
     transition: left 0.5s;
 }
 
@@ -131,10 +192,9 @@ text-muted {
 
 .action-links a:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(155, 77, 202, 0.4);
-    border-color: rgba(155, 77, 202, 0.3);
-    text-decoration: none;
-    color: #ffffff;
+    box-shadow: 0 8px 25px var(--overlay-purple-40);
+    border-color: var(--overlay-purple-30);
+    color: var(--color-text-white);
 }
 
 
@@ -159,11 +219,11 @@ select:hover {
     flex-direction: column;
     max-width: 600px;
     margin: auto;
-    background: linear-gradient( 135deg, rgba(155, 77, 202, 0.12), rgba(155, 77, 202, 0.04)), rgba(255, 255, 255, 0.04);
+    background: linear-gradient( 135deg, var(--overlay-purple-12), var(--overlay-purple-04)), var(--overlay-white-04);
     border-radius: 22px;
-    border: 1px solid rgba(155, 77, 202, 0.25);
+    border: 1px solid var(--overlay-purple-25);
     padding: 40px 36px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(155, 77, 202, 0.08) inset;
+    box-shadow: 0 20px 50px var(--overlay-black-40), 0 0 0 1px var(--overlay-purple-08) inset;
 }
 
 #login h1,
@@ -188,14 +248,14 @@ select:hover {
     line-height: 1;
     padding: 0 6px;
     font-size: 1.4rem;
-    background: #2F2B36;
+    background: var(--color-bg-medium);
     z-index: 999;
 }
 
 #login input[type="text"],
 #login select {
     border-radius: 0.4rem;
-    color: #cccccc;
+    color: var(--color-text-primary);
     font-size: 1.6rem;
     height: 4.2rem;
     padding: 0 1.4rem;
@@ -203,8 +263,8 @@ select:hover {
 }
 
 #login select option {
-    background-color: #131516;
-    color: #cccccc;
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-primary);
 }
 
 #login .dropdown {
@@ -228,22 +288,28 @@ select:hover {
     margin-top: 1.5rem;
 }
 
+#login .buttons>*,
+#copyAddress,
+.close,
+.raw-tab-button {
+    cursor: pointer;
+}
+
 #login .buttons>* {
     flex: 1 1 auto;
     min-width: 120px;
     border-radius: 20px;
-    color: #fff;
-    background: rgba(155, 77, 202, 0.2);
-    border: 1px solid rgba(155, 77, 202, 0.35);
-    box-shadow: 0 8px 20px rgba(155, 77, 202, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    cursor: pointer;
+    color: var(--color-text-white-alt);
+    background: var(--overlay-purple-20);
+    border: 1px solid var(--overlay-purple-35);
+    box-shadow: 0 8px 20px var(--overlay-purple-25), inset 0 1px 0 var(--overlay-white-08);
     transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 #login .buttons>*:hover {
-    background: rgba(155, 77, 202, 0.3);
+    background: var(--overlay-purple-30);
     transform: translateY(-2px);
-    box-shadow: 0 12px 25px rgba(155, 77, 202, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 25px var(--overlay-purple-35), inset 0 1px 0 var(--overlay-white-12);
 }
 
 .mail_attachments {
@@ -258,10 +324,15 @@ label {
 
 /* Modern Inbox Styles */
 
-.inbox-container {
+.inbox-container,
+.mail-container,
+.raw-container {
     min-width: 75%;
     max-width: 1500px;
     margin: 0 auto;
+}
+
+.inbox-container {
     padding: 0 20px;
 }
 
@@ -271,14 +342,14 @@ label {
 }
 
 .inbox-title {
-    background: linear-gradient(135deg, #9b4dca, #b366e6, #6c5ce7);
+    background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-purple-light), var(--color-accent-purple-bright));
     font-size: 2.8rem;
     font-weight: 300;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin: 0;
-    text-shadow: 0 2px 10px rgba(155, 77, 202, 0.3);
+    text-shadow: 0 2px 10px var(--overlay-purple-30);
 }
 
 .emails-container {
@@ -290,7 +361,7 @@ label {
     overflow-y: auto;
     overflow-x: hidden;
     background: transparent;
-    border: 2px solid rgba(155, 77, 202, 0.3);
+    border: 2px solid var(--overlay-purple-30);
     border-radius: 15px;
     padding: 20px;
     /* Hide scrollbar */
@@ -303,7 +374,6 @@ label {
 }
 
 .email-link {
-    text-decoration: none;
     transition: all 0.3s ease;
     display: block;
 }
@@ -312,12 +382,17 @@ label {
     transform: translateY(-4px);
 }
 
-.email-card {
+.email-card,
+.mail-content,
+.mail-attachments {
     border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--overlay-white-08);
+    box-shadow: 0 8px 30px var(--overlay-black-30);
+}
+
+.email-card {
     padding: 24px;
     transition: all 0.4s ease;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -338,7 +413,7 @@ label {
 }
 
 .email-card:hover {
-    box-shadow: 0 15px 50px rgba(155, 77, 202, 0.15);
+    box-shadow: 0 15px 50px var(--overlay-purple-15);
     transform: translateY(-2px);
 }
 
@@ -358,29 +433,38 @@ label {
 .sender-name {
     font-weight: 600;
     font-size: 1.35rem;
-    color: #ffffff;
+    color: var(--color-text-white);
     line-height: 1.2;
+}
+
+.sender-email,
+.mail-date {
+    opacity: 0.8;
 }
 
 .sender-email {
     font-size: 1rem;
-    color: #888;
-    opacity: 0.8;
+    color: var(--color-text-dim);
 }
 
 .email-date,
 .email-expiry {
     font-size: 0.85rem;
-    color: #666;
+    color: var(--color-text-dimmer);
     white-space: nowrap;
     opacity: 0.7;
 }
 
+.email-subject,
+.empty-card h3,
+.mail-attachments h4 {
+    font-weight: 400;
+}
+
 .email-subject {
     font-size: 1.25rem;
-    color: #e0e0e0;
+    color: var(--color-text-light);
     line-height: 1.5;
-    font-weight: 400;
 }
 
 
@@ -394,7 +478,7 @@ label {
 }
 
 .email-date {
-    color: #666;
+    color: var(--color-text-dimmer);
     margin-left: auto;
     text-align: right;
     white-space: nowrap;
@@ -407,25 +491,28 @@ label {
     min-height: 400px;
 }
 
-.empty-card {
-    background: rgba(255, 255, 255, 0.03);
+.empty-card,
+.mail-header {
+    background: var(--overlay-white-03);
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--overlay-white-08);
+}
+
+.empty-card {
     padding: 50px;
     text-align: center;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 40px var(--overlay-black-30);
     max-width: 400px;
 }
 
 .empty-card h3 {
-    color: #9b4dca;
+    color: var(--color-accent-purple);
     margin-bottom: 20px;
-    font-weight: 400;
     font-size: 2.2rem;
 }
 
 .empty-card p {
-    color: #888;
+    color: var(--color-text-dim);
     font-size: 1.3rem;
     opacity: 0.9;
     line-height: 1.5;
@@ -434,59 +521,52 @@ label {
 
 /* Modern Mail View Styles */
 
-.mail-container {
-    min-width: 75%;
-    max-width: 1500px;
-    margin: 0 auto;
-}
-
 .mail-header {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 30px;
     margin-bottom: 30px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 40px var(--overlay-black-40);
 }
 
 .mail-subject {
     font-size: 2.2rem;
     font-weight: 300;
     margin: 0 0 20px 0;
-    color: #ffffff;
+    color: var(--color-text-white);
     line-height: 1.3;
 }
 
 .mail-from {
     font-size: 1.5rem;
-    color: #b366e6;
+    color: var(--color-accent-purple-light);
     font-weight: 500;
 }
 
 .mail-date {
     font-size: 1.4rem;
-    color: #888;
-    opacity: 0.8;
+    color: var(--color-text-dim);
 }
 
 .mail-content {
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--overlay-white-02);
+    border: 1px solid var(--overlay-white-06);
     padding: 30px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     margin-bottom: 30px;
 }
 
-.mail-html-content iframe {
+.mail-html-content iframe,
+.attachment-link,
+.raw-mail {
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mail-html-content iframe {
+    border: 1px solid var(--overlay-white-10);
     width: 100%;
     min-height: 40vh;
 }
 
 .mail-text-content {
-    color: #e0e0e0;
+    color: var(--color-text-light);
     line-height: 1.6;
     font-size: 1rem;
     white-space: pre-wrap;
@@ -495,23 +575,19 @@ label {
 
 .mail-empty-content {
     text-align: center;
-    color: #888;
+    color: var(--color-text-dim);
     font-style: italic;
     padding: 40px;
 }
 
 .mail-attachments {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--overlay-white-03);
     padding: 25px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
 .mail-attachments h4 {
-    color: #9b4dca;
+    color: var(--color-accent-purple);
     margin: 0 0 20px 0;
-    font-weight: 400;
     font-size: 1.4rem;
 }
 
@@ -523,22 +599,19 @@ label {
 }
 
 .attachment-link {
-    color: #b366e6;
-    text-decoration: none;
+    color: var(--color-accent-purple-light);
     padding: 12px 16px;
-    border-radius: 12px;
-    background: rgba(155, 77, 202, 0.1);
-    border: 1px solid rgba(155, 77, 202, 0.2);
+    background: var(--overlay-purple-10);
+    border: 1px solid var(--overlay-purple-20);
     transition: all 0.3s ease;
     display: inline-block;
     max-width: fit-content;
 }
 
 .attachment-link:hover {
-    background: rgba(155, 77, 202, 0.15);
-    border-color: rgba(155, 77, 202, 0.3);
+    background: var(--overlay-purple-15);
+    border-color: var(--overlay-purple-30);
     transform: translateX(5px);
-    text-decoration: none;
 }
 
 
@@ -553,27 +626,27 @@ label {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: var(--overlay-black-80);
 }
 
 .modal-content {
-    background-color: #131516;
+    background-color: var(--color-bg-dark);
     margin: 10% auto;
     padding: 2rem;
-    border: 1px solid #9b4dca;
+    border: 1px solid var(--color-accent-purple);
     border-radius: 0.4rem;
     width: 90%;
     max-width: 400px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 6px var(--overlay-black-30);
 }
 
 .modal-content h3 {
     margin-top: 0;
-    color: #cccccc;
+    color: var(--color-text-primary);
 }
 
 .modal-description {
-    color: #999;
+    color: var(--color-text-gray);
     margin-bottom: 1.5rem;
     font-size: 1.4rem;
 }
@@ -582,15 +655,14 @@ label {
     float: right;
     font-size: 2.8rem;
     font-weight: bold;
-    cursor: pointer;
-    color: #cccccc;
+    color: var(--color-text-primary);
     line-height: 20px;
     transition: color 0.3s;
 }
 
 .close:hover,
 .close:focus {
-    color: #9b4dca;
+    color: var(--color-accent-purple);
 }
 
 .floating-label {
@@ -601,89 +673,82 @@ label {
     line-height: 1;
     padding: 0 6px;
     font-size: 1.4rem;
-    background-color: #131516;
+    background-color: var(--color-bg-dark);
     z-index: 999;
-    color: #cccccc;
+    color: var(--color-text-primary);
 }
 
 .modal-input {
     border-radius: 0.4rem;
-    color: #cccccc;
+    color: var(--color-text-primary);
     font-size: 1.6rem;
     height: 4.2rem;
     padding: 0 1.4rem;
     margin-bottom: 1rem;
     background-color: transparent;
-    border: 1px solid #444;
+    border: 1px solid var(--color-border-dark);
     width: 100%;
 }
 
 .modal-input:focus {
-    border-color: #9b4dca;
+    border-color: var(--color-accent-purple);
     outline: none;
 }
 
 .modal-button {
     width: 100%;
     margin-top: 1rem;
-    background-color: #9b4dca;
+    background-color: var(--color-accent-purple);
 }
 
 
 /* Lock Error Messages */
 
 .unlock-error {
-    color: #ff8c00;
+    color: var(--color-warning);
     margin-bottom: 1rem;
     padding: 0.8rem;
-    background: rgba(255, 140, 0, 0.1);
-    border-left: 3px solid #ff8c00;
+    background: var(--overlay-warning-10);
+    border-left: 3px solid var(--color-warning);
 }
 
 
 /* Remove Lock Button Styles */
 
 .modal-button-danger {
-    background-color: #e74c3c;
+    background-color: var(--color-danger);
 }
 
 .modal-button-cancel {
-    background-color: #555;
+    background-color: var(--color-button-cancel);
 }
 
 
 /* Copy address feedback */
 
-#copyAddress {
-    cursor: pointer;
-}
-
 #copyFeedback {
     display: none;
-    color: #9b4cda;
+    color: var(--color-accent-purple-alt);
     font-size: 0.9em;
     margin-left: 10px;
 }
 
 .email-expiry .expiry-timer[style*="color: #b00"] {
-    color: #b00 !important;
+    color: var(--color-error) !important;
 }
 
 
 /* Raw mail view */
 
-.raw-container {
-    max-width: 1500px;
-    margin: 0 auto;
+.raw-container,
+.raw-mail {
     padding: 20px;
 }
 
 .raw-mail {
-    background: rgba(0, 0, 0, 0.35);
-    color: #e0e0e0;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--overlay-black-35);
+    color: var(--color-text-light);
+    border: 1px solid var(--overlay-white-08);
     white-space: pre-wrap;
     word-break: break-word;
     overflow-x: auto;
@@ -700,21 +765,20 @@ label {
 .raw-tab-button {
     padding: 8px 14px;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.05);
-    color: #e0e0e0;
-    cursor: pointer;
+    border: 1px solid var(--overlay-white-12);
+    background: var(--overlay-white-05);
+    color: var(--color-text-light);
     transition: all 0.2s ease;
 }
 
 .raw-tab-button.active {
-    background: rgba(155, 77, 202, 0.25);
-    border-color: rgba(155, 77, 202, 0.4);
-    color: #fff;
+    background: var(--overlay-purple-25);
+    border-color: var(--overlay-purple-40);
+    color: var(--color-text-white-alt);
 }
 
 .raw-tab-button:hover {
-    border-color: rgba(155, 77, 202, 0.5);
+    border-color: var(--overlay-purple-50);
 }
 
 .raw-panels {
