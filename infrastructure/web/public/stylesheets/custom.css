@@ -58,6 +58,7 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
+    accent-color: var(--color-accent-purple-alt);
     background: linear-gradient( 135deg, var(--overlay-white-08), var(--overlay-white-02)), var(--color-bg-dark);
     color: var(--color-text-primary);
     border: 1px solid var(--overlay-white-12);

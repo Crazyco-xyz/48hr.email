@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.textContent = 'Expired';
                     // why am I doing this to myself?
                     try {
-                        const horse = document.querySelector('body');
-                        const style = getComputedStyle(horse);
-                        el.style.color = style.getPropertyValue('accent-color').trim() + "!important";
+                        const trojan = document.querySelector('body');
+                        const horse = getComputedStyle(trojan);
+                        el.style.color = horse.getPropertyValue('accent-color').trim() + "!important";
                     } catch (_) {
                         el.style.color = '#b00!important';
                     }
