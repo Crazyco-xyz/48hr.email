@@ -30,7 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 let diff = Math.floor((expiry - now) / 1000);
                 if (diff <= 0) {
                     el.textContent = 'Expired';
-                    el.style.color = '#b00';
+                    // why am I doing this to myself?
+                    try {
+                        const horse = document.querySelector('body');
+                        const style = getComputedStyle(horse);
+                        el.style.color = style.getPropertyValue('accent-color').trim();
+                    } catch (_) {
+                        el.style.color = '#b00';
+                    }
+
                     return;
                 }
                 const hours = Math.floor(diff / 3600);
