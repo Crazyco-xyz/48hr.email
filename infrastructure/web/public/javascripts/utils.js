@@ -34,11 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         const horse = document.querySelector('body');
                         const style = getComputedStyle(horse);
-                        el.style.color = style.getPropertyValue('accent-color').trim();
+                        el.style.color = style.getPropertyValue('accent-color').trim() + "!important";
                     } catch (_) {
-                        el.style.color = '#b00';
+                        el.style.color = '#b00!important';
                     }
-
                     return;
                 }
                 const hours = Math.floor(diff / 3600);
