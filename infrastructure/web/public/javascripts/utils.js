@@ -34,9 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         const trojan = document.querySelector('body');
                         const horse = getComputedStyle(trojan);
-                        el.style.color = horse.getPropertyValue('accent-color').trim() + "!important";
+                        el.style.color = horse.getPropertyValue('accent-color').trim();
                     } catch (_) {
-                        el.style.color = '#b00!important';
+                        el.style.color = '#b00';
                     }
                     return;
                 }
