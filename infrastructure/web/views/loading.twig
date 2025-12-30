@@ -1,0 +1,27 @@
+{% extends "layout.twig" %}
+
+{% set bodyClass = 'loading-page' %}
+
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block body %}
+<div class="loading-container">
+    <div class="loading-spinner">
+        <svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="40" stroke="var(--color-accent-purple-light)" stroke-width="8" fill="none" stroke-dasharray="63 188" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+        </svg>
+    </div>
+    <h2 class="loading-title">Loading Mail Service</h2>
+    <p class="loading-message">Connecting to IMAP server and loading messages...</p>
+    <p class="loading-submessage">This may take a few moments on first startup</p>
+</div>
+<script>
+    // Auto-refresh every 2 seconds to check if IMAP is ready
+    setTimeout(() => {
+        window.location.reload();
+    }, 2000);
+</script>
+{% endblock %}

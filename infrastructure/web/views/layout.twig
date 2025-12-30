@@ -75,7 +75,7 @@
     <script src="/javascripts/notifications.js" defer="true"></script>
 
   </head>
-  <body>
+  <body{% if bodyClass %} class="{{ bodyClass }}"{% endif %}>
   <main>
     <div class="header">
       <a href="/">

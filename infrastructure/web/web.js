@@ -85,6 +85,20 @@ app.use(
 )
 Twig.extendFilter('sanitizeHtml', sanitizeHtmlTwigFilter)
 
+// Middleware to show loading page until IMAP is ready
+app.use((req, res, next) => {
+    const isImapReady = req.app.get('isImapReady')
+    if (!isImapReady && !req.path.startsWith('/images') && !req.path.startsWith('/javascripts') && !req.path.startsWith('/stylesheets') && !req.path.startsWith('/dependencies')) {
+        return res.render('loading', {
+            branding: config.http.branding,
+            purgeTime: purgeTime,
+            count: "NaN Emails"
+
+        })
+    }
+    next()
+})
+
 app.use('/', loginRouter)
 app.use('/inbox', inboxRouter)
 app.use('/error', errorRouter)

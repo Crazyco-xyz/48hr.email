@@ -894,6 +894,43 @@ label {
 }
 
 
+/* Loading Page */
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    text-align: center;
+}
+
+.loading-spinner {
+    margin-bottom: 30px;
+}
+
+.loading-title {
+    color: var(--color-text-primary);
+    margin-bottom: 15px;
+    font-size: 2rem;
+}
+
+.loading-message {
+    color: var(--color-text-secondary);
+    font-size: 1.2rem;
+}
+
+.loading-submessage {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+body.loading-page .logo {
+    display: none;
+}
+
+
 /* Responsive Styles */
 
 @media (max-width: 768px) {

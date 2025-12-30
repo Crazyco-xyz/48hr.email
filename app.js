@@ -46,14 +46,20 @@ const mailProcessingService = new MailProcessingService(
 )
 debug('Mail processing service initialized')
 
+// Track IMAP initialization state
+let isImapReady = false
+app.set('isImapReady', false)
+
 // Put everything together:
 imapService.on(ImapService.EVENT_NEW_MAIL, mail =>
     mailProcessingService.onNewMail(mail)
 )
 debug('Bound IMAP new mail event handler')
-imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, () =>
+imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, () => {
     mailProcessingService.onInitialLoadDone()
-)
+    isImapReady = true
+    app.set('isImapReady', true)
+})
 debug('Bound IMAP initial load done event handler')
 imapService.on(ImapService.EVENT_DELETED_MAIL, mail =>
     mailProcessingService.onMailDeleted(mail)
