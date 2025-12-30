@@ -52,6 +52,51 @@
     --overlay-warning-10: rgba(255, 140, 0, 0.1);
 }
 
+
+/* Light mode theme */
+
+body.light-mode {
+    --color-bg-dark: #f5f5f5;
+    --color-bg-medium: #e4e4e4;
+    --color-text-primary: #2c2c2c;
+    --color-text-light: #1a1a1a;
+    --color-text-dim: #666666;
+    --color-text-dimmer: #888888;
+    --color-text-gray: #555555;
+    --color-text-white: #2c2c2c;
+    --color-text-white-alt: #2c2c2c;
+    --color-text-muted: #666666;
+    --color-text-secondary: #444444;
+    --color-border-dark: #cccccc;
+    --color-button-cancel: #aaaaaa;
+    --overlay-white-15: rgba(0, 0, 0, 0.08);
+    --overlay-white-12: rgba(0, 0, 0, 0.06);
+    --overlay-white-10: rgba(0, 0, 0, 0.05);
+    --overlay-white-08: rgba(0, 0, 0, 0.04);
+    --overlay-white-06: rgba(0, 0, 0, 0.03);
+    --overlay-white-05: rgba(0, 0, 0, 0.025);
+    --overlay-white-04: rgba(0, 0, 0, 0.02);
+    --overlay-white-03: rgba(0, 0, 0, 0.015);
+    --overlay-white-02: rgba(0, 0, 0, 0.01);
+    --overlay-black-80: rgba(0, 0, 0, 0.15);
+    --overlay-black-45: rgba(0, 0, 0, 0.08);
+    --overlay-black-40: rgba(0, 0, 0, 0.07);
+    --overlay-black-35: rgba(0, 0, 0, 0.06);
+    --overlay-black-30: rgba(0, 0, 0, 0.05);
+    --overlay-purple-50: rgba(155, 77, 202, 0.25);
+    --overlay-purple-40: rgba(155, 77, 202, 0.2);
+    --overlay-purple-35: rgba(155, 77, 202, 0.18);
+    --overlay-purple-30: rgba(155, 77, 202, 0.15);
+    --overlay-purple-25: rgba(155, 77, 202, 0.12);
+    --overlay-purple-20: rgba(155, 77, 202, 0.1);
+    --overlay-purple-15: rgba(155, 77, 202, 0.08);
+    --overlay-purple-12: rgba(155, 77, 202, 0.06);
+    --overlay-purple-10: rgba(155, 77, 202, 0.05);
+    --overlay-purple-08: rgba(155, 77, 202, 0.04);
+    --overlay-purple-04: rgba(155, 77, 202, 0.02);
+    --overlay-warning-10: rgba(255, 140, 0, 0.05);
+}
+
 body {
     margin: 0;
     min-height: 100vh;
@@ -63,6 +108,16 @@ body {
     color: var(--color-text-primary);
     border: 1px solid var(--overlay-white-12);
     box-shadow: 0 10px 30px var(--overlay-black-45), inset 0 1px 0 var(--overlay-white-06);
+}
+
+button:focus {
+    background: var(--overlay-purple-20);
+    border-color: var(--overlay-purple-30);
+}
+
+button:focus,
+button:hover {
+    color: var(--color-accent-purple-light);
 }
 
 body::-webkit-scrollbar {
@@ -194,6 +249,7 @@ text-muted {
 }
 
 .action-links a {
+    height: 42px;
     display: inline-block;
     padding: 12px 24px;
     border-radius: 15px;
@@ -422,15 +478,17 @@ label {
     transform: translateY(-4px);
 }
 
-.email-card,
 .mail-content,
 .mail-attachments {
-    border-radius: 18px;
-    border: 1px solid var(--overlay-white-08);
+    border: 2px solid var(--overlay-purple-30);
+    border-radius: 15px;
     box-shadow: 0 8px 30px var(--overlay-black-30);
 }
 
 .email-card {
+    border: 1px solid var(--overlay-purple-30);
+    border-radius: 15px;
+    box-shadow: 0 8px 30px var(--overlay-black-30);
     padding: 24px;
     transition: all 0.4s ease;
     position: relative;
@@ -564,6 +622,8 @@ label {
 .mail-header {
     padding: 30px;
     margin-bottom: 30px;
+    border: 2px solid var(--overlay-purple-30);
+    border-radius: 15px;
     box-shadow: 0 12px 40px var(--overlay-black-40);
 }
 
@@ -588,7 +648,6 @@ label {
 
 .mail-content {
     background: var(--overlay-white-02);
-    border: 1px solid var(--overlay-white-06);
     padding: 30px;
     margin-bottom: 30px;
 }
@@ -621,6 +680,8 @@ label {
 }
 
 .mail-attachments {
+    border: 2px solid var(--overlay-purple-30);
+    border-radius: 15px;
     background: var(--overlay-white-03);
     padding: 25px;
 }
@@ -931,6 +992,52 @@ body.loading-page .logo {
 }
 
 
+/* Theme Toggle Button */
+
+.theme-toggle {
+    background: var(--overlay-purple-20);
+    border: 1px solid var(--overlay-purple-30);
+    border-radius: 15px;
+    height: 42px;
+    color: var(--color-accent-purple-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.theme-toggle:hover {
+    background: var(--overlay-purple-30);
+    border-color: var(--overlay-purple-40);
+    box-shadow: 0 4px 15px var(--overlay-purple-25);
+    transform: translateY(-2px);
+}
+
+.theme-toggle svg {
+    margin: auto;
+    width: 20px;
+    height: 20px;
+}
+
+.theme-icon {
+    display: none;
+}
+
+body:not(.light-mode) .theme-icon-dark {
+    display: block;
+}
+
+body.light-mode .theme-icon-light {
+    display: block;
+}
+
+
 /* Responsive Styles */
 
 @media (max-width: 768px) {
@@ -939,6 +1046,10 @@ body.loading-page .logo {
     }
     .hamburger-menu {
         display: flex;
+    }
+    .action-links.mobile-open .theme-toggle {
+        justify-content: center;
+        width: 100%;
     }
     .action-links.mobile-hidden>a,
     .action-links.mobile-hidden>button:not(.hamburger-menu) {

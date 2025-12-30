@@ -1,5 +1,21 @@
-// Consolidated utilities: date formatting and lock modals
+// Load theme immediately to prevent flash
+(function() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.documentElement.classList.add('light-mode');
+        // Also add to body if it exists
+        if (document.body) {
+            document.body.classList.add('light-mode');
+        }
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Ensure body syncs with documentElement theme on load
+    if (document.documentElement.classList.contains('light-mode') && !document.body.classList.contains('light-mode')) {
+        document.body.classList.add('light-mode');
+    }
+
     function getExpiryMs(time, unit) {
         switch (unit) {
             case 'minutes':
@@ -310,12 +326,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initThemeToggle() {
+        const themeToggle = document.getElementById('themeToggle');
+        if (!themeToggle) return;
+
+        // Sync body with documentElement if theme was loaded early
+        if (document.documentElement.classList.contains('light-mode')) {
+            document.body.classList.add('light-mode');
+        }
+
+        themeToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            document.body.classList.toggle('light-mode');
+            document.documentElement.classList.toggle('light-mode');
+
+            // Save preference
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        });
+    }
+
     // Expose utilities and run them
-    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu };
+    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle };
     formatEmailDates();
     formatMailDate();
     initLockModals();
     initCopyAddress();
     initQrModal();
     initHamburgerMenu();
+    initThemeToggle();
 });
