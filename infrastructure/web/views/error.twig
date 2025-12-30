@@ -3,9 +3,9 @@
 {% block header %}
     <div class="action-links">
         {% if showUnlockButton %}
-            <a href="#" id="unlockBtn">Unlock</a>
+            <a href="#" id="unlockBtn" aria-label="Unlock inbox">Unlock</a>
         {% endif %}
-        <a href="/">Logout</a>
+        <a href="/" aria-label="Return to home">Logout</a>
     </div>
 {% endblock %}
 

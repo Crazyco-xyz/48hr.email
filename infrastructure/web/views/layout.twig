@@ -78,8 +78,8 @@
   <body{% if bodyClass %} class="{{ bodyClass }}"{% endif %}>
   <main>
     <div class="header">
-      <a href="/">
-        <img src="/images/logo.png" class="logo" style="max-width: 75px">
+      <a href="/" aria-label="48hr.email home">
+        <img src="/images/logo.png" class="logo" alt="48hr.email logo" style="max-width: 75px">
       </a>
       {% block header %}{% endblock %}
     </div>

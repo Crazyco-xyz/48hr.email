@@ -4,18 +4,18 @@
     <div class="action-links">
         {% if lockEnabled %}
             {% if isLocked and hasAccess %}
-                <a href="#" id="removeLockBtn">Remove Lock</a>
+                <a href="#" id="removeLockBtn" aria-label="Remove password lock">Remove Lock</a>
             {% elseif isLocked %}
-                <a href="#" id="unlockBtn">Unlock</a>
+                <a href="#" id="unlockBtn" aria-label="Unlock inbox">Unlock</a>
             {% else %}
-                <a href="#" id="lockBtn">Protect Inbox</a>
+                <a href="#" id="lockBtn" aria-label="Protect inbox with password">Protect Inbox</a>
             {% endif %}
         {% endif %}
-        <a href="/inbox/{{ address }}/delete-all">Wipe Inbox</a>
+        <a href="/inbox/{{ address }}/delete-all" aria-label="Delete all emails">Wipe Inbox</a>
         {% if lockEnabled and hasAccess %}
-            <a href="/lock/logout">Logout</a>
+            <a href="/lock/logout" aria-label="Logout">Logout</a>
         {% else %}
-            <a href="/logout">Logout</a>
+            <a href="/logout" aria-label="Logout">Logout</a>
         {% endif %}
     </div>
 {% endblock %}

@@ -89,12 +89,7 @@ Twig.extendFilter('sanitizeHtml', sanitizeHtmlTwigFilter)
 app.use((req, res, next) => {
     const isImapReady = req.app.get('isImapReady')
     if (!isImapReady && !req.path.startsWith('/images') && !req.path.startsWith('/javascripts') && !req.path.startsWith('/stylesheets') && !req.path.startsWith('/dependencies')) {
-        return res.render('loading', {
-            branding: config.http.branding,
-            purgeTime: purgeTime,
-            count: "NaN Emails"
-
-        })
+        return res.render('loading')
     }
     next()
 })
