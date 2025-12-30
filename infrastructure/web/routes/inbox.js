@@ -154,9 +154,7 @@ router.get(
     async(req, res, next) => {
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
-            debug(`Deleting email ${req.params.uid} for ${req.params.address}`)
-            await mailProcessingService.deleteSpecificEmail(req.params.address, req.params.uid)
-            debug(`Successfully deleted email ${req.params.uid} for ${req.params.address}`)
+            mailProcessingService.deleteSpecificEmail(req.params.address, req.params.uid)
             res.redirect(`/inbox/${req.params.address}`)
         } catch (error) {
             debug(`Error deleting email ${req.params.uid} for ${req.params.address}:`, error.message)

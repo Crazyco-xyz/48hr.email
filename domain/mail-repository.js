@@ -54,7 +54,6 @@ class MailRepository {
                 const mailToDelete = mails.find(mail => mail.uid === parseInt(uid))
                 if (mailToDelete) {
                     this.mailSummaries.remove(address, mailToDelete)
-                    debug('Removed ', mailToDelete.date, address, mailToDelete.subject)
                     deleted = true
                 }
             } else {

@@ -299,10 +299,9 @@ class ImapService extends EventEmitter {
      * @param uid delete specific mail per UID
      */
     async deleteSpecificEmail(uid) {
-        debug(`Deleting mails ${uid}`)
         if (!this.config.email.examples.uids.includes(parseInt(uid))) {
             await this.connection.deleteMessage(uid)
-            debug(`Deleted mail with UID: ${uid}.`)
+            debug(`Deleted UID ${uid}`)
             this.emit(ImapService.EVENT_DELETED_MAIL, uid)
         }
     }

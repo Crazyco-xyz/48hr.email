@@ -1,6 +1,5 @@
 const EventEmitter = require('events')
 const debug = require('debug')('48hr-email:imap-processor')
-const mem = require('mem')
 const ImapService = require('./imap-service')
 const Helper = require('./helper')
 const config = require('./config')
@@ -16,9 +15,7 @@ class MailProcessingService extends EventEmitter {
         this.config = config
 
         // Cached methods:
-        this.cachedFetchFullMail = mem(
-            this.imapService.fetchOneFullMail.bind(this.imapService), { maxAge: 10 * 60 * 1000 }
-        )
+        this._initCache()
 
         this.initialLoadDone = false
 
@@ -32,21 +29,97 @@ class MailProcessingService extends EventEmitter {
         }, this.config.imap.refreshIntervalSeconds * 1000)
     }
 
+    _initCache() {
+        // Create a cache storage to track entries by UID
+        this.cacheStorage = new Map() // Map of "address:uid:raw" -> cached result
+
+        // Wrapper that maintains our own cache with selective deletion
+        this.cachedFetchFullMail = async(address, uid, raw) => {
+            const cacheKey = `${address}:${uid}:${raw}`
+
+            // Check our cache first
+            if (this.cacheStorage.has(cacheKey)) {
+                const entry = this.cacheStorage.get(cacheKey)
+                if (Date.now() - entry.timestamp < 10 * 60 * 1000) {
+                    return entry.value
+                } else {
+                    this.cacheStorage.delete(cacheKey)
+                }
+            }
+
+            // Fetch and cache
+            const result = await this.imapService.fetchOneFullMail(address, uid, raw)
+            this.cacheStorage.set(cacheKey, {
+                value: result,
+                timestamp: Date.now(),
+                uid: uid
+            })
+
+            return result
+        }
+
+        // Wrap it to use in sync context
+        this._wrappedCachedFetch = (address, uid, raw) => {
+            return this.cachedFetchFullMail(address, uid, raw)
+        }
+    }
+
+    _clearCache() {
+        // Clear entire cache
+        debug('Clearing entire email cache')
+        this.cacheStorage.clear()
+        this._initCache()
+    }
+
+    _clearCacheForUid(uid) {
+        // Selectively clear cache entries for a specific UID
+        // Normalize UID to integer for comparison
+        const normalizedUid = parseInt(uid)
+        let cleared = 0
+
+        for (const [key, entry] of this.cacheStorage.entries()) {
+            if (parseInt(entry.uid) === normalizedUid) {
+                this.cacheStorage.delete(key)
+                cleared++
+            }
+        }
+
+        if (cleared > 0) {
+            debug(`Cleared ${cleared} cache entries for UID ${uid}`)
+        } else {
+            debug(`No cache entries found for UID ${uid}`)
+        }
+    }
+
     getMailSummaries(address) {
         debug('Getting mail summaries for', address)
         return this.mailRepository.getForRecipient(address)
     }
 
     deleteSpecificEmail(adress, uid) {
-        debug('Deleting specific email', adress, uid)
         if (this.mailRepository.removeUid(uid, adress) == true) {
+            // Clear cache immediately for this UID
+            debug('Clearing cache for uid', uid)
+            this._clearCacheForUid(uid)
             this.imapService.deleteSpecificEmail(uid)
+        } else {
+            debug('Repository removeUid returned false for', uid)
         }
     }
 
     getOneFullMail(address, uid, raw = false) {
         debug('Cache lookup for', address + ':' + uid, raw ? '(raw)' : '(parsed)')
-        return this.cachedFetchFullMail(address, uid, raw)
+
+        // Check if this UID exists in repository before fetching
+        const summaries = this.mailRepository.getForRecipient(address)
+        const exists = summaries.some(mail => mail.uid === parseInt(uid))
+
+        if (!exists) {
+            debug(`UID ${uid} not found in repository for ${address}, returning null`)
+            return Promise.resolve(null)
+        }
+
+        return this._wrappedCachedFetch(address, uid, raw)
     }
 
     getAllMailSummaries() {
@@ -87,7 +160,15 @@ class MailProcessingService extends EventEmitter {
     }
 
     onMailDeleted(uid) {
-        debug('Mail deleted with uid', uid)
+        debug('Mail deleted:', uid)
+
+        // Clear cache for this specific UID
+        try {
+            this._clearCacheForUid(uid)
+        } catch (err) {
+            debug('Failed to clear email cache:', err.message)
+        }
+
         this.mailRepository.removeUid(uid)
     }
 
