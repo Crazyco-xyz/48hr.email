@@ -158,6 +158,39 @@ text-muted {
     flex-wrap: nowrap;
     /* ensures they stay in one line */
     text-align: right;
+    display: flex;
+    gap: 10px;
+}
+
+.hamburger-menu {
+    display: none;
+    background: var(--overlay-purple-20);
+    border: 1px solid var(--overlay-purple-30);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    color: var(--color-accent-purple-light);
+    transition: all 0.3s ease;
+    flex-direction: column;
+    gap: 4px;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+}
+
+.hamburger-menu span {
+    width: 24px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-menu:hover {
+    background: var(--overlay-purple-30);
+    border-color: var(--overlay-purple-40);
+    box-shadow: 0 4px 15px var(--overlay-purple-25);
 }
 
 .action-links a {
@@ -341,9 +374,11 @@ label {
     text-align: center;
     margin-bottom: 30px;
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     gap: 12px;
+    flex-wrap: wrap;
 }
 
 .inbox-title {
@@ -735,7 +770,9 @@ label {
     display: none;
     color: var(--color-accent-purple-alt);
     font-size: 0.9em;
-    margin-left: 10px;
+    position: absolute;
+    margin-left: 0;
+    margin-top: 50px;
 }
 
 .email-expiry .expiry-timer[style*="color: #b00"] {
@@ -835,6 +872,7 @@ label {
 }
 
 .qr-modal-content h3 {
+    margin-left: 16.516px;
     margin-bottom: 24px;
 }
 
@@ -853,4 +891,45 @@ label {
     font-size: 1.2rem;
     margin: 0;
     word-break: break-all;
+}
+
+
+/* Responsive Styles */
+
+@media (max-width: 768px) {
+    .action-links {
+        position: relative;
+    }
+    .hamburger-menu {
+        display: flex;
+    }
+    .action-links.mobile-hidden>a,
+    .action-links.mobile-hidden>button:not(.hamburger-menu) {
+        display: none;
+    }
+    .action-links.mobile-open {
+        flex-direction: column;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        background: var(--color-bg-dark);
+        border: 1px solid var(--overlay-purple-30);
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 10px 40px var(--overlay-black-40);
+        z-index: 1000;
+        min-width: 200px;
+    }
+    .action-links.mobile-open>.hamburger-menu {
+        display: none;
+    }
+    .action-links.mobile-open>a,
+    .action-links.mobile-open>button:not(.hamburger-menu) {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+    .qr-icon-btn {
+        display: none;
+    }
 }

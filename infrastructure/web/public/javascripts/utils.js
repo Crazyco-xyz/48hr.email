@@ -281,11 +281,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initHamburgerMenu() {
+        const actionLinks = document.querySelector('.action-links');
+        if (!actionLinks) return;
+
+        // Create hamburger button
+        const hamburger = document.createElement('button');
+        hamburger.className = 'hamburger-menu';
+        hamburger.setAttribute('aria-label', 'Toggle menu');
+        hamburger.innerHTML = '<span></span><span></span><span></span>';
+
+        // Insert as first child
+        actionLinks.insertBefore(hamburger, actionLinks.firstChild);
+        actionLinks.classList.add('mobile-hidden');
+
+        hamburger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            actionLinks.classList.toggle('mobile-hidden');
+            actionLinks.classList.toggle('mobile-open');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (actionLinks.classList.contains('mobile-open') && !actionLinks.contains(e.target)) {
+                actionLinks.classList.remove('mobile-open');
+                actionLinks.classList.add('mobile-hidden');
+            }
+        });
+    }
+
     // Expose utilities and run them
-    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal };
+    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu };
     formatEmailDates();
     formatMailDate();
     initLockModals();
     initCopyAddress();
     initQrModal();
+    initHamburgerMenu();
 });
