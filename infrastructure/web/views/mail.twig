@@ -47,6 +47,33 @@
             {% endif %}
         </div>
 
+        {% if cryptoAttachments and cryptoAttachments|length > 0 %}
+            <div class="mail-crypto-keys">
+                <div class="crypto-header" id="cryptoHeader">
+                    <h4>Cryptographic Keys & Signatures ({{ cryptoAttachments|length }})</h4>
+                    <button class="crypto-toggle" aria-label="Toggle cryptographic keys visibility" aria-expanded="false">
+                        <svg class="crypto-icon crypto-icon-collapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <svg class="crypto-icon crypto-icon-expanded" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div class="crypto-content" id="cryptoContent" style="display: none;">
+                    {% for crypto in cryptoAttachments %}
+                        <div class="crypto-item">
+                            <div class="crypto-item-header">
+                                <span class="crypto-type">{{ crypto.type }}</span>
+                                <span class="crypto-filename">{{ crypto.filename }}{% if crypto.info %} · {{ crypto.info }}{% endif %}</span>
+                            </div>
+                            <pre class="crypto-key-content">{{ crypto.content }}</pre>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
         {% if mail.attachments %}
             <div class="mail-attachments">
                 <h4>Attachments</h4>
@@ -61,4 +88,16 @@
         {% endif %}
     </div>
 
+{% endblock %}
+
+{% block footer %}
+    {{ parent() }}
+    <script>
+        // Initialize crypto keys toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.utils && typeof window.utils.initCryptoKeysToggle === 'function') {
+                window.utils.initCryptoKeysToggle();
+            }
+        });
+    </script>
 {% endblock %}

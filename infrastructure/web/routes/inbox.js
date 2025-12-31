@@ -5,7 +5,9 @@ const debug = require('debug')('48hr-email:routes')
 
 const config = require('../../../application/config')
 const Helper = require('../../../application/helper')
+const CryptoDetector = require('../../../application/crypto-detector')
 const helper = new(Helper)
+const cryptoDetector = new CryptoDetector()
 const { checkLockAccess } = require('../middleware/lock')
 
 const purgeTime = helper.purgeTimeElemetBuilder()
@@ -112,6 +114,10 @@ router.get(
                 // Emails are immutable, cache if found
                 res.set('Cache-Control', 'private, max-age=600')
 
+                // Detect cryptographic keys in attachments
+                const cryptoAttachments = cryptoDetector.detectCryptoAttachments(mail.attachments)
+                debug(`Found ${cryptoAttachments.length} cryptographic attachments`)
+
                 const inboxLock = req.app.get('inboxLock')
                 const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
                 const hasAccess = req.session && req.session.lockedInbox === req.params.address
@@ -124,6 +130,7 @@ router.get(
                     count: count,
                     totalcount: totalcount,
                     mail,
+                    cryptoAttachments: cryptoAttachments,
                     uid: req.params.uid,
                     branding: config.http.branding,
                     lockEnabled: config.lock.enabled,

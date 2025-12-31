@@ -701,6 +701,176 @@ label {
     font-size: 1.4rem;
 }
 
+
+/* Cryptographic Keys Section */
+
+.mail-crypto-keys {
+    border: 2px solid var(--overlay-purple-30);
+    border-radius: 15px;
+    background: var(--overlay-white-03);
+    padding: 0;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.crypto-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.crypto-header:hover {
+    background: var(--overlay-purple-05);
+}
+
+.crypto-header h4 {
+    color: var(--color-accent-purple);
+    margin: 0;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.crypto-toggle {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.crypto-toggle:hover {
+    transform: scale(1.1);
+}
+
+.crypto-icon {
+    width: 24px;
+    height: 24px;
+    stroke: var(--color-accent-purple);
+}
+
+.crypto-icon-collapsed {
+    display: block;
+}
+
+.crypto-icon-expanded {
+    display: none;
+}
+
+.crypto-toggle[aria-expanded="true"] .crypto-icon-collapsed {
+    display: none;
+}
+
+.crypto-toggle[aria-expanded="true"] .crypto-icon-expanded {
+    display: block;
+}
+
+.crypto-content {
+    padding: 0 25px 25px 25px;
+}
+
+.crypto-item {
+    background: var(--overlay-white-02);
+    border: 1px solid var(--overlay-purple-20);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.crypto-item:last-child {
+    margin-bottom: 0;
+}
+
+.crypto-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.crypto-type {
+    display: inline-block;
+    background: var(--color-accent-purple);
+    color: var(--color-background);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.crypto-filename {
+    color: var(--color-text-dim);
+    font-size: 0.95rem;
+    font-family: monospace;
+    word-break: break-word;
+}
+
+.crypto-preview {
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: var(--overlay-white-03);
+    border-left: 3px solid var(--color-accent-purple-light);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.crypto-preview:hover {
+    background: var(--overlay-purple-10);
+    border-left-color: var(--color-accent-purple);
+}
+
+.crypto-key-content {
+    background: var(--color-background);
+    border: 1px solid var(--overlay-white-10);
+    border-radius: 8px;
+    padding: 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.crypto-key-content::-webkit-scrollbar {
+    height: 8px;
+}
+
+.crypto-key-content::-webkit-scrollbar-track {
+    background: var(--overlay-white-05);
+    border-radius: 4px;
+}
+
+.crypto-key-content::-webkit-scrollbar-thumb {
+    background: var(--overlay-purple-30);
+    border-radius: 4px;
+}
+
+.crypto-key-content::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-purple);
+}
+
+.mail-attachments h4 {
+    color: var(--color-accent-purple);
+    margin: 0 0 20px 0;
+    font-size: 1.4rem;
+}
+
 .attachments-list {
     display: flex;
     flex-direction: row;

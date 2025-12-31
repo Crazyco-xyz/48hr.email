@@ -347,6 +347,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initCryptoKeysToggle() {
+        const cryptoHeader = document.getElementById('cryptoHeader');
+        const cryptoContent = document.getElementById('cryptoContent');
+        const cryptoToggle = cryptoHeader ? cryptoHeader.querySelector('.crypto-toggle') : null;
+
+        if (cryptoHeader && cryptoContent && cryptoToggle) {
+            cryptoHeader.addEventListener('click', () => {
+                const isCurrentlyHidden = cryptoContent.style.display === 'none';
+                cryptoContent.style.display = isCurrentlyHidden ? 'block' : 'none';
+                cryptoToggle.setAttribute('aria-expanded', isCurrentlyHidden ? 'true' : 'false');
+            });
+        }
+    }
+
     function initRefreshCountdown(refreshInterval) {
         const refreshTimer = document.getElementById('refreshTimer');
         if (!refreshTimer || !refreshInterval) return;
@@ -363,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Expose utilities and run them
-    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown };
+    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown, initCryptoKeysToggle };
     formatEmailDates();
     formatMailDate();
     initLockModals();
