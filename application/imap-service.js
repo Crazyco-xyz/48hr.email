@@ -2,11 +2,8 @@ const EventEmitter = require('events')
 const imaps = require('imap-simple')
 const { simpleParser } = require('mailparser')
 const addressparser = require('nodemailer/lib/addressparser')
-const pSeries = require('p-series')
 const retry = require('async-retry')
 const debug = require('debug')('48hr-email:imap-manager')
-const _ = require('lodash')
-const moment = require('moment')
 const Mail = require('../domain/mail')
 const Helper = require('./helper')
 const helper = new(Helper)
@@ -190,7 +187,10 @@ class ImapService extends EventEmitter {
         const concurrency = this.config.imap.fetchConcurrency
 
         // Chunk newest-first UIDs to balance speed and first-paint
-        const uidChunks = _.chunk(newUids, chunkSize)
+        const uidChunks = []
+        for (let i = 0; i < newUids.length; i += chunkSize) {
+            uidChunks.push(newUids.slice(i, i + chunkSize))
+        }
         debug(`Chunk size: ${chunkSize}, concurrency: ${concurrency}, chunks to process: ${uidChunks.length}`)
 
         // Limited-concurrency worker
@@ -236,7 +236,7 @@ class ImapService extends EventEmitter {
         let uids;
 
         // Only do heavy IMAP date filtering if the cutoff is older than 1 day
-        const useDateFilter = helper.moreThanOneDay(moment(), deleteMailsBefore);
+        const useDateFilter = helper.moreThanOneDay(new Date(), deleteMailsBefore);
 
         const searchQuery = useDateFilter ? [
             ['!DELETED'],
@@ -346,8 +346,12 @@ class ImapService extends EventEmitter {
         const rawDate = headerPart.date && headerPart.date[0] ? headerPart.date[0] : undefined
         let date
         if (rawDate) {
-            const m = moment.parseZone(rawDate)
-            date = m.toDate()
+            // Parse email date - native Date handles ISO dates and timezones
+            date = new Date(rawDate)
+                // Fallback to current date if parsing fails
+            if (isNaN(date.getTime())) {
+                date = new Date()
+            }
         } else {
             date = new Date()
         }
@@ -378,7 +382,7 @@ class ImapService extends EventEmitter {
         if (messages.length === 0) {
             return false
         } else if (!raw) {
-            const fullBody = await _.find(messages[0].parts, { which: '' })
+            const fullBody = messages[0].parts.find(part => part.which === '')
             if (!fullBody || !fullBody.body) {
                 throw new Error('Unable to find message body')
             }

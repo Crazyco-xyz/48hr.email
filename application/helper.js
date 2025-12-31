@@ -1,5 +1,4 @@
 const config = require('./config')
-const moment = require('moment')
 const debug = require('debug')('48hr-email:helper')
 
 class Helper {
@@ -9,10 +8,30 @@ class Helper {
      * @returns {Date}
      */
     purgeTimeStamp() {
-        const cutoff = moment()
-            .subtract(config.email.purgeTime.time, config.email.purgeTime.unit)
-            .toDate()
-        debug(`Purge cutoff calculated: ${cutoff} (${config.email.purgeTime.time} ${config.email.purgeTime.unit} ago)`)
+        // Calculate cutoff time using native Date
+        const now = new Date()
+        let cutoffMs = now.getTime()
+
+        // Subtract the purge time based on unit
+        const time = config.email.purgeTime.time
+        const unit = config.email.purgeTime.unit
+
+        switch (unit) {
+            case 'minutes':
+                cutoffMs -= time * 60 * 1000
+                break
+            case 'hours':
+                cutoffMs -= time * 60 * 60 * 1000
+                break
+            case 'days':
+                cutoffMs -= time * 24 * 60 * 60 * 1000
+                break
+            default:
+                throw new Error(`Unknown time unit: ${unit}`)
+        }
+
+        const cutoff = new Date(cutoffMs)
+        debug(`Purge cutoff calculated: ${cutoff} (${time} ${unit} ago)`)
         return cutoff
     }
 

@@ -5,9 +5,6 @@
 const config = require('./application/config')
 const debug = require('debug')('48hr-email:app')
 
-// Until node 11 adds flatmap, we use this:
-require('array.prototype.flatmap').shim()
-
 const { app, io, server } = require('./infrastructure/web/web')
 const ClientNotification = require('./infrastructure/web/client-notification')
 const ImapService = require('./application/imap-service')

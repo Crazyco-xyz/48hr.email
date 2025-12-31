@@ -1,6 +1,5 @@
 const debug = require('debug')('48hr-email:mail-summary-store')
 const MultiMap = require('mnemonist/multi-map')
-const _ = require('lodash')
 const config = require('../application/config')
 
 class MailRepository {
@@ -28,12 +27,22 @@ class MailRepository {
 
         // Get fresh list after deletions
         mails = this.mailSummaries.get(address) || []
-        return _.orderBy(mails, mail => Date.parse(mail.date), ['desc'])
+            // Sort by date descending
+        return mails.sort((a, b) => {
+            const dateA = Date.parse(a.date)
+            const dateB = Date.parse(b.date)
+            return dateB - dateA // descending order (newest first)
+        })
     }
 
     getAll() {
         const mails = [...this.mailSummaries.values()]
-        return _.orderBy(mails, mail => Date.parse(mail.date), ['desc'])
+            // Sort by date descending
+        return mails.sort((a, b) => {
+            const dateA = Date.parse(a.date)
+            const dateB = Date.parse(b.date)
+            return dateB - dateA // descending order (newest first)
+        })
     }
 
     add(to, mailSummary) {
