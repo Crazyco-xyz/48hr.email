@@ -19,7 +19,26 @@ const sanitizeAddress = param('address').customSanitizer(
     }
 )
 
-router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, checkLockAccess, async(req, res, next) => {
+// Middleware to validate domain is in allowed list
+const validateDomain = (req, res, next) => {
+    const address = req.params.address
+    const domain = address.split('@')[1]
+
+    if (!domain) {
+        req.session.errorMessage = 'Invalid email address format.'
+        return res.redirect(`/error/${address}/400`)
+    }
+
+    const allowedDomains = config.email.domains.map(d => d.toLowerCase())
+    if (!allowedDomains.includes(domain.toLowerCase())) {
+        req.session.errorMessage = `Domain '${domain}' is not supported by this service.`
+        return res.redirect(`/error/${address}/403`)
+    }
+
+    next()
+}
+
+router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLockAccess, async(req, res, next) => {
     try {
         const mailProcessingService = req.app.get('mailProcessingService')
         if (!mailProcessingService) {
@@ -70,6 +89,7 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, checkLockAccess, async(
 router.get(
     '^/:address/:uid([0-9]+)',
     sanitizeAddress,
+    validateDomain,
     checkLockAccess,
     async(req, res, next) => {
         try {
@@ -126,6 +146,7 @@ router.get(
 router.get(
     '^/:address/delete-all',
     sanitizeAddress,
+    validateDomain,
     checkLockAccess,
     async(req, res, next) => {
         try {
@@ -150,6 +171,7 @@ router.get(
 router.get(
     '^/:address/:uid/delete',
     sanitizeAddress,
+    validateDomain,
     checkLockAccess,
     async(req, res, next) => {
         try {
@@ -167,6 +189,7 @@ router.get(
 router.get(
     '^/:address/:uid/:checksum([a-f0-9]+)',
     sanitizeAddress,
+    validateDomain,
     checkLockAccess,
     async(req, res, next) => {
         try {
@@ -227,6 +250,7 @@ router.get(
 router.get(
     '^/:address/:uid/raw',
     sanitizeAddress,
+    validateDomain,
     checkLockAccess,
     async(req, res, next) => {
         try {
@@ -296,6 +320,7 @@ router.get(
 router.get(
     '^/:address/:uid',
     sanitizeAddress,
+    validateDomain,
     async(req, res) => {
         req.session.errorMessage = 'Invalid/Malformed UID provided.'
         res.redirect(`/error/${req.params.address}/400`)
