@@ -161,10 +161,17 @@ router.get(
             const mailProcessingService = req.app.get('mailProcessingService')
             debug(`Deleting all emails for ${req.params.address}`)
             const mailSummaries = await mailProcessingService.getMailSummaries(req.params.address)
-            for (mail in mailSummaries) {
-                await mailProcessingService.deleteSpecificEmail(req.params.address, mailSummaries[mail].uid)
+                // Create a copy of the array to avoid modification during iteration
+            const summariesToDelete = [...mailSummaries]
+
+            let deletedCount = 0
+            for (const mail of summariesToDelete) {
+                await mailProcessingService.deleteSpecificEmail(req.params.address, mail.uid)
+                deletedCount++
+                debug(`Successfully deleted UID ${mail.uid}`)
             }
-            debug(`Deleted all emails for ${req.params.address}`)
+
+            debug(`Deleted all ${deletedCount} emails for ${req.params.address}`)
             res.redirect(`/inbox/${req.params.address}`)
         } catch (error) {
             debug(`Error deleting all emails for ${req.params.address}:`, error.message)
