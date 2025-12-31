@@ -169,7 +169,24 @@ class MailProcessingService extends EventEmitter {
             debug('Failed to clear email cache:', err.message)
         }
 
+        // Find which addresses have this UID before removing it
+        const affectedAddresses = []
+        this.mailRepository.mailSummaries.forEachAssociation((mails, address) => {
+            if (mails.some(mail => mail.uid === parseInt(uid))) {
+                affectedAddresses.push(address)
+            }
+        })
+
+        // Remove from repository
         this.mailRepository.removeUid(uid)
+
+        // Notify affected inboxes to reload
+        if (this.initialLoadDone) {
+            affectedAddresses.forEach(address => {
+                debug('Notifying inbox after deletion:', address)
+                this.clientNotification.emit(address)
+            })
+        }
     }
 
     async _deleteOldMails() {
