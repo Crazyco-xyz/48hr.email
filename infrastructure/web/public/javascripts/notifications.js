@@ -31,6 +31,13 @@ function enableNewMessageNotifications(address, reloadPage) {
     socket.on('new emails', () => {
         showNewMailsNotification(address, reloadPage)
     })
+
+    // Listen for timer sync from server
+    socket.on('refresh-timer-sync', (secondsRemaining) => {
+        if (window.updateRefreshTimer && typeof window.updateRefreshTimer === 'function') {
+            window.updateRefreshTimer(secondsRemaining)
+        }
+    })
 }
 
 function enableNotifications() {

@@ -9,9 +9,13 @@ class ClientNotification extends EventEmitter {
     constructor() {
         super();
         this.pendingNotifications = new Map(); // address -> count
+        this.io = null;
+        this.imapService = null;
+        this.timerSyncInterval = null;
     }
 
     use(io) {
+        this.io = io;
         io.on('connection', socket => {
             debug(`[SOCKET] New connection: id=${socket.id}`);
             socket.on('sign in', address => {
@@ -22,6 +26,25 @@ class ClientNotification extends EventEmitter {
                 debug(`[SOCKET] Disconnected: id=${socket.id}, reason=${reason}`);
             });
         })
+    }
+
+    startTimerSync(imapService) {
+        this.imapService = imapService;
+
+        // Broadcast timer sync every second to all connected clients
+        if (this.timerSyncInterval) {
+            clearInterval(this.timerSyncInterval);
+        }
+
+        this.timerSyncInterval = setInterval(() => {
+            const secondsRemaining = this.imapService.getSecondsUntilNextRefresh();
+            if (secondsRemaining !== null && this.io) {
+                // Broadcast to all connected clients
+                this.io.emit('refresh-timer-sync', secondsRemaining);
+            }
+        }, 1000);
+
+        debug('Started timer sync broadcasting');
     }
 
     _signIn(socket, address) {

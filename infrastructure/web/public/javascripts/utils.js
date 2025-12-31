@@ -351,19 +351,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const refreshTimer = document.getElementById('refreshTimer');
         if (!refreshTimer || !refreshInterval) return;
 
-        let secondsLeft = refreshInterval;
-
-        function updateTimer() {
-            refreshTimer.textContent = secondsLeft;
-            secondsLeft--;
-
-            if (secondsLeft < 0) {
-                secondsLeft = refreshInterval;
+        // Function to update timer display
+        window.updateRefreshTimer = function(secondsLeft) {
+            if (refreshTimer) {
+                refreshTimer.textContent = secondsLeft;
             }
-        }
+        };
 
-        updateTimer(); // Initial update
-        setInterval(updateTimer, 1000);
+        // Initialize with the configured interval
+        refreshTimer.textContent = refreshInterval;
     }
 
     // Expose utilities and run them

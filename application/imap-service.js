@@ -97,6 +97,7 @@ class ImapService extends EventEmitter {
         this.connection = null
         this.initialLoadDone = false
         this.loadingInProgress = false
+        this.lastRefreshTime = null
     }
 
     async connectAndLoadMessages() {
@@ -157,8 +158,14 @@ class ImapService extends EventEmitter {
         // for new mails on the server. This is done only after all the mails have been loaded for the
         // first time. (Note: set the refresh higher than the time it takes to download the mails).
         if (this.config.imap.refreshIntervalSeconds) {
+            // Track when refreshes happen
+            this.lastRefreshTime = Date.now()
+
             setInterval(
-                () => this._loadMailSummariesAndEmitAsEvents(),
+                () => {
+                    this.lastRefreshTime = Date.now()
+                    this._loadMailSummariesAndEmitAsEvents()
+                },
                 this.config.imap.refreshIntervalSeconds * 1000
             )
         }
@@ -304,6 +311,20 @@ class ImapService extends EventEmitter {
             debug(`Deleted UID ${uid}`)
             this.emit(ImapService.EVENT_DELETED_MAIL, uid)
         }
+    }
+
+    /**
+     * Get seconds remaining until next IMAP refresh
+     * @returns {number} Seconds until next refresh, or null if not started
+     */
+    getSecondsUntilNextRefresh() {
+        if (!this.lastRefreshTime || !this.config.imap.refreshIntervalSeconds) {
+            return null
+        }
+
+        const elapsed = (Date.now() - this.lastRefreshTime) / 1000
+        const remaining = Math.max(0, this.config.imap.refreshIntervalSeconds - elapsed)
+        return Math.ceil(remaining)
     }
 
     /**

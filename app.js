@@ -43,6 +43,11 @@ const mailProcessingService = new MailProcessingService(
 )
 debug('Mail processing service initialized')
 
+// Set up timer sync broadcasting after IMAP is ready
+imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, () => {
+    clientNotification.startTimerSync(imapService)
+})
+
 // Track IMAP initialization state
 let isImapReady = false
 app.set('isImapReady', false)
