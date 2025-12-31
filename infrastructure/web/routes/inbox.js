@@ -77,7 +77,8 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLo
             error: lockError,
             redirectTo: req.originalUrl,
             expiryTime: config.email.purgeTime.time,
-            expiryUnit: config.email.purgeTime.unit
+            expiryUnit: config.email.purgeTime.unit,
+            refreshInterval: config.imap.refreshIntervalSeconds
         })
     } catch (error) {
         debug(`Error loading inbox for ${req.params.address}:`, error.message)

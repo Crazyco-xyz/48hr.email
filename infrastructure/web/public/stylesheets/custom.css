@@ -1047,6 +1047,36 @@ body.light-mode .theme-icon-light {
 }
 
 
+/* Refresh countdown timer */
+
+.refresh-countdown {
+    color: var(--color-text-dim);
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    background: var(--overlay-purple-10);
+    border: 1px solid var(--overlay-purple-20);
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.refresh-countdown:hover {
+    opacity: 1;
+}
+
+#refreshTimer {
+    font-weight: 600;
+    color: var(--color-accent-purple-light);
+    min-width: 2ch;
+    text-align: center;
+}
+
+
 /* Responsive Styles */
 
 @media (max-width: 768px) {

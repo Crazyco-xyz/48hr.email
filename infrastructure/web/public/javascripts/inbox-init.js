@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get expiry config from data attributes
     const expiryTime = script && script.dataset.expiryTime ? Number(script.dataset.expiryTime) : 48;
     const expiryUnit = script && script.dataset.expiryUnit ? script.dataset.expiryUnit : 'hours';
+    const refreshInterval = script && script.dataset.refreshInterval ? Number(script.dataset.refreshInterval) : null;
+
     if (address) {
         enableNewMessageNotifications(address, true);
     }
@@ -14,5 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (window.utils && typeof window.utils.formatEmailDates === 'function') {
         window.utils.formatEmailDates();
+    }
+
+    // Initialize refresh countdown
+    if (window.utils && typeof window.utils.initRefreshCountdown === 'function' && refreshInterval) {
+        window.utils.initRefreshCountdown(refreshInterval);
     }
 });

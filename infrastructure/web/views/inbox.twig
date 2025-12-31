@@ -30,7 +30,7 @@
 
 {% block body %}
     <script src="/javascripts/qrcode.js"></script>
-    <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}" data-expiry-time="{{ expiryTime }}" data-expiry-unit="{{ expiryUnit }}"></script>
+    <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}" data-expiry-time="{{ expiryTime }}" data-expiry-unit="{{ expiryUnit }}" data-refresh-interval="{{ refreshInterval }}"></script>
     <div class="inbox-container">
         <div class="inbox-header">
             <h1 class="inbox-title" id="copyAddress" title="Click to copy address">{{ address }}</h1>
@@ -71,7 +71,7 @@
             There are no mails yet.
         </blockquote>
     {% endif %}
-
+    <div class="refresh-countdown" id="refreshCountdown">Auto-refresh in <span id="refreshTimer">--</span>s</div>
     {% if lockEnabled and not isLocked %}
     <!-- Lock Modal -->
     <div id="lockModal" class="modal" style="display: none;" data-lock-error="{{ error|default('') }}">

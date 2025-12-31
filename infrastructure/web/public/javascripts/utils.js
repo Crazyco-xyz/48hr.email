@@ -347,8 +347,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initRefreshCountdown(refreshInterval) {
+        const refreshTimer = document.getElementById('refreshTimer');
+        if (!refreshTimer || !refreshInterval) return;
+
+        let secondsLeft = refreshInterval;
+
+        function updateTimer() {
+            refreshTimer.textContent = secondsLeft;
+            secondsLeft--;
+
+            if (secondsLeft < 0) {
+                secondsLeft = refreshInterval;
+            }
+        }
+
+        updateTimer(); // Initial update
+        setInterval(updateTimer, 1000);
+    }
+
     // Expose utilities and run them
-    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle };
+    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown };
     formatEmailDates();
     formatMailDate();
     initLockModals();
