@@ -4,20 +4,27 @@
     <img align="center" src="https://i.imgur.com/zPzvSQJ.png" width="100%">
 </p>
 
+<p align="center">
+  <a href="https://48hr.email" target="_blank">Official Instance</a> •
+  <a href="https://48hr.email/inbox/example@48hr.email" target="_blank">Example Inbox</a> •
+  <a href="https://discord.gg/crazyco" target="_blank">Discord</a>
+</p>
+
+<br>
+
 -----
 
-### What is this?
+## What is this?
 
 48hr.email is my very own tempmail service. You can create emails on the fly with one click, not needing to worry about corporations do with your email. They can sell that one all they want!
 
 All data is being removed 48hrs after they have reached the mail server.
 
-<p align="center"><a href="https://48hr.email" target="_blank">Try now</a> | <a href="https://48hr.email/inbox/example@48hr.email" target="_blank">Example Inbox</a> | <a href="https://discord.gg/crazyco" target="_blank">Discord</a></p>
-<br><br>
+<br>
 
 -----
 
-### What are its features?
+## Features
 
 - Create a custom inbox with select name and domain, or get a fully randomized one
 - Receive emails with a clean preview in your inbox, with optional browser notifications
@@ -25,42 +32,65 @@ All data is being removed 48hrs after they have reached the mail server.
 - Delete your emails ahead of time by pressing the delete button
 - View the raw email, showing all the headers etc.
 - Download Attachments
+- Automatic detection and display of cryptographic keys and signatures
+- Password-protected inboxes
+- Dark mode
 - and more...
 
-<br><br>
+<br>
 
 -----
 
-### How does this work?
+## Screenshots
+
+| Inbox | Email using HTML and CSS |
+|:---:|:---:|
+| <img src=".github/assets/inbox.png" width="100%" style="min-width: 300px"> | <img src=".github/assets/html.png" width="100%" style="min-width: 300px"> |
+
+| Email without CSS | Dropdown for cryptographic Keys and Signatures |
+|:---:|:---:|
+| <img src=".github/assets/raw.png" width="100%" style="min-width: 300px"> | <img src=".github/assets/keys.png" width="100%" style="min-width: 300px"> |
+
+<br>
+
+-----
+
+## How does this work?
 
 48hr.email uses an existing IMAP server for its handling. A single catch-all account and the accompanying credentials handle all the emails.
 
-<br><br>
+<br>
 
 -----
 
-### How can I set this up myself?
+## How can I set this up myself?
 
-- Prerequisites:
-    - Mail server with IMAP
-    - One or multiple domains dedicated to this
-    - git & nodejs
+**Prerequisites:**
+- Mail server with IMAP
+- One or multiple domains dedicated to this
+- git & nodejs
 
 <br>
 
 <details>
-<summary>Option 1 - bare-metal install:</summary>
+<summary>Option 1 - bare-metal install</summary>
 
-- #### Setup:
-    - `git clone https://github.com/Crazyco-xyz/48hr.email.git`
-    - `cd 48hr.email`
-    - `npm i`
-    - Change all settings to the desired values:
-        - Either use environmental variables, or modify `.env` (see `.env.example`)
-    - `npm run start`
-
-- #### Service file example:
+#### Setup:
 ```bash
+git clone https://github.com/Crazyco-xyz/48hr.email.git
+cd 48hr.email
+npm i
+```
+
+Change all settings to the desired values:
+- Either use environmental variables, or modify `.env` (see `.env.example`)
+
+```bash
+npm run start
+```
+
+#### Service file example:
+```ini
 [Unit]
 Description=48hr-email
 After=network-online.target
@@ -83,48 +113,40 @@ WantedBy=multi-user.target
 </details>
 
 <details>
-<summary>Option 2 - Docker:</summary>
+<summary>Option 2 - Docker</summary>
 
-- #### Setup:
-    - `git clone https://github.com/Crazyco-xyz/48hr.email.git`
-    - `cd 48hr.email`
-    - Change all settings to the desired values:
-        - Either use environmental variables, or modify `.env`, see `.env.example`
-    - `docker compose up -d`
-    - If desired, you can also move the config file somewhere else (change volume mount accordingly)
+#### Setup:
+```bash
+git clone https://github.com/Crazyco-xyz/48hr.email.git
+cd 48hr.email
+```
+
+Change all settings to the desired values:
+- Either use environmental variables, or modify `.env`, see `.env.example`
+
+```bash
+docker compose up -d
+```
+
+If desired, you can also move the config file somewhere else (change volume mount accordingly)
 </details>
 
-<br><br>
+<br>
 
 -----
-### TODO (PRs welcome):
+
+## TODO (PRs welcome)
+
 - Add user registration:
-    - Optional "premium" domains that arent visible to the public to prevent them from being scraped and flagged
-    - Allow people to set up forwarding 
+    - Allow people to forward single emails, or an inbox in its current state
 
-#### Unsure:
-- Possible payment integration once registration exists, to lock one or more of these new features behind a paywall (configurable, ofc)
-
-<br><br>
+<br>
 
 -----
 
-### Screenshots:
+## Support me
 
-- #### Inbox:
-<img align="center" src=".github/assets/inbox.png">
-
-- #### Email using HTML and CSS:
-<img align="center" src=".github/assets/html.png">
-
-- #### Email without CSS:
-<img align="center" src=".github/assets/raw.png">
-
-<br><br>
-
------
-
-## ❤️ Support me
+If you find this project useful, consider supporting its development!
 
 <!--
 Pwease support me >.<
