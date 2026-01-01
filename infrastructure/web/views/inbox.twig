@@ -71,7 +71,7 @@
             There are no mails yet.
         </blockquote>
     {% endif %}
-    <div class="refresh-countdown" id="refreshCountdown">Auto-refresh in <span id="refreshTimer">--</span>s</div>
+    <div class="refresh-countdown" id="refreshCountdown" title="New emails are fetched from the server only when the timer hits zero. Reloading this page has no effect on fetching.">Fetching new mails in <span id="refreshTimer">--</span>s</div>
     {% if lockEnabled and not isLocked %}
     <!-- Lock Modal -->
     <div id="lockModal" class="modal" style="display: none;" data-lock-error="{{ error|default('') }}">
