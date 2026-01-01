@@ -45,11 +45,11 @@ All data is being removed 48hrs after they have reached the mail server.
 
 | Inbox | Email using HTML and CSS |
 |:---:|:---:|
-| <img src=".github/assets/inbox.png" width="100%" style="min-width: 300px"> | <img src=".github/assets/html.png" width="100%" style="min-width: 300px"> |
+| <img src=".github/assets/inbox.png" width="500px" height="300px" style="object-fit: cover;"> | <img src=".github/assets/html.png" width="500px" height="300px" style="object-fit: cover;"> |
 
 | Email without CSS | Dropdown for cryptographic Keys and Signatures |
 |:---:|:---:|
-| <img src=".github/assets/raw.png" width="100%" style="min-width: 300px"> | <img src=".github/assets/keys.png" width="100%" style="min-width: 300px"> |
+| <img src=".github/assets/raw.png" width="500px" height="300px" style="object-fit: cover;"> | <img src=".github/assets/keys.png" width="500px" height="300px" style="object-fit: cover;"> |
 
 <br>
 
