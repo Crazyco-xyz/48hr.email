@@ -29,12 +29,11 @@ All data is being removed 48hrs after they have reached the mail server.
 - Create a custom inbox with select name and domain, or get a fully randomized one
 - Receive emails with a clean preview in your inbox, with optional browser notifications
 - Read emails, with support for HTML, CSS & JS just like you are used to from regular email providers
+- Automatic detection and display of cryptographic keys and signatures
 - Delete your emails ahead of time by pressing the delete button
 - View the raw email, showing all the headers etc.
-- Download Attachments
-- Automatic detection and display of cryptographic keys and signatures
+- Download Attachments with one click
 - Password-protected inboxes
-- Dark mode
 - and more...
 
 <br>
