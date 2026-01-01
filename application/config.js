@@ -40,7 +40,8 @@ const config = {
         examples: {
             account: parseValue(process.env.EMAIL_EXAMPLE_ACCOUNT),
             uids: parseValue(process.env.EMAIL_EXAMPLE_UIDS)
-        }
+        },
+        blacklistedSenders: parseValue(process.env.EMAIL_BLACKLISTED_SENDERS) || []
     },
 
     imap: {

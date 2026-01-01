@@ -144,6 +144,20 @@ class MailProcessingService extends EventEmitter {
 
     onNewMail(mail) {
         debug('onNewMail called for:', mail.to)
+
+        // Check if sender is blacklisted
+        const senderAddress = mail.from && mail.from[0] && mail.from[0].address
+        if (senderAddress && this.config.email.blacklistedSenders.length > 0) {
+            const isBlacklisted = this.config.email.blacklistedSenders.some(blocked =>
+                blocked.toLowerCase() === senderAddress.toLowerCase()
+            )
+            if (isBlacklisted) {
+                debug(`Blacklisted sender detected: ${senderAddress}, deleting UID ${mail.uid}`)
+                this.imapService.deleteSpecificEmail(mail.uid)
+                return
+            }
+        }
+
         if (this.initialLoadDone) {
             // For now, only log messages if they arrive after the initial load
             debug('New mail for', mail.to[0])
