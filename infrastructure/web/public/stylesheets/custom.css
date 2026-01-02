@@ -741,7 +741,7 @@ text-muted {
 
 .account-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
     margin-top: 2rem;
 }
@@ -852,13 +852,19 @@ text-muted {
     color: var(--color-text-gray);
 }
 
+form {
+    margin: 0;
+}
+
 .inline-form {
     display: inline;
+    align-self: center;
 }
 
 .button-small {
     padding: 0rem 1rem;
     font-size: 0.85rem;
+    margin: 0;
 }
 
 .button-danger {

@@ -113,13 +113,13 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, optiona
 
         // Check lock status
         const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
-        const userId = req.session ? .userId
-        const isAuthenticated = req.session ? .isAuthenticated
+        const userId = req.session && req.session.userId
+        const isAuthenticated = req.session && req.session.isAuthenticated
 
         // Check if user has access (either owns the lock or has session access)
         const hasAccess = isAuthenticated && userId && inboxLock ?
             (inboxLock.isLockedByUser(req.params.address, userId) || req.session.lockedInbox === req.params.address) :
-            (req.session ? .lockedInbox === req.params.address)
+            (req.session && req.session.lockedInbox === req.params.address)
 
         // Get user's verified emails if logged in
         let userForwardEmails = []
@@ -211,13 +211,13 @@ router.get(
 
                 const inboxLock = req.app.get('inboxLock')
                 const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
-                const userId = req.session ? .userId
-                const isAuthenticated = req.session ? .isAuthenticated
+                const userId = req.session && req.session.userId
+                const isAuthenticated = req.session && req.session.isAuthenticated
 
                 // Check if user has access (either owns the lock or has session access)
                 const hasAccess = isAuthenticated && userId && inboxLock ?
                     (inboxLock.isLockedByUser(req.params.address, userId) || req.session.lockedInbox === req.params.address) :
-                    (req.session ? .lockedInbox === req.params.address)
+                    (req.session && req.session.lockedInbox === req.params.address)
 
                 // Get user's verified emails if logged in
                 let userForwardEmails = []

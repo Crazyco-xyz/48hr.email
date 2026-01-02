@@ -51,13 +51,19 @@ if (config.user.authEnabled) {
     app.set('inboxLock', inboxLock)
     debug('Inbox lock service initialized (user-based)')
 
-    // Check for inactive locked inboxes
+    // Check for inactive locked inboxes (users who haven't logged in for 7 days)
     setInterval(() => {
         const inactive = inboxLock.getInactive(config.user.lockReleaseHours)
         if (inactive.length > 0) {
-            debug(`Found ${inactive.length} inactive locked inbox(es)`)
-                // Note: Auto-release of user locks would require storing userId
-                // For now, inactive locks remain until user logs in
+            debug(`Auto-releasing ${inactive.length} locked inbox(es) due to user inactivity (${config.user.lockReleaseHours} hours without login)`)
+            inactive.forEach(lock => {
+                try {
+                    inboxLock.release(lock.userId, lock.address)
+                    debug(`Released lock on ${lock.address} for inactive user ${lock.userId}`)
+                } catch (error) {
+                    debug(`Failed to release lock on ${lock.address}: ${error.message}`)
+                }
+            })
         }
     }, config.imap.refreshIntervalSeconds * 1000)
 

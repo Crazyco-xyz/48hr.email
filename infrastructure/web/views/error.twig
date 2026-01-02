@@ -2,9 +2,23 @@
 
 {% block header %}
     <div class="action-links">
-        {% if authEnabled and not currentUser %}
-            <a href="/auth" aria-label="Login or Register">Account</a>
+        {% if currentUser %}
+            <!-- Account Dropdown (logged in) -->
+            {% if authEnabled %}
+                <div class="action-dropdown">
+                    <button class="dropdown-toggle" aria-label="Account menu">Account ▾</button>
+                    <div class="dropdown-menu">
+                        <a href="/account" aria-label="Account settings">Settings</a>
+                        <a href="/logout?redirect=/" aria-label="Logout">Logout</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            {% if authEnabled %}
+                <a href="/auth" aria-label="Login or Register">Account</a>
+            {% endif %}
         {% endif %}
+
         <a href="/" aria-label="Return to home">Home</a>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
             <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">

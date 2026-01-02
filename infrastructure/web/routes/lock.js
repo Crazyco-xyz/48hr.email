@@ -107,19 +107,7 @@ router.post('/unlock', requireAuth, async(req, res) => {
     }
 })
 
-router.get('/logout', (req, res) => {
-    const mailProcessingService = req.app.get('mailProcessingService')
-
-    // Clear cache before logout
-    if (mailProcessingService.cachedFetchFullMail && mailProcessingService.cachedFetchFullMail.clear) {
-        debug('Clearing lock cache for logout')
-        mailProcessingService.cachedFetchFullMail.clear()
-    }
-
-    debug('Clearing lockedInbox from session (lock logout)')
-    delete req.session.lockedInbox
-    res.redirect('/')
-})
+// Legacy logout route removed - handled by auth.js
 
 router.post('/remove', requireAuth, async(req, res) => {
     const { address } = req.body

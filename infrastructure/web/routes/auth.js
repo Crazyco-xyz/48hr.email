@@ -162,9 +162,10 @@ router.post('/login',
             if (result.success) {
                 debug(`User logged in successfully: ${username}`)
 
-                // Regenerate session to prevent fixation attacks
+                // Store redirect URL before regenerating session
                 const redirectUrl = req.session.redirectAfterLogin || '/'
 
+                // Regenerate session to prevent fixation attacks
                 req.session.regenerate((err) => {
                     if (err) {
                         debug(`Session regeneration error: ${err.message}`)
@@ -185,7 +186,7 @@ router.post('/login',
                             return res.redirect('/auth')
                         }
 
-                        debug(`Session created for user: ${username}`)
+                        debug(`Session created for user: ${username}, redirecting to: ${redirectUrl}`)
                         res.redirect(redirectUrl)
                     })
                 })
@@ -205,23 +206,30 @@ router.post('/login',
 
 // GET /logout - Logout user
 router.get('/logout', (req, res) => {
-    if (req.session) {
-        const username = req.session.username
-        req.session.destroy((err) => {
-            if (err) {
-                debug(`Logout error: ${err.message}`)
-                console.error('Error during logout', err)
-            } else {
-                debug(`User logged out: ${username}`)
-            }
-            res.redirect('/')
-        })
-    } else {
-        res.redirect('/')
-    }
-})
+        // Store redirect URL before destroying session
+        const redirectUrl = req.query.redirect || req.get('Referer') || '/'
 
-// GET /auth/check - JSON endpoint for checking auth status (AJAX)
+        debug(`Logout requested with redirect: ${redirectUrl}`)
+
+        if (req.session) {
+            const username = req.session.username
+            req.session.destroy((err) => {
+                if (err) {
+                    debug(`Logout error: ${err.message}`)
+                    console.error('Error during logout', err)
+                    return res.redirect('/')
+                }
+
+                debug(`User logged out: ${username}, redirecting to: ${redirectUrl}`)
+                    // Clear cookie explicitly
+                res.clearCookie('connect.sid')
+                res.redirect(redirectUrl)
+            })
+        } else {
+            debug(`No session found, redirecting to: ${redirectUrl}`)
+            res.redirect(redirectUrl)
+        }
+    }) // GET /auth/check - JSON endpoint for checking auth status (AJAX)
 router.get('/auth/check', (req, res) => {
     if (req.session && req.session.userId && req.session.isAuthenticated) {
         res.json({

@@ -45,14 +45,7 @@ router.get('/inbox/random', (req, res, _next) => {
     res.redirect(`/inbox/${inbox}`)
 })
 
-router.get('/logout', (req, res, _next) => {
-
-    /**
-     * If we ever need a logout sequence, now we can have one!
-     */
-
-    res.redirect('/')
-})
+// Legacy logout route removed - handled by auth.js
 
 router.post(
     '/', [

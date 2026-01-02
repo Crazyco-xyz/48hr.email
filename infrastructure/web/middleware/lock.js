@@ -1,8 +1,8 @@
 function checkLockAccess(req, res, next) {
     const inboxLock = req.app.get('inboxLock')
     const address = req.params.address
-    const userId = req.session ? .userId
-    const isAuthenticated = req.session ? .isAuthenticated
+    const userId = req.session && req.session.userId
+    const isAuthenticated = req.session && req.session.isAuthenticated
 
     if (!address || !inboxLock) {
         return next()
@@ -14,7 +14,7 @@ function checkLockAccess(req, res, next) {
     // Also allow session-based access for immediate unlock after locking
     const hasAccess = isAuthenticated && userId ?
         (inboxLock.isLockedByUser(address, userId) || req.session.lockedInbox === address.toLowerCase()) :
-        (req.session ? .lockedInbox === address.toLowerCase())
+        (req.session && req.session.lockedInbox === address.toLowerCase())
 
     // Block access to locked inbox without proper authentication
     if (isLocked && !hasAccess) {
@@ -28,7 +28,7 @@ function checkLockAccess(req, res, next) {
             count: count,
             message: 'This inbox is locked by another user. Only the owner can access it.',
             branding: req.app.get('config').http.branding,
-            currentUser: req.session ? .username,
+            currentUser: req.session && req.session.username,
             authEnabled: req.app.get('config').user.authEnabled
         })
     }

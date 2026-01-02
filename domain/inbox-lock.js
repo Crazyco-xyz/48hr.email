@@ -121,17 +121,22 @@ class InboxLock {
     }
 
     /**
-     * Get inactive locked inboxes (not accessed in X hours)
-     * @param {number} hoursThreshold - Hours of inactivity
-     * @returns {Array<string>} - Array of inactive inbox addresses
+     * Get inactive locked inboxes (user hasn't logged in for X hours)
+     * @param {number} hoursThreshold - Hours of user inactivity (no login)
+     * @returns {Array<Object>} - Array of {userId, address} for inactive locks
      */
     getInactive(hoursThreshold) {
         const cutoff = Date.now() - (hoursThreshold * 60 * 60 * 1000)
         const stmt = this.db.prepare(`
-            SELECT inbox_address FROM user_locked_inboxes 
-            WHERE last_accessed < ?
+            SELECT ul.user_id, ul.inbox_address, u.last_login
+            FROM user_locked_inboxes ul
+            JOIN users u ON ul.user_id = u.id
+            WHERE u.last_login IS NULL OR u.last_login < ?
         `)
-        return stmt.all(cutoff).map(row => row.inbox_address)
+        return stmt.all(cutoff).map(row => ({
+            userId: row.user_id,
+            address: row.inbox_address
+        }))
     }
 
     /**

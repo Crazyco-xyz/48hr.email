@@ -86,7 +86,7 @@ const config = {
         // Feature Limits
         maxForwardEmails: Number(process.env.USER_MAX_FORWARD_EMAILS) || 5,
         maxLockedInboxes: Number(process.env.USER_MAX_LOCKED_INBOXES) || 5,
-        lockReleaseHours: Number(process.env.LOCK_RELEASE_HOURS) || 720 // 30 days default
+        lockReleaseHours: Number(process.env.LOCK_RELEASE_HOURS) || 168 // 7 days default
     }
 };
 
