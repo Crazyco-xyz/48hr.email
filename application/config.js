@@ -62,8 +62,7 @@ const config = {
         port: Number(process.env.SMTP_PORT) || 465,
         secure: parseBool(process.env.SMTP_SECURE) || true,
         user: parseValue(process.env.SMTP_USER),
-        password: parseValue(process.env.SMTP_PASSWORD),
-        fromName: parseValue(process.env.SMTP_FROM_NAME) || '48hr.email Forwarding'
+        password: parseValue(process.env.SMTP_PASSWORD)
     },
 
     http: {
@@ -79,8 +78,7 @@ const config = {
         authEnabled: parseBool(process.env.USER_AUTH_ENABLED) || false,
 
         // Database
-        databasePath: parseValue(process.env.USER_DATABASE_PATH) || './db/users.db',
-        lockDbPath: parseValue(process.env.LOCK_DATABASE_PATH) || './db/locked-inboxes.db',
+        databasePath: parseValue(process.env.USER_DATABASE_PATH) || './db/data.db',
 
         // Session & Auth
         sessionSecret: parseValue(process.env.USER_SESSION_SECRET) || 'change-me-in-production',

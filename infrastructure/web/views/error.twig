@@ -2,10 +2,10 @@
 
 {% block header %}
     <div class="action-links">
-        {% if showUnlockButton %}
-            <a href="#" id="unlockBtn" aria-label="Unlock inbox">Unlock</a>
+        {% if authEnabled and not currentUser %}
+            <a href="/auth" aria-label="Login or Register">Account</a>
         {% endif %}
-        <a href="/" aria-label="Return to home">Logout</a>
+        <a href="/" aria-label="Return to home">Home</a>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
             <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -21,48 +21,4 @@
   <h1>{{message}}</h1>
   <h2>{{error.status}}</h2>
   <pre>{{error.stack}}</pre>
-  
-  {% if showUnlockButton %}
-  <div id="unlockModal" class="modal" style="display: none;">
-      <div class="modal-content">
-          <span class="close" id="closeUnlock">&times;</span>
-          <h3>Unlock Inbox</h3>
-          <p class="modal-description">Enter password to access this locked inbox.</p>
-          {% if unlockError %}
-              <p class="unlock-error">
-                  {% if unlockError == 'invalid_password' %}
-                      Invalid password. Please try again.
-                  {% elseif unlockError == 'missing_fields' %}
-                      Please provide a password.
-                  {% else %}
-                      An error occurred. Please try again.
-                  {% endif %}
-              </p>
-          {% endif %}
-          <form method="POST" action="/lock/unlock">
-              <input type="hidden" name="address" value="{{ address }}">
-              <input type="hidden" name="redirectTo" value="{{ redirectTo|default(address) }}">
-              <fieldset>
-                  <label for="unlockPassword" class="floating-label">Password</label>
-                  <input type="password" id="unlockPassword" name="password" required class="modal-input">
-                  <button type="submit" class="button-primary modal-button">Unlock</button>
-              </fieldset>
-          </form>
-      </div>
-  </div>
-  
-  <script>
-      const modal = document.getElementById('unlockModal');
-      const btn = document.getElementById('unlockBtn');
-      const close = document.getElementById('closeUnlock');
-      if (btn) btn.onclick = (e) => { e.preventDefault(); modal.style.display = 'block'; };
-      if (close) close.onclick = () => modal.style.display = 'none';
-      window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
-      
-      // Auto-open modal if there's an unlock error
-      if ('{{ unlockError|default("") }}') {
-          modal.style.display = 'block';
-      }
-  </script>
-  {% endif %}
 {% endblock %}

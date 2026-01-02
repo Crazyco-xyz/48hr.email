@@ -114,10 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeLock = document.getElementById('closeLock');
         const lockForm = document.querySelector('#lockModal form');
 
-        const unlockModal = document.getElementById('unlockModal');
-        const unlockBtn = document.getElementById('unlockBtn');
-        const closeUnlock = document.getElementById('closeUnlock');
-
         const removeLockModal = document.getElementById('removeLockModal');
         const removeLockBtn = document.getElementById('removeLockBtn');
         const closeRemoveLock = document.getElementById('closeRemoveLock');
@@ -136,35 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeLock.onclick = function() { closeModal(lockModal); };
         }
 
-        if (lockForm) {
-            lockForm.addEventListener('submit', function(e) {
-                const pwElement = document.getElementById('lockPassword');
-                const cfElement = document.getElementById('lockConfirm');
-                const pw = pwElement ? pwElement.value : '';
-                const cf = cfElement ? cfElement.value : '';
-                const err = document.getElementById('lockErrorInline');
-                const serverErr = document.getElementById('lockServerError');
-                if (serverErr) serverErr.style.display = 'none';
-
-                if (pw !== cf) {
-                    e.preventDefault();
-                    if (err) {
-                        err.textContent = 'Passwords do not match.';
-                        err.style.display = 'block';
-                    }
-                    return;
-                }
-                if (pw.length < 8) {
-                    e.preventDefault();
-                    if (err) {
-                        err.textContent = 'Password must be at least 8 characters.';
-                        err.style.display = 'block';
-                    }
-                    return;
-                }
-                if (err) err.style.display = 'none';
-            });
-        }
+        // Lock form no longer needs password validation - authentication-based locking
 
         if (lockModal) {
             const lockErrorValue = (lockModal.dataset.lockError || '').trim();
@@ -176,8 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (err) {
                     if (lockErrorValue === 'locking_disabled_for_example') {
                         err.textContent = 'Locking is disabled for the example inbox.';
-                    } else if (lockErrorValue === 'invalid_password') {
-                        err.textContent = 'Please provide a valid password.';
+                    } else if (lockErrorValue === 'max_locked_inboxes') {
+                        err.textContent = 'You have reached the maximum of 5 locked inboxes.';
+                    } else if (lockErrorValue === 'already_locked') {
+                        err.textContent = 'This inbox is already locked by another user.';
                     } else if (lockErrorValue === 'server_error') {
                         err.textContent = 'A server error occurred. Please try again.';
                     } else if (lockErrorValue === 'remove_failed') {
@@ -188,20 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     err.style.display = 'block';
                 }
             }
-        }
-
-        if (unlockBtn) {
-            unlockBtn.onclick = function(e) {
-                e.preventDefault();
-                openModal(unlockModal);
-            };
-        }
-        if (closeUnlock) {
-            closeUnlock.onclick = function() { closeModal(unlockModal); };
-        }
-        if (unlockModal) {
-            const unlockErrorValue = (unlockModal.dataset.unlockError || '').trim();
-            if (unlockErrorValue) { openModal(unlockModal); }
         }
 
         if (removeLockBtn) {
@@ -219,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.onclick = function(e) {
             if (e.target === lockModal) closeModal(lockModal);
-            if (e.target === unlockModal) closeModal(unlockModal);
             if (e.target === removeLockModal) closeModal(removeLockModal);
         };
     }

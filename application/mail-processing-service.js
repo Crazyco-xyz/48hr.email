@@ -261,7 +261,8 @@ class MailProcessingService extends EventEmitter {
 
             // Forward via SMTP service
             debug(`Forwarding email to ${destinationEmail}`)
-            const result = await this.smtpService.forwardMail(fullMail, destinationEmail)
+            const branding = this.config.http.branding[0] || '48hr.email'
+            const result = await this.smtpService.forwardMail(fullMail, destinationEmail, branding)
 
             if (result.success) {
                 debug(`Email forwarded successfully. MessageId: ${result.messageId}`)

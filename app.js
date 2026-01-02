@@ -4,6 +4,7 @@
 
 const config = require('./application/config')
 const debug = require('debug')('48hr-email:app')
+const Helper = require('./application/helper')
 
 const { app, io, server } = require('./infrastructure/web/web')
 const ClientNotification = require('./infrastructure/web/client-notification')
@@ -20,31 +21,23 @@ const clientNotification = new ClientNotification()
 debug('Client notification service initialized')
 clientNotification.use(io)
 
-// Initialize inbox locking (always available for registered users)
-const inboxLock = new InboxLock(config.user.lockDbPath)
-app.set('inboxLock', inboxLock)
-debug('Inbox lock service initialized')
-    // Check for inactive locked inboxes
-setInterval(() => {
-    const inactive = inboxLock.getInactive(config.user.lockReleaseHours)
-    if (inactive.length > 0) {
-        debug(`Releasing ${inactive.length} inactive locked inbox(es)`)
-        inactive.forEach(address => inboxLock.release(address))
-    }
-}, config.imap.refreshIntervalSeconds * 1000)
-
-const imapService = new ImapService(config, inboxLock)
-debug('IMAP service initialized')
-
 const smtpService = new SmtpService(config)
 debug('SMTP service initialized')
+app.set('smtpService', smtpService)
 
 const verificationStore = new VerificationStore()
 debug('Verification store initialized')
 app.set('verificationStore', verificationStore)
 
+// Set config in app for route access
+app.set('config', config)
+
 // Initialize user repository and auth service (if enabled)
+let inboxLock = null
 if (config.user.authEnabled) {
+    // Migrate legacy database files for backwards compatibility
+    Helper.migrateDatabase(config.user.databasePath)
+
     const userRepository = new UserRepository(config.user.databasePath)
     debug('User repository initialized')
     app.set('userRepository', userRepository)
@@ -52,12 +45,32 @@ if (config.user.authEnabled) {
     const authService = new AuthService(userRepository, config)
     debug('Auth service initialized')
     app.set('authService', authService)
+
+    // Initialize inbox locking with user repository
+    inboxLock = new InboxLock(userRepository)
+    app.set('inboxLock', inboxLock)
+    debug('Inbox lock service initialized (user-based)')
+
+    // Check for inactive locked inboxes
+    setInterval(() => {
+        const inactive = inboxLock.getInactive(config.user.lockReleaseHours)
+        if (inactive.length > 0) {
+            debug(`Found ${inactive.length} inactive locked inbox(es)`)
+                // Note: Auto-release of user locks would require storing userId
+                // For now, inactive locks remain until user logs in
+        }
+    }, config.imap.refreshIntervalSeconds * 1000)
+
     console.log('User authentication system enabled')
 } else {
     app.set('userRepository', null)
     app.set('authService', null)
+    app.set('inboxLock', null)
     debug('User authentication system disabled')
 }
+
+const imapService = new ImapService(config, inboxLock)
+debug('IMAP service initialized')
 
 const mailProcessingService = new MailProcessingService(
     new MailRepository(),

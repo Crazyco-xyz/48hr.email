@@ -74,8 +74,8 @@ const loginRateLimiter = (req, res, next) => {
         next()
 }
 
-// GET /register - Show registration form
-router.get('/register', redirectIfAuthenticated, (req, res) => {
+// GET /auth - Show unified auth page (login or register)
+router.get('/auth', redirectIfAuthenticated, (req, res) => {
     const config = req.app.get('config')
     const errorMessage = req.session.errorMessage
     const successMessage = req.session.successMessage
@@ -84,8 +84,8 @@ router.get('/register', redirectIfAuthenticated, (req, res) => {
     delete req.session.errorMessage
     delete req.session.successMessage
 
-    res.render('register', {
-        title: `Register | ${config.http.branding[0]}`,
+    res.render('login-auth', {
+        title: `Login or Register | ${config.http.branding[0]}`,
         branding: config.http.branding,
         errorMessage,
         successMessage
@@ -106,7 +106,7 @@ router.post('/register',
                 const firstError = errors.array()[0].msg
                 debug(`Registration validation failed: ${firstError}`)
                 req.session.errorMessage = firstError
-                return res.redirect('/register')
+                return res.redirect('/auth')
             }
 
             const { username, password, confirmPassword } = req.body
@@ -115,7 +115,7 @@ router.post('/register',
             if (password !== confirmPassword) {
                 debug('Registration failed: Passwords do not match')
                 req.session.errorMessage = 'Passwords do not match'
-                return res.redirect('/register')
+                return res.redirect('/auth')
             }
 
             const authService = req.app.get('authService')
@@ -124,38 +124,20 @@ router.post('/register',
             if (result.success) {
                 debug(`User registered successfully: ${username}`)
                 req.session.successMessage = 'Registration successful! Please log in.'
-                return res.redirect('/login')
+                return res.redirect('/auth')
             } else {
                 debug(`Registration failed: ${result.error}`)
                 req.session.errorMessage = result.error
-                return res.redirect('/register')
+                return res.redirect('/auth')
             }
         } catch (error) {
             debug(`Registration error: ${error.message}`)
             console.error('Error during registration', error)
             req.session.errorMessage = 'An unexpected error occurred. Please try again.'
-            res.redirect('/register')
+            res.redirect('/auth')
         }
     }
 )
-
-// GET /login - Show login form
-router.get('/login', redirectIfAuthenticated, (req, res) => {
-    const config = req.app.get('config')
-    const errorMessage = req.session.errorMessage
-    const successMessage = req.session.successMessage
-
-    // Clear messages after reading
-    delete req.session.errorMessage
-    delete req.session.successMessage
-
-    res.render('login-auth', {
-        title: `Login | ${config.http.branding[0]}`,
-        branding: config.http.branding,
-        errorMessage,
-        successMessage
-    })
-})
 
 // POST /login - Process login
 router.post('/login',
@@ -170,7 +152,7 @@ router.post('/login',
                 const firstError = errors.array()[0].msg
                 debug(`Login validation failed: ${firstError}`)
                 req.session.errorMessage = firstError
-                return res.redirect('/login')
+                return res.redirect('/auth')
             }
 
             const { username, password } = req.body
@@ -187,7 +169,7 @@ router.post('/login',
                     if (err) {
                         debug(`Session regeneration error: ${err.message}`)
                         req.session.errorMessage = 'Login failed. Please try again.'
-                        return res.redirect('/login')
+                        return res.redirect('/auth')
                     }
 
                     // Set session data
@@ -200,7 +182,7 @@ router.post('/login',
                         if (err) {
                             debug(`Session save error: ${err.message}`)
                             req.session.errorMessage = 'Login failed. Please try again.'
-                            return res.redirect('/login')
+                            return res.redirect('/auth')
                         }
 
                         debug(`Session created for user: ${username}`)
@@ -210,13 +192,13 @@ router.post('/login',
             } else {
                 debug(`Login failed: ${result.error}`)
                 req.session.errorMessage = result.error
-                return res.redirect('/login')
+                return res.redirect('/auth')
             }
         } catch (error) {
             debug(`Login error: ${error.message}`)
             console.error('Error during login', error)
             req.session.errorMessage = 'An unexpected error occurred. Please try again.'
-            res.redirect('/login')
+            res.redirect('/auth')
         }
     }
 )

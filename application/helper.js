@@ -232,6 +232,36 @@ class Helper {
             return false
         }
     }
+
+    /**
+     * Migrate legacy database files for backwards compatibility
+     * - Renames users.db to data.db if it exists
+     * - Logs if locked-inboxes.db exists (no longer needed)
+     * @param {string} dbPath - Path to the current database (data.db)
+     */
+    static migrateDatabase(dbPath) {
+        const fs = require('fs')
+        const path = require('path')
+
+        const dbDir = path.dirname(dbPath)
+        const legacyUsersDb = path.join(dbDir, 'users.db')
+        const legacyLockedInboxesDb = path.join(dbDir, 'locked-inboxes.db')
+
+        // Migrate users.db to data.db
+        if (fs.existsSync(legacyUsersDb) && !fs.existsSync(dbPath)) {
+            console.log(`Migrating ${legacyUsersDb} → ${dbPath}`)
+            fs.renameSync(legacyUsersDb, dbPath)
+            debug(`Database migrated: users.db → data.db`)
+        }
+
+        // Warn about old locked-inboxes.db
+        if (fs.existsSync(legacyLockedInboxesDb)) {
+            console.log(`⚠️  Found legacy ${legacyLockedInboxesDb}`)
+            console.log(`   This database is no longer used. Locks are now stored in ${path.basename(dbPath)}.`)
+            console.log(`   You can safely delete ${legacyLockedInboxesDb} after verifying your locks are working.`)
+            debug('Legacy locked-inboxes.db detected but not migrated (data already in user_locked_inboxes table)')
+        }
+    }
 }
 
 module.exports = Helper

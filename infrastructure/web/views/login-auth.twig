@@ -2,8 +2,7 @@
 
 {% block header %}
     <div class="action-links">
-        <a href="/" aria-label="Return to home">← Home</a>
-        <a href="/register" aria-label="Register">Register</a>
+        <a href="/" aria-label="Return to home">Home</a>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
             <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -16,70 +15,110 @@
 {% endblock %}
 
 {% block body %}
-<div id="login-auth" class="auth-container">
-    <div class="auth-card">
-        <h1>Welcome Back</h1>
-        <p class="auth-subtitle">Login to access your account</p>
-
+<div id="auth-unified" class="auth-unified-container">
+    <div class="auth-intro">
+        <h1>Account Access</h1>
+        <p class="auth-subtitle">Login to an existing account or create a new one</p>
         {% if errorMessage %}
-            <div class="unlock-error">
-                {{ errorMessage }}
-            </div>
+            <div class="unlock-error">{{ errorMessage }}</div>
         {% endif %}
-
         {% if successMessage %}
-            <div class="success-message">
-                {{ successMessage }}
-            </div>
+            <div class="success-message">{{ successMessage }}</div>
         {% endif %}
+    </div>
 
-        <form method="POST" action="/login">
-            <fieldset>
-                <label for="username">Username</label>
-                <input 
-                    type="text" 
-                    id="username" 
-                    name="username" 
-                    placeholder="Enter your username"
-                    required
-                    autocomplete="username"
-                >
+    <div class="auth-forms-grid">
+        <!-- Login Form -->
+        <div class="auth-card">
+            <h2>Login</h2>
+            <p class="auth-card-subtitle">Access your existing account</p>
+            
+            <form method="POST" action="/login">
+                <fieldset>
+                    <label for="login-username">Username</label>
+                    <input 
+                        type="text" 
+                        id="login-username" 
+                        name="username" 
+                        placeholder="Your username"
+                        required
+                        autocomplete="username"
+                    >
 
-                <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Enter your password"
-                    required
-                    autocomplete="current-password"
-                >
+                    <label for="login-password">Password</label>
+                    <input 
+                        type="password" 
+                        id="login-password" 
+                        name="password" 
+                        placeholder="Your password"
+                        required
+                        autocomplete="current-password"
+                    >
 
-                <div class="auth-actions">
                     <button class="button button-primary" type="submit">Login</button>
-                </div>
-            </fieldset>
-        </form>
+                </fieldset>
+            </form>
+        </div>
 
-        <div class="auth-footer">
-            <p>Don't have an account? <a href="/register">Register here</a></p>
+        <!-- Register Form -->
+        <div class="auth-card">
+            <h2>Register</h2>
+            <p class="auth-card-subtitle">Create a new account</p>
+            
+            <form method="POST" action="/register">
+                <fieldset>
+                    <label for="register-username">Username</label>
+                    <input 
+                        type="text" 
+                        id="register-username" 
+                        name="username" 
+                        placeholder="3-20 characters"
+                        required
+                        minlength="3"
+                        maxlength="20"
+                        pattern="[a-zA-Z0-9_]+"
+                        autocomplete="username"
+                    >
+                    <small>Letters, numbers, underscore only</small>
+
+                    <label for="register-password">Password</label>
+                    <input 
+                        type="password" 
+                        id="register-password" 
+                        name="password" 
+                        placeholder="Min 8 characters"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                    >
+                    <small>Uppercase, lowercase, and number</small>
+
+                    <label for="register-confirm">Confirm Password</label>
+                    <input 
+                        type="password" 
+                        id="register-confirm" 
+                        name="confirmPassword" 
+                        placeholder="Re-enter password"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                    >
+
+                    <button class="button button-primary" type="submit">Create Account</button>
+                </fieldset>
+            </form>
         </div>
     </div>
 
-    <div class="auth-features">
-        <h3>Account Features</h3>
-        <ul>
-            <li>✓ Forward emails to verified addresses</li>
-            <li>✓ Lock and protect up to 5 inboxes</li>
-            <li>✓ Manage forwarding destinations</li>
-            <li>✓ Access from any device</li>
-        </ul>
-        
-        <div class="auth-guest-section">
-            <h4>Guest Access</h4>
-            <p>You can still use temporary inboxes without an account, but forwarding and locking require registration.</p>
-            <a href="/" class="button">Browse as Guest</a>
+    <div class="auth-features-unified">
+        <h3>✓ Account Benefits</h3>
+        <div class="features-grid">
+            <div class="feature-item">Forward emails to verified addresses</div>
+            <div class="feature-item">Lock up to 5 inboxes with passwords</div>
+            <div class="feature-item">Manage multiple forwarding destinations</div>
+            <div class="feature-item">Access your locked inboxes anywhere</div>
         </div>
+        <p class="guest-note">No account needed for basic temporary inboxes • <a href="/">Browse as guest</a></p>
     </div>
 </div>
 {% endblock %}

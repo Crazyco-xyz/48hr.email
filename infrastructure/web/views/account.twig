@@ -1,0 +1,170 @@
+{% extends 'layout.twig' %}
+
+{% block header %}
+    <div class="action-links">
+        <a href="/" aria-label="Return to home">Home</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+            <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+        </button>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div id="account" class="account-container">
+    <h1>Account Dashboard</h1>
+    <p class="account-subtitle">Welcome back, <strong>{{ username }}</strong></p>
+
+    {% if successMessage %}
+        <div class="success-message">
+            {{ successMessage }}
+        </div>
+    {% endif %}
+
+    {% if errorMessage %}
+        <div class="unlock-error">
+            {{ errorMessage }}
+        </div>
+    {% endif %}
+
+    <div class="account-grid">
+        <!-- Account Stats -->
+        <div class="account-card account-stats">
+            <h2>Account Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ stats.forwardEmailsCount }}/{{ stats.maxForwardEmails }}</div>
+                    <div class="stat-label">Forward Emails</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ stats.lockedInboxesCount }}/{{ stats.maxLockedInboxes }}</div>
+                    <div class="stat-label">Locked Inboxes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ stats.accountAge }}</div>
+                    <div class="stat-label">Account Age</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forwarding Emails Section -->
+        <div class="account-card">
+            <h2>Forwarding Emails</h2>
+            <p class="card-description">Add verified emails to forward messages to. Each email must be verified before use.</p>
+            
+            {% if forwardEmails|length > 0 %}
+                <ul class="email-list">
+                    {% for email in forwardEmails %}
+                        <li class="email-item">
+                            <div class="email-info">
+                                <span class="email-address">{{ email.email }}</span>
+                                <span class="email-meta">Verified {{ email.verifiedAgo }}</span>
+                            </div>
+                            <form method="POST" action="/account/forward-email/remove" class="inline-form">
+                                <input type="hidden" name="email" value="{{ email.email }}">
+                                <button type="submit" class="button button-small button-danger" onclick="return confirm('Remove {{ email.email }}?')">
+                                    Remove
+                                </button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty-state">No verified forwarding emails yet.</p>
+            {% endif %}
+            
+            {% if stats.forwardEmailsCount < stats.maxForwardEmails %}
+                <button class="button button-primary" id="addEmailBtn">Add Email</button>
+            {% else %}
+                <p class="limit-reached">Maximum {{ stats.maxForwardEmails }} emails reached</p>
+            {% endif %}
+        </div>
+
+        <!-- Locked Inboxes Section -->
+        <div class="account-card">
+            <h2>Locked Inboxes</h2>
+            <p class="card-description">Manage your locked inboxes. These are protected by your account and only accessible when logged in.</p>
+            
+            {% if lockedInboxes|length > 0 %}
+                <ul class="inbox-list">
+                    {% for inbox in lockedInboxes %}
+                        <li class="inbox-item">
+                            <div class="inbox-info">
+                                <a href="/inbox/{{ inbox.address }}" class="inbox-address">{{ inbox.address }}</a>
+                                <span class="inbox-meta">Last accessed {{ inbox.lastAccessedAgo }}</span>
+                            </div>
+                            <form method="POST" action="/account/locked-inbox/release" class="inline-form">
+                                <input type="hidden" name="address" value="{{ inbox.address }}">
+                                <button type="submit" class="button button-small button-danger" onclick="return confirm('Release lock on {{ inbox.address }}?')">
+                                    Release
+                                </button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="empty-state">No locked inboxes yet. Lock an inbox to protect it with your account.</p>
+            {% endif %}
+            
+            {% if stats.lockedInboxesCount < stats.maxLockedInboxes %}
+                <p class="hint">You can lock up to {{ stats.maxLockedInboxes }} inboxes total.</p>
+            {% else %}
+                <p class="limit-reached">Maximum {{ stats.maxLockedInboxes }} inboxes locked</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Email Modal -->
+<div id="addEmailModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeAddEmail">&times;</span>
+        <h3>Add Forwarding Email</h3>
+        <p class="modal-description">Enter an email address to verify. We'll send you a verification link.</p>
+        
+        <form method="POST" action="/account/forward-email/add">
+            <fieldset>
+                <label for="forwardEmail">Email Address</label>
+                <input 
+                    type="email" 
+                    id="forwardEmail" 
+                    name="email" 
+                    placeholder="your-email@example.com"
+                    required
+                    class="modal-input"
+                >
+                <button type="submit" class="button-primary modal-button">Send Verification</button>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<script>
+// Add Email Modal
+const addEmailBtn = document.getElementById('addEmailBtn');
+const addEmailModal = document.getElementById('addEmailModal');
+const closeAddEmail = document.getElementById('closeAddEmail');
+
+if (addEmailBtn) {
+    addEmailBtn.onclick = function() {
+        addEmailModal.style.display = 'block';
+    }
+}
+
+if (closeAddEmail) {
+    closeAddEmail.onclick = function() {
+        addEmailModal.style.display = 'none';
+    }
+}
+
+window.onclick = function(event) {
+    if (event.target == addEmailModal) {
+        addEmailModal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

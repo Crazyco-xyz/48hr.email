@@ -186,7 +186,7 @@ class UserRepository {
     /**
      * Get all verified forwarding emails for a user
      * @param {number} userId
-     * @returns {Array} - Array of email objects
+     * @returns {Array} - Array of email objects with formatted timestamps
      */
     getForwardEmails(userId) {
         try {
@@ -197,12 +197,35 @@ class UserRepository {
                 ORDER BY created_at DESC
             `)
             const emails = stmt.all(userId)
+
+            // Add formatted timestamp
+            const formatted = emails.map(email => ({
+                ...email,
+                verifiedAgo: this._formatTimeAgo(email.verified_at)
+            }))
+
             debug(`Found ${emails.length} forward emails for user ${userId}`)
-            return emails
+            return formatted
         } catch (error) {
             debug(`Error getting forward emails: ${error.message}`)
             throw error
         }
+    }
+
+    /**
+     * Format timestamp to relative time
+     * @param {number} timestamp - Unix timestamp in milliseconds
+     * @returns {string} - Formatted time ago string
+     * @private
+     */
+    _formatTimeAgo(timestamp) {
+        const seconds = Math.floor((Date.now() - timestamp) / 1000)
+
+        if (seconds < 60) return 'just now'
+        if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`
+        if (seconds < 2592000) return `${Math.floor(seconds / 86400)} days ago`
+        return `${Math.floor(seconds / 2592000)} months ago`
     }
 
     /**
@@ -276,9 +299,10 @@ class UserRepository {
     /**
      * Get user statistics
      * @param {number} userId
-     * @returns {Object} - {lockedInboxesCount, forwardEmailsCount, accountAge}
+     * @param {Object} config - Application configuration
+     * @returns {Object} - {lockedInboxesCount, forwardEmailsCount, accountAge, maxLockedInboxes, maxForwardEmails, lockReleaseHours}
      */
-    getUserStats(userId) {
+    getUserStats(userId, config = {}) {
         try {
             const user = this.getUserById(userId)
             if (!user) {
@@ -294,7 +318,8 @@ class UserRepository {
 
             const lockedInboxesCount = lockedInboxesStmt.get(userId).count
             const forwardEmailsCount = forwardEmailsStmt.get(userId).count
-            const accountAge = Date.now() - user.created_at
+            const accountAgeMs = Date.now() - user.created_at
+            const accountAge = this._formatAccountAge(accountAgeMs)
 
             debug(`Stats for user ${userId}: ${lockedInboxesCount} locked inboxes, ${forwardEmailsCount} forward emails`)
 
@@ -303,12 +328,30 @@ class UserRepository {
                 forwardEmailsCount,
                 accountAge,
                 createdAt: user.created_at,
-                lastLogin: user.last_login
+                lastLogin: user.last_login,
+                maxLockedInboxes: config.maxLockedInboxes || 5,
+                maxForwardEmails: config.maxForwardEmails || 5,
+                lockReleaseHours: config.lockReleaseHours || 720
             }
         } catch (error) {
             debug(`Error getting user stats: ${error.message}`)
             throw error
         }
+    }
+
+    /**
+     * Format account age in human-readable format
+     * @param {number} ms - Milliseconds since account creation
+     * @returns {string} - Formatted age
+     * @private
+     */
+    _formatAccountAge(ms) {
+        const days = Math.floor(ms / (1000 * 60 * 60 * 24))
+        if (days === 0) return 'Today'
+        if (days === 1) return '1 day'
+        if (days < 30) return `${days} days`
+        if (days < 365) return `${Math.floor(days / 30)} months`
+        return `${Math.floor(days / 365)} years`
     }
 
     /**

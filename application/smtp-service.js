@@ -65,7 +65,7 @@ class SmtpService {
      * @param {string} destinationEmail - Email address to forward to
      * @returns {Promise<{success: boolean, error?: string, messageId?: string}>}
      */
-    async forwardMail(mail, destinationEmail) {
+    async forwardMail(mail, destinationEmail, branding = '48hr.email') {
         if (!this.transporter) {
             return {
                 success: false,
@@ -83,7 +83,7 @@ class SmtpService {
         try {
             debug(`Forwarding email (Subject: "${mail.subject}") to ${destinationEmail}`)
 
-            const forwardMessage = this._buildForwardMessage(mail, destinationEmail)
+            const forwardMessage = this._buildForwardMessage(mail, destinationEmail, branding)
 
             const info = await this.transporter.sendMail(forwardMessage)
 
@@ -106,10 +106,11 @@ class SmtpService {
      * Build the forward message structure
      * @param {Object} mail - Parsed email object
      * @param {string} destinationEmail - Destination address
+     * @param {string} branding - Service branding name
      * @returns {Object} - Nodemailer message object
      * @private
      */
-    _buildForwardMessage(mail, destinationEmail) {
+    _buildForwardMessage(mail, destinationEmail, branding = '48hr.email') {
         // Extract original sender info
         const originalFrom = (mail.from && mail.from.text) || 'Unknown Sender'
         const originalTo = (mail.to && mail.to.text) || 'Unknown Recipient'
@@ -138,7 +139,7 @@ To: ${originalTo}
         // Build the message object
         const message = {
             from: {
-                name: this.config.smtp.fromName,
+                name: branding,
                 address: this.config.smtp.user
             },
             to: destinationEmail,
@@ -224,9 +225,10 @@ ${mail.html}
      * @param {string} token - Verification token
      * @param {string} baseUrl - Base URL for verification link
      * @param {string} branding - Service branding name
+     * @param {string} verifyPath - Verification path (default: /inbox/verify)
      * @returns {Promise<{success: boolean, error?: string, messageId?: string}>}
      */
-    async sendVerificationEmail(destinationEmail, token, baseUrl, branding = '48hr.email') {
+    async sendVerificationEmail(destinationEmail, token, baseUrl, branding = '48hr.email', verifyPath = '/inbox/verify') {
         if (!this.transporter) {
             return {
                 success: false,
@@ -234,7 +236,7 @@ ${mail.html}
             }
         }
 
-        const verificationLink = `${baseUrl}/inbox/verify?token=${token}`
+        const verificationLink = `${baseUrl}${verifyPath}?token=${token}`
 
         const htmlContent = `
 <!DOCTYPE html>

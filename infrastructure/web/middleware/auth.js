@@ -27,13 +27,13 @@ function requireAuth(req, res, next) {
     }
 
     // User is not authenticated
-    debug('Unauthenticated request, redirecting to login')
+    debug('Unauthenticated request, redirecting to auth page')
 
     // Store the original URL to redirect back after login
     req.session.redirectAfterLogin = req.originalUrl
 
-    // Redirect to login
-    return res.redirect('/login')
+    // Redirect to auth page
+    return res.redirect('/auth')
 }
 
 /**

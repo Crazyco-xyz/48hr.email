@@ -16,6 +16,7 @@ const loginRouter = require('./routes/login')
 const errorRouter = require('./routes/error')
 const lockRouter = require('./routes/lock')
 const authRouter = require('./routes/auth')
+const accountRouter = require('./routes/account')
 const { sanitizeHtmlTwigFilter } = require('./views/twig-filters')
 
 const Helper = require('../../application/helper')
@@ -43,20 +44,22 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
 // Cookie parser for signed cookies (email verification)
-app.use(cookieParser(config.lock.sessionSecret))
+app.use(cookieParser(config.user.sessionSecret))
 
 // Session support (always enabled for forward verification and inbox locking)
 app.use(session({
-    secret: config.lock.sessionSecret,
+    secret: config.user.sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }))
 
-// Clear session when user goes Home so locked inboxes require password again
+// Clear lock session data when user goes Home (but preserve authentication)
 app.get('/', (req, res, next) => {
-    if (req.session) {
-        req.session.destroy(() => next())
+    if (req.session && req.session.lockedInbox) {
+        // Only clear lock-related data, preserve user authentication
+        delete req.session.lockedInbox
+        req.session.save(() => next())
     } else {
         next()
     }
@@ -87,6 +90,19 @@ app.use(
 )
 Twig.extendFilter('sanitizeHtml', sanitizeHtmlTwigFilter)
 
+// Middleware to expose user session to all templates
+app.use((req, res, next) => {
+    res.locals.authEnabled = config.user.authEnabled
+    res.locals.currentUser = null
+    if (req.session && req.session.userId && req.session.username && req.session.isAuthenticated) {
+        res.locals.currentUser = {
+            id: req.session.userId,
+            username: req.session.username
+        }
+    }
+    next()
+})
+
 // Middleware to show loading page until IMAP is ready
 app.use((req, res, next) => {
     const isImapReady = req.app.get('isImapReady')
@@ -99,6 +115,7 @@ app.use((req, res, next) => {
 app.use('/', loginRouter)
 if (config.user.authEnabled) {
     app.use('/', authRouter)
+    app.use('/', accountRouter)
 }
 app.use('/inbox', inboxRouter)
 app.use('/error', errorRouter)

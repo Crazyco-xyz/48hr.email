@@ -2,22 +2,41 @@
 
 {% block header %}
     <div class="action-links">
-        {% if authEnabled %}
-            {% if isLocked and hasAccess %}
-                <a href="#" id="removeLockBtn" aria-label="Remove password lock">Remove Lock</a>
-            {% elseif isLocked %}
-                <a href="#" id="unlockBtn" aria-label="Unlock inbox">Unlock</a>
-            {% else %}
-                <a href="#" id="lockBtn" aria-label="Protect inbox with password">Protect Inbox</a>
+        {% if currentUser %}
+            <!-- Inbox Dropdown (multiple actions when logged in) -->
+            <div class="action-dropdown">
+                <button class="dropdown-toggle" aria-label="Inbox actions">Inbox ▾</button>
+                <div class="dropdown-menu">
+                    <a href="#" id="forwardAllBtn" aria-label="Forward all emails">Forward All</a>
+                    {% if authEnabled %}
+                        {% if isLocked and hasAccess %}
+                            <a href="#" id="removeLockBtn" aria-label="Remove lock">Remove Lock</a>
+                        {% elseif not isLocked %}
+                            <a href="#" id="lockBtn" aria-label="Lock inbox to your account">Lock Inbox</a>
+                        {% endif %}
+                    {% endif %}
+                    <a href="/inbox/{{ address }}/delete-all" aria-label="Delete all emails">Wipe Inbox</a>
+                </div>
+            </div>
+
+            <!-- Account Dropdown (logged in) -->
+            {% if authEnabled %}
+                <div class="action-dropdown">
+                    <button class="dropdown-toggle" aria-label="Account menu">Account ▾</button>
+                    <div class="dropdown-menu">
+                        <a href="/account" aria-label="Account settings">Settings</a>
+                        <a href="/logout" aria-label="Logout">Logout</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Simple buttons when not logged in -->
+            <a href="/inbox/{{ address }}/delete-all" aria-label="Delete all emails">Wipe Inbox</a>
+            {% if authEnabled %}
+                <a href="/auth" aria-label="Login or Register">Account</a>
             {% endif %}
         {% endif %}
-        <a href="#" id="forwardAllBtn" aria-label="Forward all emails">Forward All</a>
-        <a href="/inbox/{{ address }}/delete-all" aria-label="Delete all emails">Wipe Inbox</a>
-        {% if authEnabled and hasAccess %}
-            <a href="/lock/logout" aria-label="Logout">Logout</a>
-        {% else %}
-            <a href="/logout" aria-label="Logout">Logout</a>
-        {% endif %}
+
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
             <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -93,21 +112,22 @@
     <div id="lockModal" class="modal" style="display: none;" data-lock-error="{{ error|default('') }}">
         <div class="modal-content">
             <span class="close" id="closeLock">&times;</span>
-            <h3>Protect Inbox</h3>
-            <p class="modal-description">Password-protect this inbox. Locked emails won't be deleted. Protection active for {{ locktimer }}hrs after last login.</p>
+            <h3>Lock Inbox</h3>
+            <p class="modal-description">Lock this inbox to your account. Only you will be able to access it while logged in.</p>
             {% if error and error == 'locking_disabled_for_example' %}
                 <p id="lockServerError" class="unlock-error">Locking is disabled for the example inbox.</p>
+            {% elseif error and error == 'max_locked_inboxes' %}
+                <p id="lockServerError" class="unlock-error">You have reached the maximum of 5 locked inboxes. Please remove a lock before adding a new one.</p>
+            {% elseif error and error == 'already_locked' %}
+                <p id="lockServerError" class="unlock-error">This inbox is already locked by another user.</p>
+            {% elseif error and error == 'not_your_lock' %}
+                <p id="lockServerError" class="unlock-error">You don't own the lock on this inbox.</p>
             {% endif %}
             <p id="lockErrorInline" class="unlock-error" style="display:none"></p>
             <form method="POST" action="/lock/lock">
                 <input type="hidden" name="address" value="{{ address }}">
                 <fieldset>
-                    <label for="lockPassword" class="floating-label">Password (min 8 characters)</label>
-                    <input type="password" id="lockPassword" name="password" placeholder="Password" required minlength="8" class="modal-input">
-                    
-                    <label for="lockConfirm" class="floating-label">Confirm Password</label>
-                    <input type="password" id="lockConfirm" placeholder="Confirm" required minlength="8" class="modal-input">
-                    
+                    <p>This inbox will be protected with your account. Only you will be able to access it while logged in.</p>
                     <button type="submit" class="button-primary modal-button">Lock Inbox</button>
                 </fieldset>
             </form>
@@ -116,45 +136,15 @@
     
     {% endif %}
 
-    {% if authEnabled and isLocked and not hasAccess %}
-    <!-- Unlock Modal -->
-    <div id="unlockModal" class="modal" style="display: none;" data-unlock-error="{{ unlockError|default('') }}">
-        <div class="modal-content">
-            <span class="close" id="closeUnlock">&times;</span>
-            <h3>Unlock Inbox</h3>
-            <p class="modal-description">Enter password to access this locked inbox.</p>
-            {% if unlockError %}
-                <p class="unlock-error">
-                    {% if unlockError == 'invalid_password' %}
-                        Invalid password. Please try again.
-                    {% elseif unlockError == 'missing_fields' %}
-                        Please provide a password.
-                    {% else %}
-                        An error occurred. Please try again.
-                    {% endif %}
-                </p>
-            {% endif %}
-            <form method="POST" action="/lock/unlock">
-                <input type="hidden" name="address" value="{{ address }}">
-                <input type="hidden" name="redirectTo" value="{{ redirectTo }}">
-                <fieldset>
-                    <label for="unlockPassword" class="floating-label">Password</label>
-                    <input type="password" id="unlockPassword" name="password" placeholder="Password" required class="modal-input">
-                    <button type="submit" class="button-primary modal-button">Unlock</button>
-                </fieldset>
-            </form>
-        </div>
-    </div>
-    
-    {% endif %}
+
 
     {% if authEnabled and isLocked and hasAccess %}
     <!-- Remove Lock Modal -->
     <div id="removeLockModal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close" id="closeRemoveLock">&times;</span>
-            <h3>Remove Password Lock</h3>
-            <p class="modal-description">Are you sure you want to remove the password lock from this inbox? This cannot be undone.</p>
+            <h3>Remove Lock</h3>
+            <p class="modal-description">Are you sure you want to remove the lock from this inbox? Anyone will be able to access it.</p>
             <form method="POST" action="/lock/remove">
                 <input type="hidden" name="address" value="{{ address }}">
                 <fieldset>
@@ -183,19 +173,38 @@
         <div class="modal-content">
             <span class="close" id="closeForwardAll">&times;</span>
             <h3>Forward All Emails</h3>
-            <p class="modal-description">Enter the email address to forward all emails in this inbox to. Limited to 25 emails maximum.</p>
-            {% if mailSummaries|length > 0 %}
-                <p class="modal-info">You have {{ mailSummaries|length }} email(s) in this inbox.</p>
+            
+            {% if not currentUser %}
+                <p class="modal-description auth-required">
+                    <strong>Login required:</strong> You must be logged in to forward emails.
+                </p>
+                <div class="auth-prompt">
+                    <a href="/auth?redirect={{ ('/inbox/' ~ address)|url_encode }}" class="button button-primary">Login or Register</a>
+                </div>
+            {% elseif userForwardEmails|length == 0 %}
+                <p class="modal-description">You don't have any verified forwarding emails yet.</p>
+                <p class="modal-description">Add a verified email address in your account settings to enable forwarding.</p>
+                <a href="/account" class="button button-primary">Go to Account Settings</a>
+            {% else %}
+                <p class="modal-description">Select a verified email address to forward all emails to. Limited to 25 emails maximum.</p>
+                {% if mailSummaries|length > 0 %}
+                    <p class="modal-info">You have {{ mailSummaries|length }} email(s) in this inbox.</p>
+                {% endif %}
+                <p id="forwardAllError" class="unlock-error" style="display:none"></p>
+                <form method="POST" action="/inbox/{{ address }}/forward-all">
+                    <fieldset>
+                        <label for="forwardAllEmail" class="floating-label">Forward to</label>
+                        <select id="forwardAllEmail" name="destinationEmail" required class="modal-input">
+                            <option value="">Select an email...</option>
+                            {% for email in userForwardEmails %}
+                                <option value="{{ email.email }}">{{ email.email }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-hint">Manage emails in <a href="/account">Account Settings</a></small>
+                        <button type="submit" class="button-primary modal-button">Forward All</button>
+                    </fieldset>
+                </form>
             {% endif %}
-            <p id="forwardAllError" class="unlock-error" style="display:none"></p>
-            <form method="POST" action="/inbox/{{ address }}/forward-all">
-                <fieldset>
-                    <label for="forwardAllEmail" class="floating-label">Destination Email</label>
-                    <input type="email" id="forwardAllEmail" name="destinationEmail" 
-                           placeholder="recipient@example.com" required class="modal-input">
-                    <button type="submit" class="button-primary modal-button">Forward All</button>
-                </fieldset>
-            </form>
         </div>
     </div>
 {% endblock %}

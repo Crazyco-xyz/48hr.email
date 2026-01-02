@@ -9,6 +9,7 @@ const CryptoDetector = require('../../../application/crypto-detector')
 const helper = new(Helper)
 const cryptoDetector = new CryptoDetector()
 const { checkLockAccess } = require('../middleware/lock')
+const { requireAuth, optionalAuth } = require('../middleware/auth')
 
 const purgeTime = helper.purgeTimeElemetBuilder()
 
@@ -97,7 +98,7 @@ const validateForwardRequest = [
     })
 ]
 
-router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLockAccess, async(req, res, next) => {
+router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, optionalAuth, checkLockAccess, async(req, res, next) => {
     try {
         const mailProcessingService = req.app.get('mailProcessingService')
         if (!mailProcessingService) {
@@ -109,8 +110,25 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLo
         const largestUid = await req.app.locals.imapService.getLargestUid()
         const totalcount = helper.countElementBuilder(count, largestUid)
         debug(`Rendering inbox with ${count} total mails`)
+
+        // Check lock status
         const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
-        const hasAccess = req.session && req.session.lockedInbox === req.params.address
+        const userId = req.session ? .userId
+        const isAuthenticated = req.session ? .isAuthenticated
+
+        // Check if user has access (either owns the lock or has session access)
+        const hasAccess = isAuthenticated && userId && inboxLock ?
+            (inboxLock.isLockedByUser(req.params.address, userId) || req.session.lockedInbox === req.params.address) :
+            (req.session ? .lockedInbox === req.params.address)
+
+        // Get user's verified emails if logged in
+        let userForwardEmails = []
+        if (req.session && req.session.userId) {
+            const userRepository = req.app.get('userRepository')
+            if (userRepository) {
+                userForwardEmails = userRepository.getForwardEmails(req.session.userId)
+            }
+        }
 
         // Pull any lock error from session and clear it after reading
         const lockError = req.session ? req.session.lockError : undefined
@@ -138,6 +156,8 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLo
             mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
             branding: config.http.branding,
             authEnabled: config.user.authEnabled,
+            isAuthenticated: req.session && req.session.userId ? true : false,
+            userForwardEmails: userForwardEmails,
             isLocked: isLocked,
             hasAccess: hasAccess,
             unlockError: unlockErrorSession,
@@ -163,6 +183,7 @@ router.get(
     '^/:address/:uid([0-9]+)',
     sanitizeAddress,
     validateDomain,
+    optionalAuth,
     checkLockAccess,
     async(req, res, next) => {
         try {
@@ -190,7 +211,22 @@ router.get(
 
                 const inboxLock = req.app.get('inboxLock')
                 const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
-                const hasAccess = req.session && req.session.lockedInbox === req.params.address
+                const userId = req.session ? .userId
+                const isAuthenticated = req.session ? .isAuthenticated
+
+                // Check if user has access (either owns the lock or has session access)
+                const hasAccess = isAuthenticated && userId && inboxLock ?
+                    (inboxLock.isLockedByUser(req.params.address, userId) || req.session.lockedInbox === req.params.address) :
+                    (req.session ? .lockedInbox === req.params.address)
+
+                // Get user's verified emails if logged in
+                let userForwardEmails = []
+                if (req.session && req.session.userId) {
+                    const userRepository = req.app.get('userRepository')
+                    if (userRepository) {
+                        userForwardEmails = userRepository.getForwardEmails(req.session.userId)
+                    }
+                }
 
                 // Pull error message from session and clear it
                 const errorMessage = req.session ? req.session.errorMessage : undefined
@@ -217,6 +253,8 @@ router.get(
                     uid: req.params.uid,
                     branding: config.http.branding,
                     authEnabled: config.user.authEnabled,
+                    isAuthenticated: req.session && req.session.userId ? true : false,
+                    userForwardEmails: userForwardEmails,
                     isLocked: isLocked,
                     hasAccess: hasAccess,
                     errorMessage: errorMessage,
@@ -418,9 +456,10 @@ router.get(
     }
 )
 
-// POST route for forwarding a single email
+// POST route for forwarding a single email (requires authentication)
 router.post(
     '^/:address/:uid/forward',
+    requireAuth,
     forwardLimiter,
     validateDomain,
     checkLockAccess,
@@ -436,51 +475,36 @@ router.post(
             }
 
             const mailProcessingService = req.app.get('mailProcessingService')
+            const userRepository = req.app.get('userRepository')
             const { destinationEmail } = req.body
             const uid = parseInt(req.params.uid, 10)
 
-            // Check if destination email is verified via signed cookie
-            const verifiedEmail = req.signedCookies.verified_email
+            // Check if destination email is in user's verified emails
+            const userEmails = userRepository.getForwardEmails(req.session.userId)
+            const isVerified = userEmails.some(e => e.email.toLowerCase() === destinationEmail.toLowerCase())
 
-            if (verifiedEmail && verifiedEmail.toLowerCase() === destinationEmail.toLowerCase()) {
-                // Email is verified, proceed with forwarding
-                debug(`Forwarding email ${uid} from ${req.params.address} to ${destinationEmail} (verified)`)
+            if (!isVerified) {
+                debug(`Email ${destinationEmail} not in user's verified emails`)
+                req.session.errorMessage = 'Please select a verified email address from your account'
+                return res.redirect(`/inbox/${req.params.address}/${req.params.uid}`)
+            }
 
-                const result = await mailProcessingService.forwardEmail(
-                    req.params.address,
-                    uid,
-                    destinationEmail
-                )
+            // Email is verified, proceed with forwarding
+            debug(`Forwarding email ${uid} from ${req.params.address} to ${destinationEmail} (user verified)`)
 
-                if (result.success) {
-                    debug(`Email ${uid} forwarded successfully to ${destinationEmail}`)
-                    return res.redirect(`/inbox/${req.params.address}/${uid}?forwarded=true`)
-                } else {
-                    debug(`Failed to forward email ${uid}: ${result.error}`)
-                    req.session.errorMessage = result.error
-                    return res.redirect(`/inbox/${req.params.address}/${uid}`)
-                }
+            const result = await mailProcessingService.forwardEmail(
+                req.params.address,
+                uid,
+                destinationEmail
+            )
+
+            if (result.success) {
+                debug(`Email ${uid} forwarded successfully to ${destinationEmail}`)
+                return res.redirect(`/inbox/${req.params.address}/${uid}?forwarded=true`)
             } else {
-                // Email not verified, initiate verification flow
-                debug(`Email ${destinationEmail} not verified, initiating verification`)
-
-                const verificationResult = await mailProcessingService.initiateForwardVerification(
-                    req.params.address,
-                    destinationEmail, [uid]
-                )
-
-                if (verificationResult.success) {
-                    debug(`Verification email sent to ${destinationEmail}`)
-                    return res.redirect(`/inbox/${req.params.address}/${uid}?verificationSent=true&email=${encodeURIComponent(destinationEmail)}`)
-                } else if (verificationResult.cooldownSeconds) {
-                    debug(`Verification rate limited for ${destinationEmail}`)
-                    req.session.errorMessage = verificationResult.error
-                    return res.redirect(`/inbox/${req.params.address}/${uid}`)
-                } else {
-                    debug(`Failed to send verification email: ${verificationResult.error}`)
-                    req.session.errorMessage = verificationResult.error || 'Failed to send verification email'
-                    return res.redirect(`/inbox/${req.params.address}/${uid}`)
-                }
+                debug(`Failed to forward email ${uid}: ${result.error}`)
+                req.session.errorMessage = result.error
+                return res.redirect(`/inbox/${req.params.address}/${uid}`)
             }
         } catch (error) {
             debug(`Error forwarding email ${req.params.uid}: ${error.message}`)
@@ -491,9 +515,10 @@ router.post(
     }
 )
 
-// POST route for forwarding all emails in an inbox
+// POST route for forwarding all emails in an inbox (requires authentication)
 router.post(
     '^/:address/forward-all',
+    requireAuth,
     forwardLimiter,
     validateDomain,
     checkLockAccess,
@@ -509,40 +534,21 @@ router.post(
             }
 
             const mailProcessingService = req.app.get('mailProcessingService')
+            const userRepository = req.app.get('userRepository')
             const { destinationEmail } = req.body
 
-            // Check if destination email is verified via signed cookie
-            const verifiedEmail = req.signedCookies.verified_email
+            // Check if destination email is in user's verified emails
+            const userEmails = userRepository.getForwardEmails(req.session.userId)
+            const isVerified = userEmails.some(e => e.email.toLowerCase() === destinationEmail.toLowerCase())
 
-            if (!verifiedEmail || verifiedEmail.toLowerCase() !== destinationEmail.toLowerCase()) {
-                // Email not verified, initiate verification flow
-                debug(`Email ${destinationEmail} not verified, initiating verification for forward-all`)
-
-                const mailSummaries = await mailProcessingService.getMailSummaries(req.params.address)
-                const uids = mailSummaries.map(m => m.uid)
-
-                const verificationResult = await mailProcessingService.initiateForwardVerification(
-                    req.params.address,
-                    destinationEmail,
-                    uids
-                )
-
-                if (verificationResult.success) {
-                    debug(`Verification email sent to ${destinationEmail}`)
-                    return res.redirect(`/inbox/${req.params.address}?verificationSent=true&email=${encodeURIComponent(destinationEmail)}`)
-                } else if (verificationResult.cooldownSeconds) {
-                    debug(`Verification rate limited for ${destinationEmail}`)
-                    req.session.errorMessage = verificationResult.error
-                    return res.redirect(`/inbox/${req.params.address}`)
-                } else {
-                    debug(`Failed to send verification email: ${verificationResult.error}`)
-                    req.session.errorMessage = verificationResult.error || 'Failed to send verification email'
-                    return res.redirect(`/inbox/${req.params.address}`)
-                }
+            if (!isVerified) {
+                debug(`Email ${destinationEmail} not in user's verified emails`)
+                req.session.errorMessage = 'Please select a verified email address from your account'
+                return res.redirect(`/inbox/${req.params.address}`)
             }
 
             // Email is verified, proceed with bulk forwarding
-            debug(`Forwarding all emails from ${req.params.address} to ${destinationEmail} (verified)`)
+            debug(`Forwarding all emails from ${req.params.address} to ${destinationEmail} (user verified)`)
 
             const mailSummaries = await mailProcessingService.getMailSummaries(req.params.address)
 
