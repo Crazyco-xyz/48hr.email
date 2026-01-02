@@ -10,30 +10,28 @@ const ClientNotification = require('./infrastructure/web/client-notification')
 const ImapService = require('./application/imap-service')
 const MailProcessingService = require('./application/mail-processing-service')
 const SmtpService = require('./application/smtp-service')
+const AuthService = require('./application/auth-service')
 const MailRepository = require('./domain/mail-repository')
 const InboxLock = require('./domain/inbox-lock')
 const VerificationStore = require('./domain/verification-store')
+const UserRepository = require('./domain/user-repository')
 
 const clientNotification = new ClientNotification()
 debug('Client notification service initialized')
 clientNotification.use(io)
 
-let inboxLock = null
-    // Initialize inbox locking if enabled
-if (config.lock.enabled) {
-    inboxLock = new InboxLock(config.lock.dbPath)
-    app.set('inboxLock', inboxLock)
-    console.log(`Inbox locking enabled (auto-release after ${config.lock.releaseHours} hours)`)
-
+// Initialize inbox locking (always available for registered users)
+const inboxLock = new InboxLock(config.user.lockDbPath)
+app.set('inboxLock', inboxLock)
+debug('Inbox lock service initialized')
     // Check for inactive locked inboxes
-    setInterval(() => {
-        const inactive = inboxLock.getInactive(config.lock.releaseHours)
-        if (inactive.length > 0) {
-            console.log(`Releasing ${inactive.length} inactive locked inbox(es)`)
-            inactive.forEach(address => inboxLock.release(address))
-        }
-    }, config.imap.refreshIntervalSeconds * 1000)
-}
+setInterval(() => {
+    const inactive = inboxLock.getInactive(config.user.lockReleaseHours)
+    if (inactive.length > 0) {
+        debug(`Releasing ${inactive.length} inactive locked inbox(es)`)
+        inactive.forEach(address => inboxLock.release(address))
+    }
+}, config.imap.refreshIntervalSeconds * 1000)
 
 const imapService = new ImapService(config, inboxLock)
 debug('IMAP service initialized')
@@ -44,6 +42,22 @@ debug('SMTP service initialized')
 const verificationStore = new VerificationStore()
 debug('Verification store initialized')
 app.set('verificationStore', verificationStore)
+
+// Initialize user repository and auth service (if enabled)
+if (config.user.authEnabled) {
+    const userRepository = new UserRepository(config.user.databasePath)
+    debug('User repository initialized')
+    app.set('userRepository', userRepository)
+
+    const authService = new AuthService(userRepository, config)
+    debug('Auth service initialized')
+    app.set('authService', authService)
+    console.log('User authentication system enabled')
+} else {
+    app.set('userRepository', null)
+    app.set('authService', null)
+    debug('User authentication system disabled')
+}
 
 const mailProcessingService = new MailProcessingService(
     new MailRepository(),

@@ -297,6 +297,231 @@ text-muted {
 }
 
 
+/* Auth pages */
+
+.auth-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+}
+
+.auth-card {
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-border-dark);
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.auth-card h1 {
+    margin-bottom: 0.5rem;
+    color: var(--color-accent-purple);
+}
+
+.auth-subtitle {
+    color: var(--color-text-gray);
+    margin-bottom: 2rem;
+}
+
+.auth-card fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.auth-card label {
+    display: block;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.auth-card small {
+    display: block;
+    color: var(--color-text-gray);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.auth-card input[type="text"],
+.auth-card input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border-dark);
+    border-radius: 4px;
+    background: var(--color-bg-medium);
+    color: var(--color-text-light);
+}
+
+.auth-actions {
+    margin-top: 2rem;
+}
+
+.button-primary {
+    width: 100%;
+    background: var(--color-accent-purple);
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.button-primary:hover {
+    background: var(--color-accent-purple-light);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border-dark);
+}
+
+.auth-footer a {
+    color: var(--color-accent-purple);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.auth-features {
+    padding: 2rem;
+}
+
+.auth-features h3,
+.auth-features h4 {
+    color: var(--color-accent-purple);
+    margin-bottom: 1rem;
+}
+
+.auth-features ul {
+    list-style: none;
+    padding: 0;
+}
+
+.auth-features li {
+    padding: 0.75rem 0;
+    font-size: 1.05rem;
+}
+
+.auth-guest-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border-dark);
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    .auth-features {
+        padding: 1rem;
+    }
+}
+
+
+/* Verification success page */
+
+.verification-success-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: 2rem;
+}
+
+.verification-success-card {
+    background: var(--color-bg-dark);
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    padding: 3rem 2rem;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 6px var(--overlay-black-40);
+}
+
+.verification-success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    color: #28a745;
+}
+
+.verification-success-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.verification-success-card h1 {
+    color: #28a745;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+}
+
+.verification-details {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--overlay-white-05);
+    border-radius: 5px;
+}
+
+.verification-details p {
+    margin: 0.5rem 0;
+}
+
+.verified-email {
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--color-accent-purple);
+    word-break: break-all;
+}
+
+.verification-info {
+    margin: 2rem 0;
+    text-align: left;
+    padding: 0 1rem;
+}
+
+.verification-info p {
+    margin: 0.75rem 0;
+    line-height: 1.6;
+}
+
+.verification-actions {
+    margin-top: 2rem;
+}
+
+.verification-actions .button-primary {
+    display: inline-block;
+    width: auto;
+    padding: 0.75rem 2rem;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+@media (max-width: 600px) {
+    .verification-success-card {
+        padding: 2rem 1rem;
+    }
+    .verification-success-card h1 {
+        font-size: 1.5rem;
+    }
+}
+
+
 /* Reset apple form styles */
 
 input,

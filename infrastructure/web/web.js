@@ -15,6 +15,7 @@ const inboxRouter = require('./routes/inbox')
 const loginRouter = require('./routes/login')
 const errorRouter = require('./routes/error')
 const lockRouter = require('./routes/lock')
+const authRouter = require('./routes/auth')
 const { sanitizeHtmlTwigFilter } = require('./views/twig-filters')
 
 const Helper = require('../../application/helper')
@@ -96,11 +97,12 @@ app.use((req, res, next) => {
 })
 
 app.use('/', loginRouter)
+if (config.user.authEnabled) {
+    app.use('/', authRouter)
+}
 app.use('/inbox', inboxRouter)
 app.use('/error', errorRouter)
-if (config.lock.enabled) {
-    app.use('/lock', lockRouter)
-}
+app.use('/lock', lockRouter)
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {

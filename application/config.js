@@ -74,11 +74,21 @@ const config = {
         hideOther: parseBool(process.env.HTTP_HIDE_OTHER)
     },
 
-    lock: {
-        enabled: parseBool(process.env.LOCK_ENABLED) || false,
-        sessionSecret: parseValue(process.env.LOCK_SESSION_SECRET) || 'change-me-in-production',
-        dbPath: parseValue(process.env.LOCK_DATABASE_PATH) || './db/locked-inboxes.db',
-        releaseHours: Number(process.env.LOCK_RELEASE_HOURS) || 720 // 30 days default
+    user: {
+        // Authentication System
+        authEnabled: parseBool(process.env.USER_AUTH_ENABLED) || false,
+
+        // Database
+        databasePath: parseValue(process.env.USER_DATABASE_PATH) || './db/users.db',
+        lockDbPath: parseValue(process.env.LOCK_DATABASE_PATH) || './db/locked-inboxes.db',
+
+        // Session & Auth
+        sessionSecret: parseValue(process.env.USER_SESSION_SECRET) || 'change-me-in-production',
+
+        // Feature Limits
+        maxForwardEmails: Number(process.env.USER_MAX_FORWARD_EMAILS) || 5,
+        maxLockedInboxes: Number(process.env.USER_MAX_LOCKED_INBOXES) || 5,
+        lockReleaseHours: Number(process.env.LOCK_RELEASE_HOURS) || 720 // 30 days default
     }
 };
 

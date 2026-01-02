@@ -6,7 +6,7 @@
         <a href="#" id="forwardBtn" aria-label="Forward this email">Forward Email</a>
         <a href="/inbox/{{ address }}/{{ uid }}/delete" aria-label="Delete this email">Delete Email</a>
         <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank" aria-label="View raw email">View Raw</a>
-        {% if lockEnabled and isLocked and hasAccess %}
+        {% if authEnabled and isLocked and hasAccess %}
             <a href="/lock/logout" aria-label="Logout">Logout</a>
         {% else %}
             <a href="/logout" aria-label="Logout">Logout</a>

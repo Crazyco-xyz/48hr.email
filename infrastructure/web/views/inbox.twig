@@ -2,7 +2,7 @@
 
 {% block header %}
     <div class="action-links">
-        {% if lockEnabled %}
+        {% if authEnabled %}
             {% if isLocked and hasAccess %}
                 <a href="#" id="removeLockBtn" aria-label="Remove password lock">Remove Lock</a>
             {% elseif isLocked %}
@@ -13,7 +13,7 @@
         {% endif %}
         <a href="#" id="forwardAllBtn" aria-label="Forward all emails">Forward All</a>
         <a href="/inbox/{{ address }}/delete-all" aria-label="Delete all emails">Wipe Inbox</a>
-        {% if lockEnabled and hasAccess %}
+        {% if authEnabled and hasAccess %}
             <a href="/lock/logout" aria-label="Logout">Logout</a>
         {% else %}
             <a href="/logout" aria-label="Logout">Logout</a>
@@ -88,7 +88,7 @@
         </blockquote>
     {% endif %}
     <div class="refresh-countdown" id="refreshCountdown" title="New emails are fetched from the server only when the timer hits zero. Reloading this page has no effect on fetching.">Fetching new mails in <span id="refreshTimer">--</span>s</div>
-    {% if lockEnabled and not isLocked %}
+    {% if authEnabled and not isLocked %}
     <!-- Lock Modal -->
     <div id="lockModal" class="modal" style="display: none;" data-lock-error="{{ error|default('') }}">
         <div class="modal-content">
@@ -116,7 +116,7 @@
     
     {% endif %}
 
-    {% if lockEnabled and isLocked and not hasAccess %}
+    {% if authEnabled and isLocked and not hasAccess %}
     <!-- Unlock Modal -->
     <div id="unlockModal" class="modal" style="display: none;" data-unlock-error="{{ unlockError|default('') }}">
         <div class="modal-content">
@@ -148,7 +148,7 @@
     
     {% endif %}
 
-    {% if lockEnabled and isLocked and hasAccess %}
+    {% if authEnabled and isLocked and hasAccess %}
     <!-- Remove Lock Modal -->
     <div id="removeLockModal" class="modal" style="display: none;">
         <div class="modal-content">

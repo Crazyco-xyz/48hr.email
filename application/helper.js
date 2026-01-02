@@ -199,7 +199,7 @@ class Helper {
      * @returns {string} - HMAC signature (hex)
      */
     signCookie(email) {
-        const secret = config.lock.sessionSecret
+        const secret = config.user.sessionSecret
         const hmac = crypto.createHmac('sha256', secret)
         hmac.update(email.toLowerCase())
         const signature = hmac.digest('hex')
