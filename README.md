@@ -65,7 +65,7 @@ All data is being removed 48hrs after they have reached the mail server.
 ## How can I set this up myself?
 
 **Prerequisites:**
-- Mail server with IMAP
+- Mail server with IMAP (Optionally also SMTP for email forwarding feature)
 - One or multiple domains dedicated to this
 - git & nodejs
 
@@ -129,15 +129,6 @@ docker compose up -d
 
 If desired, you can also move the config file somewhere else (change volume mount accordingly)
 </details>
-
-<br>
-
------
-
-## TODO (PRs welcome)
-
-- Add user registration:
-    - Allow people to forward single emails, or an inbox in its current state
 
 <br>
 

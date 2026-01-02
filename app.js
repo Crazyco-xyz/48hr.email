@@ -9,6 +9,7 @@ const { app, io, server } = require('./infrastructure/web/web')
 const ClientNotification = require('./infrastructure/web/client-notification')
 const ImapService = require('./application/imap-service')
 const MailProcessingService = require('./application/mail-processing-service')
+const SmtpService = require('./application/smtp-service')
 const MailRepository = require('./domain/mail-repository')
 const InboxLock = require('./domain/inbox-lock')
 
@@ -35,11 +36,16 @@ if (config.lock.enabled) {
 
 const imapService = new ImapService(config, inboxLock)
 debug('IMAP service initialized')
+
+const smtpService = new SmtpService(config)
+debug('SMTP service initialized')
+
 const mailProcessingService = new MailProcessingService(
     new MailRepository(),
     imapService,
     clientNotification,
-    config
+    config,
+    smtpService
 )
 debug('Mail processing service initialized')
 

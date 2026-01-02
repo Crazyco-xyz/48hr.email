@@ -3,6 +3,7 @@
 {% block header %}
     <div class="action-links">
         <a href="/inbox/{{ address }}" aria-label="Return to inbox">← Return to inbox</a>
+        <a href="#" id="forwardBtn" aria-label="Forward this email">Forward Email</a>
         <a href="/inbox/{{ address }}/{{ uid }}/delete" aria-label="Delete this email">Delete Email</a>
         <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank" aria-label="View raw email">View Raw</a>
         {% if lockEnabled and isLocked and hasAccess %}
@@ -22,6 +23,11 @@
 {% endblock %}
 
 {% block body %}
+    {% if forwardSuccess %}
+        <div class="success-message">
+            ✓ Email forwarded successfully!
+        </div>
+    {% endif %}
     <div class="mail-container">
         <div class="mail-header">
             <h1 class="mail-subject">{{ mail.subject }}</h1>
@@ -88,16 +94,29 @@
         {% endif %}
     </div>
 
+    <!-- Forward Email Modal -->
+    <div id="forwardModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeForward">&times;</span>
+            <h3>Forward Email</h3>
+            <p class="modal-description">Enter the email address to forward this message to.</p>
+            {% if errorMessage %}
+                <p class="unlock-error">{{ errorMessage }}</p>
+            {% endif %}
+            <p id="forwardError" class="unlock-error" style="display:none"></p>
+            <form method="POST" action="/inbox/{{ address }}/{{ uid }}/forward">
+                <fieldset>
+                    <label for="forwardEmail" class="floating-label">Destination Email</label>
+                    <input type="email" id="forwardEmail" name="destinationEmail" 
+                           placeholder="recipient@example.com" required class="modal-input">
+                    <button type="submit" class="button-primary modal-button">Forward</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block footer %}
     {{ parent() }}
-    <script>
-        // Initialize crypto keys toggle
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.utils && typeof window.utils.initCryptoKeysToggle === 'function') {
-                window.utils.initCryptoKeysToggle();
-            }
-        });
-    </script>
 {% endblock %}

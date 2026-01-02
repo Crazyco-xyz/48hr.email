@@ -361,6 +361,173 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function initForwardModal() {
+        const forwardModal = document.getElementById('forwardModal');
+        const forwardBtn = document.getElementById('forwardBtn');
+        const closeForward = document.getElementById('closeForward');
+        const forwardForm = document.querySelector('#forwardModal form');
+        const forwardEmail = document.getElementById('forwardEmail');
+        const forwardError = document.getElementById('forwardError');
+
+        if (!forwardModal || !forwardBtn) return;
+
+        const openModal = (m) => { if (m) m.style.display = 'block'; };
+        const closeModal = (m) => { if (m) m.style.display = 'none'; };
+
+        forwardBtn.onclick = function(e) {
+            e.preventDefault();
+            openModal(forwardModal);
+            if (forwardEmail) forwardEmail.focus();
+        };
+
+        if (closeForward) {
+            closeForward.onclick = function() {
+                closeModal(forwardModal);
+                if (forwardError) forwardError.style.display = 'none';
+            };
+        }
+
+        if (forwardForm) {
+            forwardForm.addEventListener('submit', function(e) {
+                const email = forwardEmail ? forwardEmail.value.trim() : '';
+
+                // Basic client-side validation
+                if (!email) {
+                    e.preventDefault();
+                    if (forwardError) {
+                        forwardError.textContent = 'Please enter an email address.';
+                        forwardError.style.display = 'block';
+                    }
+                    return;
+                }
+
+                // Simple email format validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    if (forwardError) {
+                        forwardError.textContent = 'Please enter a valid email address.';
+                        forwardError.style.display = 'block';
+                    }
+                    return;
+                }
+
+                if (forwardError) forwardError.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === forwardModal) {
+                closeModal(forwardModal);
+                if (forwardError) forwardError.style.display = 'none';
+            }
+        });
+
+        // Check if there's a server error and re-open modal
+        const serverError = forwardModal.querySelector('.unlock-error');
+        if (serverError && serverError.textContent.trim() && !serverError.id) {
+            openModal(forwardModal);
+            if (forwardEmail) forwardEmail.focus();
+        }
+
+        // Check for success message in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('forwarded') === 'true') {
+            // Remove the query param from URL without reload
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
+        }
+    }
+
+    function initForwardAllModal() {
+        const forwardAllModal = document.getElementById('forwardAllModal');
+        const forwardAllBtn = document.getElementById('forwardAllBtn');
+        const closeForwardAll = document.getElementById('closeForwardAll');
+        const forwardAllForm = document.querySelector('#forwardAllModal form');
+        const forwardAllEmail = document.getElementById('forwardAllEmail');
+        const forwardAllError = document.getElementById('forwardAllError');
+
+        if (!forwardAllModal || !forwardAllBtn) return;
+
+        const openModal = (m) => { if (m) m.style.display = 'block'; };
+        const closeModal = (m) => { if (m) m.style.display = 'none'; };
+
+        forwardAllBtn.onclick = function(e) {
+            e.preventDefault();
+            openModal(forwardAllModal);
+            if (forwardAllEmail) forwardAllEmail.focus();
+        };
+
+        if (closeForwardAll) {
+            closeForwardAll.onclick = function() {
+                closeModal(forwardAllModal);
+                if (forwardAllError) forwardAllError.style.display = 'none';
+            };
+        }
+
+        if (forwardAllForm) {
+            forwardAllForm.addEventListener('submit', function(e) {
+                const email = forwardAllEmail ? forwardAllEmail.value.trim() : '';
+
+                // Basic client-side validation
+                if (!email) {
+                    e.preventDefault();
+                    if (forwardAllError) {
+                        forwardAllError.textContent = 'Please enter an email address.';
+                        forwardAllError.style.display = 'block';
+                    }
+                    return;
+                }
+
+                // Simple email format validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    if (forwardAllError) {
+                        forwardAllError.textContent = 'Please enter a valid email address.';
+                        forwardAllError.style.display = 'block';
+                    }
+                    return;
+                }
+
+                if (forwardAllError) forwardAllError.style.display = 'none';
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === forwardAllModal) {
+                closeModal(forwardAllModal);
+                if (forwardAllError) forwardAllError.style.display = 'none';
+            }
+        });
+
+        // Check for success message in URL
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Check if we just came from a forward all attempt with an error
+        // Look for error message in the page that might be related to forwarding
+        const pageErrorDiv = document.querySelector('.unlock-error');
+        if (pageErrorDiv && !urlParams.get('forwardedAll')) {
+            const errorText = pageErrorDiv.textContent.trim();
+            // Check if error is related to forwarding
+            if (errorText.includes('forward') || errorText.includes('email') || errorText.includes('25')) {
+                openModal(forwardAllModal);
+                if (forwardAllEmail) forwardAllEmail.focus();
+                // Move error into modal
+                if (forwardAllError) {
+                    forwardAllError.textContent = errorText;
+                    forwardAllError.style.display = 'block';
+                }
+            }
+        }
+
+        if (urlParams.get('forwardedAll')) {
+            // Remove the query param from URL without reload
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
+        }
+    }
+
     function initRefreshCountdown(refreshInterval) {
         const refreshTimer = document.getElementById('refreshTimer');
         if (!refreshTimer || !refreshInterval) return;
@@ -377,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Expose utilities and run them
-    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown, initCryptoKeysToggle };
+    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown, initCryptoKeysToggle, initForwardModal, initForwardAllModal };
     formatEmailDates();
     formatMailDate();
     initLockModals();
@@ -385,4 +552,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initQrModal();
     initHamburgerMenu();
     initThemeToggle();
+    initForwardModal();
+    initCryptoKeysToggle();
 });

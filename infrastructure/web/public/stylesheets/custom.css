@@ -931,6 +931,16 @@ label {
     font-size: 1.4rem;
 }
 
+.modal-info {
+    color: var(--color-text-primary);
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: var(--overlay-purple-08);
+    border-left: 3px solid var(--color-accent-purple);
+    border-radius: 4px;
+    font-size: 1.3rem;
+}
+
 .close {
     float: right;
     font-size: 2.8rem;
@@ -990,6 +1000,19 @@ label {
     padding: 0.8rem;
     background: var(--overlay-warning-10);
     border-left: 3px solid var(--color-warning);
+}
+
+
+/* Success Messages */
+
+.success-message {
+    color: #2ecc71;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(46, 204, 113, 0.1);
+    border-left: 3px solid #2ecc71;
+    border-radius: 4px;
+    font-weight: 500;
 }
 
 

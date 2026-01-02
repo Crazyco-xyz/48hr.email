@@ -56,6 +56,16 @@ const config = {
         fetchConcurrency: Number(process.env.IMAP_CONCURRENCY) || 6
     },
 
+    smtp: {
+        enabled: parseBool(process.env.SMTP_ENABLED) || false,
+        host: parseValue(process.env.SMTP_HOST),
+        port: Number(process.env.SMTP_PORT) || 465,
+        secure: parseBool(process.env.SMTP_SECURE) || true,
+        user: parseValue(process.env.SMTP_USER),
+        password: parseValue(process.env.SMTP_PASSWORD),
+        fromName: parseValue(process.env.SMTP_FROM_NAME) || '48hr.email Forwarding'
+    },
+
     http: {
         port: Number(process.env.HTTP_PORT),
         branding: parseValue(process.env.HTTP_BRANDING),

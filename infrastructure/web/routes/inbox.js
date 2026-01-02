@@ -1,6 +1,6 @@
 const express = require('express')
 const router = new express.Router()
-const { param } = require('express-validator')
+const { param, body, validationResult } = require('express-validator')
 const debug = require('debug')('48hr-email:routes')
 
 const config = require('../../../application/config')
@@ -40,6 +40,63 @@ const validateDomain = (req, res, next) => {
     next()
 }
 
+// Simple in-memory rate limiter for forwarding (5 requests per 15 minutes per IP)
+const forwardRateLimitStore = new Map()
+const forwardLimiter = (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress
+    const now = Date.now()
+    const windowMs = 15 * 60 * 1000 // 15 minutes
+    const maxRequests = 5
+
+    // Clean up old entries
+    for (const [key, data] of forwardRateLimitStore.entries()) {
+        if (now - data.resetTime > windowMs) {
+            forwardRateLimitStore.delete(key)
+        }
+    }
+
+    // Get or create entry for this IP
+    let ipData = forwardRateLimitStore.get(ip)
+    if (!ipData || now - ipData.resetTime > windowMs) {
+        ipData = { count: 0, resetTime: now }
+        forwardRateLimitStore.set(ip, ipData)
+    }
+
+    // Check if limit exceeded
+    if (ipData.count >= maxRequests) {
+        debug(`Rate limit exceeded for IP ${ip}`)
+        req.session.errorMessage = 'Too many forward requests. Please try again after 15 minutes.'
+        return res.redirect(`/inbox/${req.params.address}`)
+    }
+
+    // Increment counter
+    ipData.count++
+        next()
+}
+
+// Email validation middleware for forwarding
+const validateForwardRequest = [
+    sanitizeAddress,
+    body('destinationEmail')
+    .trim()
+    .isEmail()
+    .withMessage('Invalid email address format')
+    .normalizeEmail()
+    .custom((value) => {
+        // Prevent forwarding to temporary email addresses
+        const domain = value.split('@')[1]
+        if (!domain) {
+            throw new Error('Invalid email address')
+        }
+
+        const tempDomains = config.email.domains.map(d => d.toLowerCase())
+        if (tempDomains.includes(domain.toLowerCase())) {
+            throw new Error('Cannot forward to temporary email addresses')
+        }
+        return true
+    })
+]
+
 router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLockAccess, async(req, res, next) => {
     try {
         const mailProcessingService = req.app.get('mailProcessingService')
@@ -58,10 +115,15 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLo
         // Pull any lock error from session and clear it after reading
         const lockError = req.session ? req.session.lockError : undefined
         const unlockErrorSession = req.session ? req.session.unlockError : undefined
+        const errorMessage = req.session ? req.session.errorMessage : undefined
         if (req.session) {
             delete req.session.lockError
             delete req.session.unlockError
+            delete req.session.errorMessage
         }
+
+        // Check for forward all success flag
+        const forwardAllSuccess = req.query.forwardedAll ? parseInt(req.query.forwardedAll) : null
 
         res.render('inbox', {
             title: `${config.http.branding[0]} | ` + req.params.address,
@@ -80,7 +142,9 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLo
             redirectTo: req.originalUrl,
             expiryTime: config.email.purgeTime.time,
             expiryUnit: config.email.purgeTime.unit,
-            refreshInterval: config.imap.refreshIntervalSeconds
+            refreshInterval: config.imap.refreshIntervalSeconds,
+            errorMessage: errorMessage,
+            forwardAllSuccess: forwardAllSuccess
         })
     } catch (error) {
         debug(`Error loading inbox for ${req.params.address}:`, error.message)
@@ -122,6 +186,15 @@ router.get(
                 const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
                 const hasAccess = req.session && req.session.lockedInbox === req.params.address
 
+                // Pull error message from session and clear it
+                const errorMessage = req.session ? req.session.errorMessage : undefined
+                if (req.session) {
+                    delete req.session.errorMessage
+                }
+
+                // Check for forward success flag
+                const forwardSuccess = req.query.forwarded === 'true'
+
                 debug(`Rendering email view for UID ${req.params.uid}`)
                 res.render('mail', {
                     title: mail.subject + " | " + req.params.address,
@@ -135,7 +208,9 @@ router.get(
                     branding: config.http.branding,
                     lockEnabled: config.lock.enabled,
                     isLocked: isLocked,
-                    hasAccess: hasAccess
+                    hasAccess: hasAccess,
+                    errorMessage: errorMessage,
+                    forwardSuccess: forwardSuccess
                 })
             } else {
                 debug(`Email ${req.params.uid} not found for ${req.params.address}`)
@@ -327,6 +402,131 @@ router.get(
             debug(`Error fetching raw email ${req.params.uid}: ${error.message}`)
             console.error('Error while fetching raw email', error)
             next(error)
+        }
+    }
+)
+
+// POST route for forwarding a single email
+router.post(
+    '^/:address/:uid/forward',
+    forwardLimiter,
+    validateDomain,
+    checkLockAccess,
+    validateForwardRequest,
+    async(req, res, next) => {
+        try {
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+                const firstError = errors.array()[0].msg
+                debug(`Forward validation failed for ${req.params.address}: ${firstError}`)
+                req.session.errorMessage = firstError
+                return res.redirect(`/inbox/${req.params.address}/${req.params.uid}`)
+            }
+
+            const mailProcessingService = req.app.get('mailProcessingService')
+            const { destinationEmail } = req.body
+            const uid = parseInt(req.params.uid, 10)
+
+            debug(`Forwarding email ${uid} from ${req.params.address} to ${destinationEmail}`)
+
+            const result = await mailProcessingService.forwardEmail(
+                req.params.address,
+                uid,
+                destinationEmail
+            )
+
+            if (result.success) {
+                debug(`Email ${uid} forwarded successfully to ${destinationEmail}`)
+                return res.redirect(`/inbox/${req.params.address}/${uid}?forwarded=true`)
+            } else {
+                debug(`Failed to forward email ${uid}: ${result.error}`)
+                req.session.errorMessage = result.error
+                return res.redirect(`/inbox/${req.params.address}/${uid}`)
+            }
+        } catch (error) {
+            debug(`Error forwarding email ${req.params.uid}: ${error.message}`)
+            console.error('Error while forwarding email', error)
+            req.session.errorMessage = 'An unexpected error occurred while forwarding the email.'
+            res.redirect(`/inbox/${req.params.address}/${req.params.uid}`)
+        }
+    }
+)
+
+// POST route for forwarding all emails in an inbox
+router.post(
+    '^/:address/forward-all',
+    forwardLimiter,
+    validateDomain,
+    checkLockAccess,
+    validateForwardRequest,
+    async(req, res, next) => {
+        try {
+            const validationErrors = validationResult(req)
+            if (!validationErrors.isEmpty()) {
+                const firstError = validationErrors.array()[0].msg
+                debug(`Forward all validation failed for ${req.params.address}: ${firstError}`)
+                req.session.errorMessage = firstError
+                return res.redirect(`/inbox/${req.params.address}`)
+            }
+
+            const mailProcessingService = req.app.get('mailProcessingService')
+            const { destinationEmail } = req.body
+
+            debug(`Forwarding all emails from ${req.params.address} to ${destinationEmail}`)
+
+            const mailSummaries = await mailProcessingService.getMailSummaries(req.params.address)
+
+            // Limit bulk forwarding to 25 emails
+            const MAX_FORWARD_ALL = 25
+            if (mailSummaries.length > MAX_FORWARD_ALL) {
+                debug(`Forward all blocked: ${mailSummaries.length} emails exceeds limit of ${MAX_FORWARD_ALL}`)
+                req.session.errorMessage = `Cannot forward more than ${MAX_FORWARD_ALL} emails at once. You have ${mailSummaries.length} emails.`
+                return res.redirect(`/inbox/${req.params.address}`)
+            }
+
+            if (mailSummaries.length === 0) {
+                debug(`No emails to forward for ${req.params.address}`)
+                req.session.errorMessage = 'No emails to forward.'
+                return res.redirect(`/inbox/${req.params.address}`)
+            }
+
+            let successCount = 0
+            let failCount = 0
+            const failMessages = []
+
+            for (const mail of mailSummaries) {
+                const result = await mailProcessingService.forwardEmail(
+                    req.params.address,
+                    mail.uid,
+                    destinationEmail
+                )
+
+                if (result.success) {
+                    successCount++
+                    debug(`Successfully forwarded email UID ${mail.uid}`)
+                } else {
+                    failCount++
+                    debug(`Failed to forward email UID ${mail.uid}: ${result.error}`)
+                    failMessages.push(`UID ${mail.uid}: ${result.error}`)
+                }
+            }
+
+            debug(`Forward all complete: ${successCount} succeeded, ${failCount} failed`)
+
+            if (successCount > 0 && failCount === 0) {
+                return res.redirect(`/inbox/${req.params.address}?forwardedAll=${successCount}`)
+            } else if (successCount > 0 && failCount > 0) {
+                req.session.errorMessage = `Forwarded ${successCount} email(s), but ${failCount} failed.`
+                return res.redirect(`/inbox/${req.params.address}`)
+            } else {
+                req.session.errorMessage = `Failed to forward emails: ${failMessages[0] || 'Unknown error'}`
+                return res.redirect(`/inbox/${req.params.address}`)
+            }
+        } catch (error) {
+            debug(`Error forwarding all emails: ${error.message}`)
+            console.error('Error while forwarding all emails', error)
+            req.session.errorMessage = 'An unexpected error occurred while forwarding emails.'
+            res.redirect(`/inbox/${req.params.address}`)
         }
     }
 )

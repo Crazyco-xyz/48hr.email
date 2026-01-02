@@ -22,4 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.utils && typeof window.utils.initRefreshCountdown === 'function' && refreshInterval) {
         window.utils.initRefreshCountdown(refreshInterval);
     }
+
+    // Initialize forward all modal
+    if (window.utils && typeof window.utils.initForwardAllModal === 'function') {
+        window.utils.initForwardAllModal();
+    }
 });

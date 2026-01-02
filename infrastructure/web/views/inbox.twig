@@ -11,6 +11,7 @@
                 <a href="#" id="lockBtn" aria-label="Protect inbox with password">Protect Inbox</a>
             {% endif %}
         {% endif %}
+        <a href="#" id="forwardAllBtn" aria-label="Forward all emails">Forward All</a>
         <a href="/inbox/{{ address }}/delete-all" aria-label="Delete all emails">Wipe Inbox</a>
         {% if lockEnabled and hasAccess %}
             <a href="/lock/logout" aria-label="Logout">Logout</a>
@@ -31,6 +32,16 @@
 {% block body %}
     <script src="/javascripts/qrcode.js"></script>
     <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}" data-expiry-time="{{ expiryTime }}" data-expiry-unit="{{ expiryUnit }}" data-refresh-interval="{{ refreshInterval }}"></script>
+    {% if forwardAllSuccess %}
+        <div class="success-message">
+            ✓ Successfully forwarded {{ forwardAllSuccess }} email(s)!
+        </div>
+    {% endif %}
+    {% if errorMessage %}
+        <div class="unlock-error">
+            {{ errorMessage }}
+        </div>
+    {% endif %}
     <div class="inbox-container">
         <div class="inbox-header">
             <h1 class="inbox-title" id="copyAddress" title="Click to copy address">{{ address }}</h1>
@@ -162,4 +173,24 @@
         </div>
     </div>
 
+    <!-- Forward All Modal -->
+    <div id="forwardAllModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeForwardAll">&times;</span>
+            <h3>Forward All Emails</h3>
+            <p class="modal-description">Enter the email address to forward all emails in this inbox to. Limited to 25 emails maximum.</p>
+            {% if mailSummaries|length > 0 %}
+                <p class="modal-info">You have {{ mailSummaries|length }} email(s) in this inbox.</p>
+            {% endif %}
+            <p id="forwardAllError" class="unlock-error" style="display:none"></p>
+            <form method="POST" action="/inbox/{{ address }}/forward-all">
+                <fieldset>
+                    <label for="forwardAllEmail" class="floating-label">Destination Email</label>
+                    <input type="email" id="forwardAllEmail" name="destinationEmail" 
+                           placeholder="recipient@example.com" required class="modal-input">
+                    <button type="submit" class="button-primary modal-button">Forward All</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
 {% endblock %}

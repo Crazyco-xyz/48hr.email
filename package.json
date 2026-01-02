@@ -67,15 +67,17 @@
                 }
             ]
         },
-        "overrides": [{
-            "files": "public/javascripts/*.js",
-            "esnext": false,
-            "env": [
-                "browser"
-            ],
-            "globals": [
-                "io"
-            ]
-        }]
+        "overrides": [
+            {
+                "files": "public/javascripts/*.js",
+                "esnext": false,
+                "env": [
+                    "browser"
+                ],
+                "globals": [
+                    "io"
+                ]
+            }
+        ]
     }
 }

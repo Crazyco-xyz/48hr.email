@@ -7,12 +7,13 @@ const helper = new(Helper)
 
 
 class MailProcessingService extends EventEmitter {
-    constructor(mailRepository, imapService, clientNotification, config) {
+    constructor(mailRepository, imapService, clientNotification, config, smtpService = null) {
         super()
         this.mailRepository = mailRepository
         this.clientNotification = clientNotification
         this.imapService = imapService
         this.config = config
+        this.smtpService = smtpService
 
         // Cached methods:
         this._initCache()
@@ -211,6 +212,68 @@ class MailProcessingService extends EventEmitter {
         } catch (error) {
             debug('Error deleting old messages:', error.message)
             console.log('Cant delete old messages', error)
+        }
+    }
+
+    /**
+     * Forward an email to a destination address
+     * @param {string} address - The recipient address of the email to forward
+     * @param {number|string} uid - The UID of the email to forward
+     * @param {string} destinationEmail - The email address to forward to
+     * @returns {Promise<{success: boolean, error?: string, messageId?: string}>}
+     */
+    async forwardEmail(address, uid, destinationEmail) {
+        // Check if SMTP service is available
+        if (!this.smtpService) {
+            debug('Forward attempt failed: SMTP service not configured')
+            return {
+                success: false,
+                error: 'Email forwarding is not configured. Please configure SMTP settings.'
+            }
+        }
+
+        // Check if email exists in repository
+        const mailSummary = this.mailRepository.getForRecipient(address)
+            .find(mail => parseInt(mail.uid) === parseInt(uid))
+
+        if (!mailSummary) {
+            debug(`Forward attempt failed: Email not found (address: ${address}, uid: ${uid})`)
+            return {
+                success: false,
+                error: 'Email not found'
+            }
+        }
+
+        try {
+            // Fetch full email content using cached method
+            debug(`Fetching full email for forwarding (address: ${address}, uid: ${uid})`)
+            const fullMail = await this.getOneFullMail(address, uid, false)
+
+            if (!fullMail) {
+                debug('Forward attempt failed: Could not fetch full email')
+                return {
+                    success: false,
+                    error: 'Could not retrieve email content'
+                }
+            }
+
+            // Forward via SMTP service
+            debug(`Forwarding email to ${destinationEmail}`)
+            const result = await this.smtpService.forwardMail(fullMail, destinationEmail)
+
+            if (result.success) {
+                debug(`Email forwarded successfully. MessageId: ${result.messageId}`)
+            } else {
+                debug(`Email forwarding failed: ${result.error}`)
+            }
+
+            return result
+        } catch (error) {
+            debug('Error forwarding email:', error.message)
+            return {
+                success: false,
+                error: `Failed to forward email: ${error.message}`
+            }
         }
     }
 
