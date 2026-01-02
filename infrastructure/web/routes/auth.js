@@ -84,7 +84,7 @@ router.get('/auth', redirectIfAuthenticated, (req, res) => {
     delete req.session.errorMessage
     delete req.session.successMessage
 
-    res.render('login-auth', {
+    res.render('auth', {
         title: `Login or Register | ${config.http.branding[0]}`,
         branding: config.http.branding,
         errorMessage,

@@ -658,8 +658,9 @@ router.get('/verify', async(req, res, next) => {
 
         debug(`Email ${destinationEmail} verified successfully, cookie set for 24 hours`)
 
-        // Redirect to success page
-        return res.redirect(`/inbox/verify-success?email=${encodeURIComponent(destinationEmail)}`)
+        // Show success on account page
+        req.session.accountSuccess = `Successfully verified ${destinationEmail}!`
+        return res.redirect('/account')
     } catch (error) {
         debug(`Error during verification: ${error.message}`)
         console.error('Error during email verification', error)
@@ -667,29 +668,4 @@ router.get('/verify', async(req, res, next) => {
         res.redirect('/')
     }
 })
-
-// GET route for verification success page
-router.get('/verify-success', async(req, res) => {
-    const { email } = req.query
-
-    if (!email) {
-        return res.redirect('/')
-    }
-
-    const config = req.app.get('config')
-    const mailProcessingService = req.app.get('mailProcessingService')
-    const count = await mailProcessingService.getCount()
-    const largestUid = await req.app.locals.imapService.getLargestUid()
-    const totalcount = helper.countElementBuilder(count, largestUid)
-
-    res.render('verify-success', {
-        title: `Email Verified | ${config.http.branding[0]}`,
-        email: email,
-        branding: config.http.branding,
-        purgeTime: purgeTime,
-        totalcount: totalcount
-    })
-})
-
-
 module.exports = router

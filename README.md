@@ -33,7 +33,7 @@ All data is being removed 48hrs after they have reached the mail server.
 - Delete your emails ahead of time by pressing the delete button
 - View the raw email, showing all the headers etc.
 - Download Attachments with one click
-- Password-protected inboxes
+- <u>Optional</u> User Account System with email forwarding and inbox locking
 - and more...
 
 <br>
@@ -42,13 +42,14 @@ All data is being removed 48hrs after they have reached the mail server.
 
 ## Screenshots
 
-| Inbox | Email using HTML and CSS |
+| Homepage | Account Panel |
 |:---:|:---:|
-| <img src=".github/assets/inbox.png" width="500px" height="300px" style="object-fit: cover;"> | <img src=".github/assets/html.png" width="500px" height="300px" style="object-fit: cover;"> |
+| <img src=".github/assets/home.png" width="500px" height="300px" style="object-fit: fit;"> | <img src=".github/assets/account.png" width="500px" height="300px" style="object-fit: fit;"> |
 
-| Email without CSS | Dropdown for cryptographic Keys and Signatures |
-|:---:|:---:|
-| <img src=".github/assets/raw.png" width="500px" height="300px" style="object-fit: cover;"> | <img src=".github/assets/keys.png" width="500px" height="300px" style="object-fit: cover;"> |
+| Inbox | Email using HTML and CSS | Attachments and Cryptographic Keys view |
+|:---:|:---:|:---:|
+| <img src=".github/assets/inbox.png" width="500px" height="300px" style="object-fit: fit;"> | <img src=".github/assets/html.png" width="500px" height="300px" style="object-fit: fit;"> | <img src=".github/assets/keys.png" width="500px" height="300px" style="object-fit: fit;"> |
+
 
 <br>
 
@@ -65,7 +66,7 @@ All data is being removed 48hrs after they have reached the mail server.
 ## How can I set this up myself?
 
 **Prerequisites:**
-- Mail server with IMAP (Optionally also SMTP for email forwarding feature)
+- Mail server with IMAP (Optionally also SMTP for registration and protected features)
 - One or multiple domains dedicated to this
 - git & nodejs
 
