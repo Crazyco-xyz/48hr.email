@@ -12,6 +12,7 @@ const MailProcessingService = require('./application/mail-processing-service')
 const SmtpService = require('./application/smtp-service')
 const MailRepository = require('./domain/mail-repository')
 const InboxLock = require('./domain/inbox-lock')
+const VerificationStore = require('./domain/verification-store')
 
 const clientNotification = new ClientNotification()
 debug('Client notification service initialized')
@@ -40,12 +41,17 @@ debug('IMAP service initialized')
 const smtpService = new SmtpService(config)
 debug('SMTP service initialized')
 
+const verificationStore = new VerificationStore()
+debug('Verification store initialized')
+app.set('verificationStore', verificationStore)
+
 const mailProcessingService = new MailProcessingService(
     new MailRepository(),
     imapService,
     clientNotification,
     config,
-    smtpService
+    smtpService,
+    verificationStore
 )
 debug('Mail processing service initialized')
 

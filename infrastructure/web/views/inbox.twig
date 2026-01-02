@@ -37,6 +37,11 @@
             ✓ Successfully forwarded {{ forwardAllSuccess }} email(s)!
         </div>
     {% endif %}
+    {% if verificationSent %}
+        <div class="verification-message">
+            📧 Verification email sent to <strong>{{ verificationEmail }}</strong>. Please check your inbox and click the verification link (expires in 15 minutes).
+        </div>
+    {% endif %}
     {% if errorMessage %}
         <div class="unlock-error">
             {{ errorMessage }}

@@ -28,6 +28,11 @@
             ✓ Email forwarded successfully!
         </div>
     {% endif %}
+    {% if verificationSent %}
+        <div class="verification-message">
+            📧 Verification email sent to <strong>{{ verificationEmail }}</strong>. Please check your inbox and click the verification link (expires in 15 minutes).
+        </div>
+    {% endif %}
     <div class="mail-container">
         <div class="mail-header">
             <h1 class="mail-subject">{{ mail.subject }}</h1>

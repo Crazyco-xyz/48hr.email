@@ -217,6 +217,111 @@ ${mail.html}
             }
         }
     }
+
+    /**
+     * Send verification email to destination address
+     * @param {string} destinationEmail - Email address to verify
+     * @param {string} token - Verification token
+     * @param {string} baseUrl - Base URL for verification link
+     * @param {string} branding - Service branding name
+     * @returns {Promise<{success: boolean, error?: string, messageId?: string}>}
+     */
+    async sendVerificationEmail(destinationEmail, token, baseUrl, branding = '48hr.email') {
+        if (!this.transporter) {
+            return {
+                success: false,
+                error: 'SMTP is not configured. Please configure SMTP settings to enable forwarding.'
+            }
+        }
+
+        const verificationLink = `${baseUrl}/inbox/verify?token=${token}`
+
+        const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+        .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 5px 5px; }
+        .button { display: inline-block; background: #3498db; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+        .button:hover { background: #2980b9; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 0.9em; }
+        code { background: #e8e8e8; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>🔐 Verify Your Email Address</h2>
+    </div>
+    <div class="content">
+        <p>Hello,</p>
+        
+        <p>You requested to use <strong>${this._escapeHtml(destinationEmail)}</strong> as a forwarding destination on <strong>${this._escapeHtml(branding)}</strong>.</p>
+        
+        <p>To verify ownership of this email address and enable forwarding for 24 hours, please click the button below:</p>
+        
+        <div style="text-align: center;">
+            <a href="${verificationLink}" class="button">Verify Email Address</a>
+        </div>
+        
+        <p>Or copy and paste this link into your browser:</p>
+        <p><code>${verificationLink}</code></p>
+        
+        <div class="warning">
+            ⚠️ <strong>Important:</strong> This verification link expires in <strong>15 minutes</strong>. Once verified, you'll be able to forward emails to this address for 24 hours.
+        </div>
+        
+        <p>If you didn't request this verification, you can safely ignore this email.</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message from ${this._escapeHtml(branding)}</p>
+    </div>
+</body>
+</html>
+`
+
+        const textContent = `
+Verify Your Email Address
+
+You requested to use ${destinationEmail} as a forwarding destination on ${branding}.
+
+To verify ownership of this email address and enable forwarding for 24 hours, please visit:
+
+${verificationLink}
+
+IMPORTANT: This verification link expires in 15 minutes. Once verified, you'll be able to forward emails to this address for 24 hours.
+
+If you didn't request this verification, you can safely ignore this email.
+
+---
+This is an automated message from ${branding}
+`
+
+        try {
+            const info = await this.transporter.sendMail({
+                from: `"${branding} Forwarding Service" <${this.config.smtp.user}>`,
+                to: destinationEmail,
+                subject: `${branding} - Verify your email for forwarding`,
+                text: textContent,
+                html: htmlContent
+            })
+
+            debug(`Verification email sent to ${destinationEmail}, messageId: ${info.messageId}`)
+            return {
+                success: true,
+                messageId: info.messageId
+            }
+        } catch (error) {
+            debug(`Failed to send verification email: ${error.message}`)
+            return {
+                success: false,
+                error: `Failed to send verification email: ${error.message}`
+            }
+        }
+    }
 }
 
 module.exports = SmtpService

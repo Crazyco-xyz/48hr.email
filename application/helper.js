@@ -1,5 +1,6 @@
 const config = require('./config')
 const debug = require('debug')('48hr-email:helper')
+const crypto = require('crypto')
 
 class Helper {
 
@@ -179,6 +180,57 @@ class Helper {
         <h4 style="display: inline;"><u><i>${count}</i></u> mail${count === 1 ? '' : 's'}</h4>
         </label>`
         return handling
+    }
+
+    /**
+     * Generate a cryptographically secure random verification token
+     * @returns {string} - 32-byte hex token (64 characters)
+     */
+    generateVerificationToken() {
+        const token = crypto.randomBytes(32).toString('hex')
+        debug('Generated verification token')
+        return token
+    }
+
+    /**
+     * Sign an email address for use in a cookie
+     * Uses HMAC-SHA256 with the session secret
+     * @param {string} email - Email address to sign
+     * @returns {string} - HMAC signature (hex)
+     */
+    signCookie(email) {
+        const secret = config.lock.sessionSecret
+        const hmac = crypto.createHmac('sha256', secret)
+        hmac.update(email.toLowerCase())
+        const signature = hmac.digest('hex')
+        debug(`Signed cookie for email: ${email}`)
+        return signature
+    }
+
+    /**
+     * Verify a cookie signature for an email address
+     * @param {string} email - Email address to verify
+     * @param {string} signature - HMAC signature to verify
+     * @returns {boolean} - True if signature is valid
+     */
+    verifyCookieSignature(email, signature) {
+        if (!email || !signature) {
+            return false
+        }
+
+        const expectedSignature = this.signCookie(email)
+
+        // Use timing-safe comparison to prevent timing attacks
+        try {
+            return crypto.timingSafeEqual(
+                Buffer.from(signature, 'hex'),
+                Buffer.from(expectedSignature, 'hex')
+            )
+        } catch (error) {
+            // timingSafeEqual throws if buffers are different lengths
+            debug(`Cookie signature verification failed: ${error.message}`)
+            return false
+        }
     }
 }
 

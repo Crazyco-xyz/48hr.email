@@ -125,6 +125,10 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLo
         // Check for forward all success flag
         const forwardAllSuccess = req.query.forwardedAll ? parseInt(req.query.forwardedAll) : null
 
+        // Check for verification sent flag
+        const verificationSent = req.query.verificationSent === 'true'
+        const verificationEmail = req.query.email || ''
+
         res.render('inbox', {
             title: `${config.http.branding[0]} | ` + req.params.address,
             purgeTime: purgeTime,
@@ -144,7 +148,9 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, checkLo
             expiryUnit: config.email.purgeTime.unit,
             refreshInterval: config.imap.refreshIntervalSeconds,
             errorMessage: errorMessage,
-            forwardAllSuccess: forwardAllSuccess
+            forwardAllSuccess: forwardAllSuccess,
+            verificationSent: verificationSent,
+            verificationEmail: verificationEmail
         })
     } catch (error) {
         debug(`Error loading inbox for ${req.params.address}:`, error.message)
@@ -195,6 +201,10 @@ router.get(
                 // Check for forward success flag
                 const forwardSuccess = req.query.forwarded === 'true'
 
+                // Check for verification sent flag
+                const verificationSent = req.query.verificationSent === 'true'
+                const verificationEmail = req.query.email || ''
+
                 debug(`Rendering email view for UID ${req.params.uid}`)
                 res.render('mail', {
                     title: mail.subject + " | " + req.params.address,
@@ -210,7 +220,9 @@ router.get(
                     isLocked: isLocked,
                     hasAccess: hasAccess,
                     errorMessage: errorMessage,
-                    forwardSuccess: forwardSuccess
+                    forwardSuccess: forwardSuccess,
+                    verificationSent: verificationSent,
+                    verificationEmail: verificationEmail
                 })
             } else {
                 debug(`Email ${req.params.uid} not found for ${req.params.address}`)
@@ -427,21 +439,48 @@ router.post(
             const { destinationEmail } = req.body
             const uid = parseInt(req.params.uid, 10)
 
-            debug(`Forwarding email ${uid} from ${req.params.address} to ${destinationEmail}`)
+            // Check if destination email is verified via signed cookie
+            const verifiedEmail = req.signedCookies.verified_email
 
-            const result = await mailProcessingService.forwardEmail(
-                req.params.address,
-                uid,
-                destinationEmail
-            )
+            if (verifiedEmail && verifiedEmail.toLowerCase() === destinationEmail.toLowerCase()) {
+                // Email is verified, proceed with forwarding
+                debug(`Forwarding email ${uid} from ${req.params.address} to ${destinationEmail} (verified)`)
 
-            if (result.success) {
-                debug(`Email ${uid} forwarded successfully to ${destinationEmail}`)
-                return res.redirect(`/inbox/${req.params.address}/${uid}?forwarded=true`)
+                const result = await mailProcessingService.forwardEmail(
+                    req.params.address,
+                    uid,
+                    destinationEmail
+                )
+
+                if (result.success) {
+                    debug(`Email ${uid} forwarded successfully to ${destinationEmail}`)
+                    return res.redirect(`/inbox/${req.params.address}/${uid}?forwarded=true`)
+                } else {
+                    debug(`Failed to forward email ${uid}: ${result.error}`)
+                    req.session.errorMessage = result.error
+                    return res.redirect(`/inbox/${req.params.address}/${uid}`)
+                }
             } else {
-                debug(`Failed to forward email ${uid}: ${result.error}`)
-                req.session.errorMessage = result.error
-                return res.redirect(`/inbox/${req.params.address}/${uid}`)
+                // Email not verified, initiate verification flow
+                debug(`Email ${destinationEmail} not verified, initiating verification`)
+
+                const verificationResult = await mailProcessingService.initiateForwardVerification(
+                    req.params.address,
+                    destinationEmail, [uid]
+                )
+
+                if (verificationResult.success) {
+                    debug(`Verification email sent to ${destinationEmail}`)
+                    return res.redirect(`/inbox/${req.params.address}/${uid}?verificationSent=true&email=${encodeURIComponent(destinationEmail)}`)
+                } else if (verificationResult.cooldownSeconds) {
+                    debug(`Verification rate limited for ${destinationEmail}`)
+                    req.session.errorMessage = verificationResult.error
+                    return res.redirect(`/inbox/${req.params.address}/${uid}`)
+                } else {
+                    debug(`Failed to send verification email: ${verificationResult.error}`)
+                    req.session.errorMessage = verificationResult.error || 'Failed to send verification email'
+                    return res.redirect(`/inbox/${req.params.address}/${uid}`)
+                }
             }
         } catch (error) {
             debug(`Error forwarding email ${req.params.uid}: ${error.message}`)
@@ -472,7 +511,38 @@ router.post(
             const mailProcessingService = req.app.get('mailProcessingService')
             const { destinationEmail } = req.body
 
-            debug(`Forwarding all emails from ${req.params.address} to ${destinationEmail}`)
+            // Check if destination email is verified via signed cookie
+            const verifiedEmail = req.signedCookies.verified_email
+
+            if (!verifiedEmail || verifiedEmail.toLowerCase() !== destinationEmail.toLowerCase()) {
+                // Email not verified, initiate verification flow
+                debug(`Email ${destinationEmail} not verified, initiating verification for forward-all`)
+
+                const mailSummaries = await mailProcessingService.getMailSummaries(req.params.address)
+                const uids = mailSummaries.map(m => m.uid)
+
+                const verificationResult = await mailProcessingService.initiateForwardVerification(
+                    req.params.address,
+                    destinationEmail,
+                    uids
+                )
+
+                if (verificationResult.success) {
+                    debug(`Verification email sent to ${destinationEmail}`)
+                    return res.redirect(`/inbox/${req.params.address}?verificationSent=true&email=${encodeURIComponent(destinationEmail)}`)
+                } else if (verificationResult.cooldownSeconds) {
+                    debug(`Verification rate limited for ${destinationEmail}`)
+                    req.session.errorMessage = verificationResult.error
+                    return res.redirect(`/inbox/${req.params.address}`)
+                } else {
+                    debug(`Failed to send verification email: ${verificationResult.error}`)
+                    req.session.errorMessage = verificationResult.error || 'Failed to send verification email'
+                    return res.redirect(`/inbox/${req.params.address}`)
+                }
+            }
+
+            // Email is verified, proceed with bulk forwarding
+            debug(`Forwarding all emails from ${req.params.address} to ${destinationEmail} (verified)`)
 
             const mailSummaries = await mailProcessingService.getMailSummaries(req.params.address)
 
@@ -541,6 +611,79 @@ router.get(
         res.redirect(`/error/${req.params.address}/400`)
     }
 )
+
+// GET route for email verification (token verification)
+router.get('/verify', async(req, res, next) => {
+    try {
+        const { token } = req.query
+
+        if (!token) {
+            debug('Verification attempt without token')
+            req.session.errorMessage = 'Verification token is required'
+            return res.redirect('/')
+        }
+
+        const verificationStore = req.app.get('verificationStore')
+        if (!verificationStore) {
+            debug('Verification store not available')
+            req.session.errorMessage = 'Email verification is not configured'
+            return res.redirect('/')
+        }
+
+        // Verify the token
+        const verification = verificationStore.verifyToken(token)
+
+        if (!verification) {
+            debug(`Invalid or expired verification token: ${token}`)
+            req.session.errorMessage = 'This verification link is invalid or has expired. Please request a new verification email.'
+            return res.redirect('/')
+        }
+
+        // Token is valid, set signed cookie
+        const destinationEmail = verification.destinationEmail
+        const cookieMaxAge = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+
+        res.cookie('verified_email', destinationEmail, {
+            maxAge: cookieMaxAge,
+            httpOnly: true,
+            signed: true,
+            sameSite: 'lax'
+        })
+
+        debug(`Email ${destinationEmail} verified successfully, cookie set for 24 hours`)
+
+        // Redirect to success page
+        return res.redirect(`/inbox/verify-success?email=${encodeURIComponent(destinationEmail)}`)
+    } catch (error) {
+        debug(`Error during verification: ${error.message}`)
+        console.error('Error during email verification', error)
+        req.session.errorMessage = 'An error occurred during verification'
+        res.redirect('/')
+    }
+})
+
+// GET route for verification success page
+router.get('/verify-success', async(req, res) => {
+    const { email } = req.query
+
+    if (!email) {
+        return res.redirect('/')
+    }
+
+    const config = req.app.get('config')
+    const mailProcessingService = req.app.get('mailProcessingService')
+    const count = await mailProcessingService.getCount()
+    const largestUid = await req.app.locals.imapService.getLargestUid()
+    const totalcount = helper.countElementBuilder(count, largestUid)
+
+    res.render('verify-success', {
+        title: `Email Verified | ${config.http.branding[0]}`,
+        email: email,
+        branding: config.http.branding,
+        purgeTime: purgeTime,
+        totalcount: totalcount
+    })
+})
 
 
 module.exports = router

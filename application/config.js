@@ -68,6 +68,7 @@ const config = {
 
     http: {
         port: Number(process.env.HTTP_PORT),
+        baseUrl: parseValue(process.env.HTTP_BASE_URL) || 'http://localhost:3000',
         branding: parseValue(process.env.HTTP_BRANDING),
         displaySort: Number(process.env.HTTP_DISPLAY_SORT),
         hideOther: parseBool(process.env.HTTP_HIDE_OTHER)

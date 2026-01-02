@@ -1016,6 +1016,24 @@ label {
 }
 
 
+/* Verification Messages */
+
+.verification-message {
+    color: #3498db;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(52, 152, 219, 0.1);
+    border-left: 3px solid #3498db;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.verification-message strong {
+    color: #2980b9;
+    font-weight: 600;
+}
+
+
 /* Remove Lock Button Styles */
 
 .modal-button-danger {

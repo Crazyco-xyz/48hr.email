@@ -3,6 +3,7 @@ const http = require('http')
 const debug = require('debug')('48hr-email:server')
 const express = require('express')
 const session = require('express-session')
+const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const Twig = require('twig')
 const compression = require('compression')
@@ -40,20 +41,20 @@ app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
-// Session support for inbox locking
-if (config.lock.enabled) {
-    const session = require('express-session')
-    app.use(session({
-        secret: config.lock.sessionSecret,
-        resave: false,
-        saveUninitialized: false,
-        cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
-    }))
-}
+// Cookie parser for signed cookies (email verification)
+app.use(cookieParser(config.lock.sessionSecret))
+
+// Session support (always enabled for forward verification and inbox locking)
+app.use(session({
+    secret: config.lock.sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+}))
 
 // Clear session when user goes Home so locked inboxes require password again
 app.get('/', (req, res, next) => {
-    if (config.lock.enabled && req.session) {
+    if (req.session) {
         req.session.destroy(() => next())
     } else {
         next()

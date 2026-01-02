@@ -7,13 +7,15 @@ const helper = new(Helper)
 
 
 class MailProcessingService extends EventEmitter {
-    constructor(mailRepository, imapService, clientNotification, config, smtpService = null) {
+    constructor(mailRepository, imapService, clientNotification, config, smtpService = null, verificationStore = null) {
         super()
         this.mailRepository = mailRepository
         this.clientNotification = clientNotification
         this.imapService = imapService
         this.config = config
         this.smtpService = smtpService
+        this.verificationStore = verificationStore
+        this.helper = new(Helper)
 
         // Cached methods:
         this._initCache()
@@ -273,6 +275,94 @@ class MailProcessingService extends EventEmitter {
             return {
                 success: false,
                 error: `Failed to forward email: ${error.message}`
+            }
+        }
+    }
+
+    /**
+     * Initiate email verification for forwarding
+     * Sends verification email to destination address
+     * @param {string} sourceAddress - The inbox address requesting forwarding
+     * @param {string} destinationEmail - The email address to verify and forward to
+     * @param {Array<number>} uids - Array of email UIDs to forward (optional, for context)
+     * @returns {Promise<{success: boolean, error?: string, cooldownSeconds?: number}>}
+     */
+    async initiateForwardVerification(sourceAddress, destinationEmail, uids = []) {
+        // Check if verification store is available
+        if (!this.verificationStore) {
+            debug('Verification store not available')
+            return {
+                success: false,
+                error: 'Email verification is not configured'
+            }
+        }
+
+        // Check if SMTP service is available
+        if (!this.smtpService) {
+            debug('SMTP service not configured')
+            return {
+                success: false,
+                error: 'Email forwarding is not configured. Please configure SMTP settings.'
+            }
+        }
+
+        // Check rate limit (5-minute cooldown)
+        const canRequest = this.verificationStore.canRequestVerification(destinationEmail)
+        if (!canRequest) {
+            const lastRequest = this.verificationStore.getLastVerificationTime(destinationEmail)
+            const cooldownMs = 5 * 60 * 1000
+            const elapsed = Date.now() - lastRequest
+            const remainingSeconds = Math.ceil((cooldownMs - elapsed) / 1000)
+
+            debug(`Verification rate limit hit for ${destinationEmail}, ${remainingSeconds}s remaining`)
+            return {
+                success: false,
+                error: `Please wait ${remainingSeconds} seconds before requesting another verification email`,
+                cooldownSeconds: remainingSeconds
+            }
+        }
+
+        try {
+            // Generate verification token
+            const token = this.helper.generateVerificationToken()
+
+            // Store verification with metadata
+            this.verificationStore.createVerification(token, destinationEmail, {
+                sourceAddress,
+                uids,
+                createdAt: new Date().toISOString()
+            })
+
+            // Send verification email
+            const baseUrl = this.config.http.baseUrl
+            const branding = this.config.http.branding[0] || '48hr.email'
+
+            debug(`Sending verification email to ${destinationEmail} for source ${sourceAddress}`)
+            const result = await this.smtpService.sendVerificationEmail(
+                destinationEmail,
+                token,
+                baseUrl,
+                branding
+            )
+
+            if (result.success) {
+                debug(`Verification email sent successfully. MessageId: ${result.messageId}`)
+                return {
+                    success: true,
+                    messageId: result.messageId
+                }
+            } else {
+                debug(`Failed to send verification email: ${result.error}`)
+                return {
+                    success: false,
+                    error: result.error
+                }
+            }
+        } catch (error) {
+            debug('Error initiating verification:', error.message)
+            return {
+                success: false,
+                error: `Failed to send verification email: ${error.message}`
             }
         }
     }
