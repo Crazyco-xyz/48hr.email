@@ -249,7 +249,7 @@ class Helper {
 
         // Warn about old locked-inboxes.db
         if (fs.existsSync(legacyLockedInboxesDb)) {
-            console.log(`⚠️  Found legacy ${legacyLockedInboxesDb}`)
+            console.log(`WARNING: Found legacy ${legacyLockedInboxesDb}`)
             console.log(`   This database is no longer used. Locks are now stored in ${path.basename(dbPath)}.`)
             console.log(`   You can safely delete ${legacyLockedInboxesDb} after verifying your locks are working.`)
             debug('Legacy locked-inboxes.db detected but not migrated (data already in user_locked_inboxes table)')

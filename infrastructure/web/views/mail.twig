@@ -8,7 +8,7 @@
             <!-- Email Dropdown (multiple actions when logged in) -->
             <div class="action-dropdown">
                 <button class="dropdown-toggle" aria-label="Email actions">Email ▾</button>
-                <div class="dropdown-menu">
+                <div class="dropdown-menu" data-section-title="Email Actions">
                     <a href="#" id="forwardBtn" aria-label="Forward this email">Forward</a>
                     <a href="/inbox/{{ address }}/{{ uid }}/delete" aria-label="Delete this email">Delete</a>
                     <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank" aria-label="View raw email">View Raw</a>
@@ -19,7 +19,7 @@
             {% if authEnabled %}
                 <div class="action-dropdown">
                     <button class="dropdown-toggle" aria-label="Account menu">Account ▾</button>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu" data-section-title="Account">
                         <a href="/account" aria-label="Account settings">Settings</a>
                         <a href="/logout?redirect={{ ('/inbox/' ~ address ~ '/' ~ uid) | url_encode }}" aria-label="Logout">Logout</a>
                     </div>
@@ -48,8 +48,11 @@
 
 {% block body %}
     {% if forwardSuccess %}
-        <div class="success-message">
-            ✓ Email forwarded successfully!
+        <div class="alert alert-success">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
+                <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+            Email forwarded successfully!
         </div>
     {% endif %}
     {% if verificationSent %}
@@ -125,7 +128,7 @@
 
     <!-- Forward Email Modal -->
     <div id="forwardModal" class="modal" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content frosted-glass">
             <span class="close" id="closeForward">&times;</span>
             <h3>Forward Email</h3>
             
@@ -143,9 +146,9 @@
             {% else %}
                 <p class="modal-description">Select a verified email address to forward this message to.</p>
                 {% if errorMessage %}
-                    <p class="unlock-error">{{ errorMessage }}</p>
+                    <p class="alert alert-error">{{ errorMessage }}</p>
                 {% endif %}
-                <p id="forwardError" class="unlock-error" style="display:none"></p>
+                <p id="forwardError" class="alert alert-error" style="display:none"></p>
                 <form method="POST" action="/inbox/{{ address }}/{{ uid }}/forward">
                     <fieldset>
                         <label for="forwardEmail" class="floating-label">Forward to</label>

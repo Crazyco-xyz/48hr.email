@@ -18,7 +18,7 @@ const lockRouter = require('./routes/lock')
 const authRouter = require('./routes/auth')
 const accountRouter = require('./routes/account')
 const statsRouter = require('./routes/stats')
-const { sanitizeHtmlTwigFilter } = require('./views/twig-filters')
+const { sanitizeHtmlTwigFilter, readablePurgeTime } = require('./views/twig-filters')
 
 const Helper = require('../../application/helper')
 const helper = new(Helper)
@@ -90,6 +90,7 @@ app.use(
     })
 )
 Twig.extendFilter('sanitizeHtml', sanitizeHtmlTwigFilter)
+Twig.extendFilter('readablePurgeTime', readablePurgeTime)
 
 // Middleware to expose user session to all templates
 app.use((req, res, next) => {

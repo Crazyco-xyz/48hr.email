@@ -273,7 +273,7 @@ ${mail.html}
         <p><code>${verificationLink}</code></p>
         
         <div class="warning">
-            ⚠️ <strong>Important:</strong> This verification link expires in <strong>15 minutes</strong>. Once verified, you'll be able to forward emails to this address for 24 hours.
+            <strong>Important:</strong> This verification link expires in <strong>15 minutes</strong>. Once verified, you'll be able to forward emails to this address for 24 hours.
         </div>
         
         <p>If you didn't request this verification, you can safely ignore this email.</p>

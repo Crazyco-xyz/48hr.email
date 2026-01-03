@@ -93,8 +93,8 @@ router.post('/account/forward-email/add',
             })
 
             // Send verification email
-            const baseUrl = config.http.baseUrl || 'http://localhost:3000'
-            const branding = config.http.branding[0] || '48hr.email'
+            const baseUrl = config.http.baseUrl
+            const branding = config.http.branding[0]
 
             await smtpService.sendVerificationEmail(
                 email,
@@ -215,6 +215,110 @@ router.post('/account/locked-inbox/release',
         } catch (error) {
             console.error('Release inbox error:', error)
             req.session.accountError = 'Failed to release inbox. Please try again.'
+            res.redirect('/account')
+        }
+    }
+)
+
+// POST /account/change-password - Change user password
+router.post('/account/change-password',
+    requireAuth,
+    body('currentPassword').notEmpty().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters'),
+    body('confirmNewPassword').notEmpty().withMessage('Password confirmation is required'),
+    async(req, res) => {
+        try {
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+                req.session.accountError = errors.array()[0].msg
+                return res.redirect('/account')
+            }
+
+            const { currentPassword, newPassword, confirmNewPassword } = req.body
+
+            // Check if new passwords match
+            if (newPassword !== confirmNewPassword) {
+                req.session.accountError = 'New passwords do not match'
+                return res.redirect('/account')
+            }
+
+            // Validate new password strength
+            const hasUpperCase = /[A-Z]/.test(newPassword)
+            const hasLowerCase = /[a-z]/.test(newPassword)
+            const hasNumber = /[0-9]/.test(newPassword)
+
+            if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+                req.session.accountError = 'Password must include uppercase, lowercase, and number'
+                return res.redirect('/account')
+            }
+
+            const userRepository = req.app.get('userRepository')
+
+            // Verify current password
+            const isValidPassword = await userRepository.verifyPassword(req.session.userId, currentPassword)
+            if (!isValidPassword) {
+                req.session.accountError = 'Current password is incorrect'
+                return res.redirect('/account')
+            }
+
+            // Update password
+            await userRepository.updatePassword(req.session.userId, newPassword)
+
+            req.session.accountSuccess = 'Password updated successfully'
+            res.redirect('/account')
+        } catch (error) {
+            console.error('Change password error:', error)
+            req.session.accountError = 'Failed to change password. Please try again.'
+            res.redirect('/account')
+        }
+    }
+)
+
+// POST /account/delete - Permanently delete user account
+router.post('/account/delete',
+    requireAuth,
+    body('password').notEmpty().withMessage('Password is required'),
+    body('confirmText').equals('DELETE').withMessage('You must type DELETE to confirm'),
+    async(req, res) => {
+        try {
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+                req.session.accountError = errors.array()[0].msg
+                return res.redirect('/account')
+            }
+
+            const { password } = req.body
+            const userRepository = req.app.get('userRepository')
+
+            // Verify password
+            const isValidPassword = await userRepository.verifyPassword(req.session.userId, password)
+            if (!isValidPassword) {
+                req.session.accountError = 'Incorrect password'
+                return res.redirect('/account')
+            }
+
+            // Get user's locked inboxes to release them
+            const inboxLock = req.app.get('inboxLock')
+            if (inboxLock) {
+                const lockedInboxes = inboxLock.getUserLockedInboxes(req.session.userId)
+                for (const inbox of lockedInboxes) {
+                    inboxLock.release(req.session.userId, inbox.address)
+                }
+            }
+
+            // Delete user account
+            await userRepository.deleteUser(req.session.userId)
+
+            // Destroy session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error('Session destroy error:', err)
+                }
+                res.redirect('/?deleted=true')
+            })
+        } catch (error) {
+            console.error('Delete account error:', error)
+            req.session.accountError = 'Failed to delete account. Please try again.'
             res.redirect('/account')
         }
     }

@@ -20,20 +20,28 @@
     <p class="account-subtitle">Welcome back, <strong>{{ username }}</strong></p>
 
     {% if successMessage %}
-        <div class="success-message">
-            {{ successMessage }}
+        <div class="alert alert-success">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
+                <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+            <p>{{ successMessage }}</p>
         </div>
     {% endif %}
 
     {% if errorMessage %}
-        <div class="unlock-error">
-            {{ errorMessage }}
+        <div class="alert alert-error">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <p>{{ errorMessage }}</p>
         </div>
     {% endif %}
 
     <div class="account-grid">
         <!-- Account Stats -->
-        <div class="account-card account-stats">
+        <div class="account-card frosted-glass">
             <h2>Account Overview</h2>
             <div class="stats-grid">
                 <div class="stat-item">
@@ -52,7 +60,7 @@
         </div>
 
         <!-- Forwarding Emails Section -->
-        <div class="account-card">
+        <div class="account-card frosted-glass">
             <h2>Forwarding Emails</h2>
             <p class="card-description">Add verified emails to forward messages to. Each email must be verified before use.</p>
             
@@ -85,7 +93,7 @@
         </div>
 
         <!-- Locked Inboxes Section -->
-        <div class="account-card">
+        <div class="account-card frosted-glass">
             <h2>Locked Inboxes</h2>
             <p class="card-description">Manage your locked inboxes. These are protected by your account and only accessible when logged in. Locks auto-release after 7 days without login.</p>
             
@@ -116,6 +124,105 @@
                 <p class="limit-reached">Maximum {{ stats.maxLockedInboxes }} inboxes locked</p>
             {% endif %}
         </div>
+
+        <!-- Change Password Section -->
+        <div class="account-card frosted-glass">
+            <h2>Change Password</h2>
+            <p class="card-description">Update your account password. You'll need to enter your current password to confirm.</p>
+            
+            <form method="POST" action="/account/change-password" class="password-form">
+                <fieldset>
+                    <label for="currentPassword">Current Password</label>
+                    <input 
+                        type="password" 
+                        id="currentPassword" 
+                        name="currentPassword" 
+                        placeholder="Enter current password"
+                        required
+                        autocomplete="current-password"
+                    >
+
+                    <label for="newPassword">New Password</label>
+                    <input 
+                        type="password" 
+                        id="newPassword" 
+                        name="newPassword" 
+                        placeholder="Min 8 characters"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                    >
+                    <small>Must include uppercase, lowercase, and number</small>
+
+                    <label for="confirmNewPassword">Confirm New Password</label>
+                    <input 
+                        type="password" 
+                        id="confirmNewPassword" 
+                        name="confirmNewPassword" 
+                        placeholder="Re-enter new password"
+                        required
+                        minlength="8"
+                        autocomplete="new-password"
+                    >
+
+                    <button type="submit" class="button button-primary">Update Password</button>
+                </fieldset>
+            </form>
+        </div>
+
+        <!-- Delete Account Section -->
+        <div class="account-card frosted-glass danger-zone">
+            <h2>Danger Zone</h2>
+            <p class="card-description">Permanently delete your account and all associated data. This action cannot be undone.</p>
+            
+            <div class="danger-content">
+                <p><strong>Warning:</strong> Deleting your account will:</p>
+                <ul class="danger-list">
+                    <li>Remove all forwarding email addresses</li>
+                    <li>Release all locked inboxes</li>
+                    <li>Permanently delete your account data</li>
+                </ul>
+                
+                <button class="button button-danger button-full-width" id="deleteAccountBtn">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div id="deleteAccountModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeDeleteAccount">&times;</span>
+        <h3>Delete Account</h3>
+        <p class="modal-description" style="color: var(--color-danger);">This action is permanent and cannot be undone!</p>
+        
+        <form method="POST" action="/account/delete">
+            <fieldset>
+                <label for="confirmPassword">Enter your password to confirm</label>
+                <input 
+                    type="password" 
+                    id="confirmPassword" 
+                    name="password" 
+                    placeholder="Your password"
+                    required
+                    class="modal-input"
+                    autocomplete="current-password"
+                >
+                
+                <label for="confirmText">Type "DELETE" to confirm</label>
+                <input 
+                    type="text" 
+                    id="confirmText" 
+                    name="confirmText" 
+                    placeholder="Type DELETE"
+                    required
+                    class="modal-input"
+                >
+                
+                <button type="submit" class="button button-danger modal-button">Permanently Delete Account</button>
+                <button type="button" class="button button-secondary modal-button" id="cancelDelete">Cancel</button>
+            </fieldset>
+        </form>
     </div>
 </div>
 
@@ -161,9 +268,36 @@ if (closeAddEmail) {
     }
 }
 
+// Delete Account Modal
+const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+const deleteAccountModal = document.getElementById('deleteAccountModal');
+const closeDeleteAccount = document.getElementById('closeDeleteAccount');
+const cancelDelete = document.getElementById('cancelDelete');
+
+if (deleteAccountBtn) {
+    deleteAccountBtn.onclick = function() {
+        deleteAccountModal.style.display = 'block';
+    }
+}
+
+if (closeDeleteAccount) {
+    closeDeleteAccount.onclick = function() {
+        deleteAccountModal.style.display = 'none';
+    }
+}
+
+if (cancelDelete) {
+    cancelDelete.onclick = function() {
+        deleteAccountModal.style.display = 'none';
+    }
+}
+
 window.onclick = function(event) {
     if (event.target == addEmailModal) {
         addEmailModal.style.display = 'none';
+    }
+    if (event.target == deleteAccountModal) {
+        deleteAccountModal.style.display = 'none';
     }
 }
 </script>

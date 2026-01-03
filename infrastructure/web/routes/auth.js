@@ -3,6 +3,11 @@ const router = new express.Router()
 const { body, validationResult } = require('express-validator')
 const debug = require('debug')('48hr-email:auth-routes')
 const { redirectIfAuthenticated } = require('../middleware/auth')
+const config = require('../../../application/config')
+const Helper = require('../../../application/helper')
+const helper = new Helper()
+
+const purgeTime = helper.purgeTimeElemetBuilder()
 
 // Simple in-memory rate limiters for registration and login
 const registrationRateLimitStore = new Map()
@@ -87,6 +92,7 @@ router.get('/auth', redirectIfAuthenticated, (req, res) => {
     res.render('auth', {
         title: `Login or Register | ${config.http.branding[0]}`,
         branding: config.http.branding,
+        purgeTime: purgeTime,
         errorMessage,
         successMessage
     })

@@ -7,7 +7,7 @@
             {% if authEnabled %}
                 <div class="action-dropdown">
                     <button class="dropdown-toggle" aria-label="Account menu">Account ▾</button>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu" data-section-title="Account">
                         <a href="/account" aria-label="Account settings">Settings</a>
                         <a href="/logout?redirect=/" aria-label="Logout">Logout</a>
                     </div>
@@ -32,33 +32,105 @@
 {% endblock %}
 
 {% block body %}
-<div id="login">
-    <h1 class="page-title">Welcome!</h1>
-    <h4>Here you can either create a new Inbox, or access your old one</h4>
+<div class="homepage-container">
+    <div class="hero-section">
+        <h1 class="page-title hero-title">Your Temporary Inbox</h1>
+        <p class="hero-subtitle">Create instant disposable email addresses. No registration required. Emails auto-delete after {{ purgeTimeRaw|readablePurgeTime }}.</p>
+    </div>
 
-    {% if userInputError %}
-        <blockquote class="warning">
-            Your input was invalid. Please try other values.
-        </blockquote>
-    {% endif %}
-    <form method="POST" action="/">
-        <fieldset>
-            <label for="nameField">Name</label>
-            <input type="text" id="nameField" name="username" value="{{ username }}">
-            <label for="commentField">Domain ({{ domains|length }})</label>
-            <div class="dropdown">
-                <select id="commentField" name="domain">
-                    {% for domain in domains %}
-                        <option value="{{ domain }}">{{ domain }}</option>
-                    {% endfor %}
-                </select>
+    <div class="inbox-creator frosted-glass">
+        <h2 class="creator-title">Get Started</h2>
+        
+        {% if userInputError %}
+            <div class="alert alert-warning">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+                Your input was invalid. Please try other values.
             </div>
-            <div class="buttons">
-                <input class="button" type="submit" value="Access This Inbox">
-                <a class="button" href="/inbox/random">Create Random Inbox</a>
+        {% endif %}
+
+        <form method="POST" action="/" class="inbox-form">
+            <div class="form-group">
+                <label for="nameField">Choose Your Name</label>
+                <input type="text" id="nameField" name="username" value="{{ username }}" placeholder="e.g., john.doe" required>
             </div>
-        </fieldset>
-    </form>
+
+            <div class="form-group">
+                <label for="commentField">Select Domain</label>
+                <div class="select-wrapper">
+                    <select id="commentField" name="domain">
+                        {% for domain in domains %}
+                            <option value="{{ domain }}">@{{ domain }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <span class="domain-count">{{ domains|length }} domains available</span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <span>Access Inbox</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <a href="/inbox/random" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                    </svg>
+                    <span>Random Inbox</span>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card frosted-glass">
+            <h3>Privacy First</h3>
+            <p>No registration, no tracking. Your temporary email is completely anonymous.</p>
+        </div>
+        <div class="feature-card frosted-glass">
+            <h3>Instant Access</h3>
+            <p>Create unlimited temporary email addresses in seconds. No waiting, no verification.</p>
+        </div>
+        <div class="feature-card frosted-glass">
+            <h3>Auto-Delete</h3>
+            <p>All emails automatically purge after {{ purgeTimeRaw|readablePurgeTime }}. Clean and secure by default.</p>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <div class="info-content frosted-glass">
+            <h2>What is a Temporary Email?</h2>
+            <p>A temporary email (also known as disposable email or throwaway email) is a service that allows you to receive emails at a temporary address that self-destructs after a certain time. It's perfect for signing up to websites, testing services, or protecting your real inbox from spam.</p>
+            
+            <h3>Common Use Cases</h3>
+            <ul class="use-cases-list">
+                <li><strong>Avoid Spam:</strong> Sign up for services without cluttering your primary inbox</li>
+                <li><strong>Test Services:</strong> Try new apps and websites without commitment</li>
+                <li><strong>Online Privacy:</strong> Keep your real email address private from third parties</li>
+                <li><strong>One-Time Verification:</strong> Receive verification codes without long-term exposure</li>
+                <li><strong>Download Content:</strong> Access gated content that requires email confirmation</li>
+                <li><strong>Form Testing:</strong> Test email workflows during development</li>
+            </ul>
+
+            <h3>Why Choose {{ branding[0] }}?</h3>
+            <ul class="benefits-list">
+                <li><strong>No Sign-Up Required:</strong> Start using immediately without creating an account</li>
+                <li><strong>Multiple Domains:</strong> Choose from several domain options for flexibility</li>
+                <li><strong>Clean Interface:</strong> Simple, modern design focused on usability</li>
+                <li><strong>Real-Time Updates:</strong> See new emails arrive instantly without refreshing</li>
+                <li><strong>Open Source:</strong> Transparent codebase you can review and trust</li>
+                <li><strong>{{ purgeTimeRaw|readablePurgeTime|title }} Retention:</strong> Emails stay accessible for the full duration before auto-deletion</li>
+            </ul>
+
+            <p class="note">For extended features like email forwarding and inbox locking, you can optionally create a free account. But for basic temporary email needs, no registration is ever required.</p>
+        </div>
+    </div>
 </div>
-
 {% endblock %}

@@ -6,7 +6,7 @@
             <!-- Inbox Dropdown (multiple actions when logged in) -->
             <div class="action-dropdown">
                 <button class="dropdown-toggle" aria-label="Inbox actions">Inbox ▾</button>
-                <div class="dropdown-menu">
+                <div class="dropdown-menu" data-section-title="Inbox Actions">
                     <a href="#" id="forwardAllBtn" aria-label="Forward all emails">Forward All</a>
                     {% if authEnabled %}
                         {% if isLocked and hasAccess %}
@@ -23,7 +23,7 @@
             {% if authEnabled %}
                 <div class="action-dropdown">
                     <button class="dropdown-toggle" aria-label="Account menu">Account ▾</button>
-                    <div class="dropdown-menu">
+                    <div class="dropdown-menu" data-section-title="Account">
                         <a href="/account" aria-label="Account settings">Settings</a>
                         <a href="/logout?redirect={{ ('/inbox/' ~ address) | url_encode }}" aria-label="Logout">Logout</a>
                     </div>
@@ -53,8 +53,11 @@
     <script src="/javascripts/qrcode.js"></script>
     <script src="/javascripts/inbox-init.js" defer data-address="{{ address }}" data-expiry-time="{{ expiryTime }}" data-expiry-unit="{{ expiryUnit }}" data-refresh-interval="{{ refreshInterval }}"></script>
     {% if forwardAllSuccess %}
-        <div class="success-message">
-            ✓ Successfully forwarded {{ forwardAllSuccess }} email(s)!
+        <div class="alert alert-success">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
+                <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+            Successfully forwarded {{ forwardAllSuccess }} email(s)!
         </div>
     {% endif %}
     {% if verificationSent %}
@@ -63,7 +66,12 @@
         </div>
     {% endif %}
     {% if errorMessage %}
-        <div class="unlock-error">
+        <div class="alert alert-error">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
             {{ errorMessage }}
         </div>
     {% endif %}
@@ -84,7 +92,7 @@
         <div class="emails-container">
             {% for mail in mailSummaries %}
                 <a href="{{ mail.to[0] }}/{{ mail.uid }}" class="email-link">
-                    <div class="email-card">
+                    <div class="email-card frosted-glass">
                         <div class="email-header">
                             <div class="email-sender">
                                 <div class="sender-name">{{ mail.from[0].name }}</div>
@@ -111,20 +119,20 @@
     {% if authEnabled and not isLocked %}
     <!-- Lock Modal -->
     <div id="lockModal" class="modal" style="display: none;" data-lock-error="{{ error|default('') }}">
-        <div class="modal-content">
+        <div class="modal-content frosted-glass">
             <span class="close" id="closeLock">&times;</span>
             <h3>Lock Inbox</h3>
             <p class="modal-description">Lock this inbox to your account. Only you will be able to access it while logged in.</p>
             {% if error and error == 'locking_disabled_for_example' %}
-                <p id="lockServerError" class="unlock-error">Locking is disabled for the example inbox.</p>
+                <p id="lockServerError" class="alert alert-error">Locking is disabled for the example inbox.</p>
             {% elseif error and error == 'max_locked_inboxes' %}
-                <p id="lockServerError" class="unlock-error">You have reached the maximum of 5 locked inboxes. Please remove a lock before adding a new one.</p>
+                <p id="lockServerError" class="alert alert-error">You have reached the maximum of 5 locked inboxes. Please remove a lock before adding a new one.</p>
             {% elseif error and error == 'already_locked' %}
-                <p id="lockServerError" class="unlock-error">This inbox is already locked by another user.</p>
+                <p id="lockServerError" class="alert alert-error">This inbox is already locked by another user.</p>
             {% elseif error and error == 'not_your_lock' %}
-                <p id="lockServerError" class="unlock-error">You don't own the lock on this inbox.</p>
+                <p id="lockServerError" class="alert alert-error">You don't own the lock on this inbox.</p>
             {% endif %}
-            <p id="lockErrorInline" class="unlock-error" style="display:none"></p>
+            <p id="lockErrorInline" class="alert alert-error" style="display:none"></p>
             <form method="POST" action="/lock/lock">
                 <input type="hidden" name="address" value="{{ address }}">
                 <fieldset>
@@ -142,7 +150,7 @@
     {% if authEnabled and isLocked and hasAccess %}
     <!-- Remove Lock Modal -->
     <div id="removeLockModal" class="modal" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content frosted-glass">
             <span class="close" id="closeRemoveLock">&times;</span>
             <h3>Remove Lock</h3>
             <p class="modal-description">Are you sure you want to remove the lock from this inbox? Anyone will be able to access it.</p>

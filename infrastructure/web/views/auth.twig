@@ -20,50 +20,29 @@
         <h1 class="page-title">Account Access</h1>
         <p class="auth-subtitle">Login to an existing account or create a new one</p>
         {% if errorMessage %}
-            <div class="unlock-error">{{ errorMessage }}</div>
+            <div class="alert alert-error">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                {{ errorMessage }}
+            </div>
         {% endif %}
         {% if successMessage %}
-            <div class="success-message">{{ successMessage }}</div>
+            <div class="alert alert-success">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
+                    <path d="M20 6L9 17l-5-5"></path>
+                </svg>
+                {{ successMessage }}
+            </div>
         {% endif %}
     </div>
 
     <div class="auth-forms-grid">
-        <!-- Login Form -->
-        <div class="auth-card">
-            <h2>Login</h2>
-            <p class="auth-card-subtitle">Access your existing account</p>
-            
-            <form method="POST" action="/login">
-                <fieldset>
-                    <label for="login-username">Username</label>
-                    <input 
-                        type="text" 
-                        id="login-username" 
-                        name="username" 
-                        placeholder="Your username"
-                        required
-                        autocomplete="username"
-                    >
-
-                    <label for="login-password">Password</label>
-                    <input 
-                        type="password" 
-                        id="login-password" 
-                        name="password" 
-                        placeholder="Your password"
-                        required
-                        autocomplete="current-password"
-                    >
-
-                    <button class="button button-primary" type="submit">Login</button>
-                </fieldset>
-            </form>
-        </div>
-
         <!-- Register Form -->
-        <div class="auth-card">
+        <div class="auth-card frosted-glass">
             <h2>Register</h2>
-            <p class="auth-card-subtitle">Create a new account</p>
             
             <form method="POST" action="/register">
                 <fieldset>
@@ -108,10 +87,41 @@
                 </fieldset>
             </form>
         </div>
+
+        <!-- Login Form -->
+        <div class="auth-card frosted-glass">
+            <h2>Login</h2>
+            
+            <form method="POST" action="/login">
+                <fieldset>
+                    <label for="login-username">Username</label>
+                    <input 
+                        type="text" 
+                        id="login-username" 
+                        name="username" 
+                        placeholder="Your username"
+                        required
+                        autocomplete="username"
+                    >
+
+                    <label for="login-password">Password</label>
+                    <input 
+                        type="password" 
+                        id="login-password" 
+                        name="password" 
+                        placeholder="Your password"
+                        required
+                        autocomplete="current-password"
+                    >
+
+                    <button class="button button-primary" type="submit">Login</button>
+                </fieldset>
+            </form>
+        </div>
     </div>
 
     <div class="auth-features-unified">
-        <h3>✓ Account Benefits</h3>
+        <h3>Account Benefits</h3>
         <div class="features-grid">
             <div class="feature-item">Forward emails to verified addresses</div>
             <div class="feature-item">Lock up to 5 inboxes to your account</div>

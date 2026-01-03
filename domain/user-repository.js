@@ -355,6 +355,100 @@ class UserRepository {
     }
 
     /**
+     * Verify user password
+     * @param {number} userId - User ID
+     * @param {string} password - Plain text password to verify
+     * @returns {Promise<boolean>} - True if password matches
+     */
+    async verifyPassword(userId, password) {
+        try {
+            const bcrypt = require('bcrypt')
+            const stmt = this.db.prepare('SELECT password_hash FROM users WHERE id = ?')
+            const user = stmt.get(userId)
+
+            if (!user) {
+                debug(`User not found for password verification: ${userId}`)
+                return false
+            }
+
+            const isValid = await bcrypt.compare(password, user.password_hash)
+            debug(`Password verification for user ${userId}: ${isValid ? 'success' : 'failed'}`)
+            return isValid
+        } catch (error) {
+            debug(`Error verifying password: ${error.message}`)
+            return false
+        }
+    }
+
+    /**
+     * Update user password
+     * @param {number} userId - User ID
+     * @param {string} newPassword - New plain text password
+     * @returns {Promise<boolean>} - True if successful
+     */
+    async updatePassword(userId, newPassword) {
+        try {
+            const bcrypt = require('bcrypt')
+            const saltRounds = 10
+            const passwordHash = await bcrypt.hash(newPassword, saltRounds)
+
+            const stmt = this.db.prepare(`
+                UPDATE users
+                SET password_hash = ?
+                WHERE id = ?
+            `)
+            const result = stmt.run(passwordHash, userId)
+
+            if (result.changes > 0) {
+                debug(`Password updated for user ${userId}`)
+                return true
+            } else {
+                debug(`User not found for password update: ${userId}`)
+                return false
+            }
+        } catch (error) {
+            debug(`Error updating password: ${error.message}`)
+            throw error
+        }
+    }
+
+    /**
+     * Delete user account and all associated data
+     * @param {number} userId - User ID
+     * @returns {boolean} - True if successful
+     */
+    deleteUser(userId) {
+        try {
+            // Delete in order due to foreign key constraints:
+            // 1. forward_emails (references users.id)
+            // 2. users
+
+            const deleteForwardEmails = this.db.prepare('DELETE FROM forward_emails WHERE user_id = ?')
+            const deleteUser = this.db.prepare('DELETE FROM users WHERE id = ?')
+
+            // Use transaction for atomicity
+            const deleteTransaction = this.db.transaction((uid) => {
+                deleteForwardEmails.run(uid)
+                const result = deleteUser.run(uid)
+                return result.changes > 0
+            })
+
+            const success = deleteTransaction(userId)
+
+            if (success) {
+                debug(`User ${userId} and all associated data deleted`)
+            } else {
+                debug(`User ${userId} not found for deletion`)
+            }
+
+            return success
+        } catch (error) {
+            debug(`Error deleting user: ${error.message}`)
+            throw error
+        }
+    }
+
+    /**
      * Close database connection
      */
     close() {
