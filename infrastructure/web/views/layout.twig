@@ -7,6 +7,7 @@
     
     <title>{{ title }}</title>
     
+    {% block metaTags %}
     <!-- SEO Meta Tags -->
     <meta name="description" content="Your temporary Inbox. Create instant throwaway email addresses to protect your privacy. No registration required. Emails auto-delete after 48 hours.">
     <meta name="keywords" content="temporary email, disposable email, throwaway email, fake email, temp mail, anonymous email, 48hr email, privacy protection, burner email">
@@ -29,6 +30,7 @@
     <meta name="twitter:title" content="48hr.email - Your temporary Inbox">
     <meta name="twitter:description" content="Free temporary email service. Protect your privacy with disposable email addresses.">
     <meta name="twitter:image" content="https://48hr.email/images/logo.png">
+    {% endblock %}
     
     <!-- Additional Meta Tags -->
     <meta name="theme-color" content="#9b4dca">
