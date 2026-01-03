@@ -5,7 +5,7 @@
 const config = require('./application/config')
 const debug = require('debug')('48hr-email:app')
 const Helper = require('./application/helper')
-
+const helper = new(Helper)
 const { app, io, server } = require('./infrastructure/web/web')
 const ClientNotification = require('./infrastructure/web/client-notification')
 const ImapService = require('./application/imap-service')
@@ -95,10 +95,14 @@ const mailProcessingService = new MailProcessingService(
 debug('Mail processing service initialized')
 
 // Initialize statistics with current count
-imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, () => {
+imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, async() => {
     const count = mailProcessingService.getCount()
     statisticsStore.initialize(count)
-    debug(`Statistics initialized with ${count} emails`)
+
+    // Get and set the largest UID for all-time total
+    const largestUid = await helper.getLargestUid(imapService)
+    statisticsStore.updateLargestUid(largestUid)
+    debug(`Statistics initialized with ${count} emails, largest UID: ${largestUid}`)
 })
 
 // Set up timer sync broadcasting after IMAP is ready

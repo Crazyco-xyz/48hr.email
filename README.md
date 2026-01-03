@@ -42,9 +42,9 @@ All data is being removed 48hrs after they have reached the mail server.
 
 ## Screenshots
 
-| Homepage | Account Panel |
-|:---:|:---:|
-| <img src=".github/assets/home.png" width="500px" height="300px" style="object-fit: fit;"> | <img src=".github/assets/account.png" width="500px" height="300px" style="object-fit: fit;"> |
+| Homepage | Account Panel | Stats Page |
+|:---:|:---:|:---:|
+| <img src=".github/assets/home.png" width="500px" height="300px" style="object-fit: fit;"> | <img src=".github/assets/account.png" width="500px" height="300px" style="object-fit: fit;"> | <img src=".github/assets/stats.png" width="500px" height="300px" style="object-fit: fit;"> |
 
 | Inbox | Email using HTML and CSS | Attachments and Cryptographic Keys view |
 |:---:|:---:|:---:|

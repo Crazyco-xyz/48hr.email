@@ -7,13 +7,20 @@ router.get('/', async(req, res) => {
     try {
         const config = req.app.get('config')
         const statisticsStore = req.app.get('statisticsStore')
+        const imapService = req.app.get('imapService')
         const Helper = require('../../../application/helper')
         const helper = new Helper()
+
+        // Update largest UID before getting stats (if IMAP is ready)
+        if (imapService) {
+            const largestUid = await helper.getLargestUid(imapService)
+            statisticsStore.updateLargestUid(largestUid)
+        }
 
         const stats = statisticsStore.getStats()
         const purgeTime = helper.purgeTimeElemetBuilder()
 
-        debug(`Stats page requested: ${stats.currentCount} current, ${stats.historicalTotal} historical`)
+        debug(`Stats page requested: ${stats.currentCount} current, ${stats.allTimeTotal} all-time total`)
 
         res.render('stats', {
             title: `Statistics | ${config.http.branding[0]}`,
@@ -34,6 +41,16 @@ router.get('/', async(req, res) => {
 router.get('/api', async(req, res) => {
     try {
         const statisticsStore = req.app.get('statisticsStore')
+        const imapService = req.app.get('imapService')
+        const Helper = require('../../../application/helper')
+        const helper = new Helper()
+
+        // Update largest UID before getting stats (if IMAP is ready)
+        if (imapService) {
+            const largestUid = await helper.getLargestUid(imapService)
+            statisticsStore.updateLargestUid(largestUid)
+        }
+
         const stats = statisticsStore.getStats()
 
         res.json(stats)

@@ -8,15 +8,15 @@ class StatisticsStore {
     constructor() {
         // Current totals
         this.currentCount = 0
-        this.historicalTotal = 0
-        
+        this.largestUid = 0
+
         // 24-hour rolling data (one entry per minute = 1440 entries)
         this.hourlyData = []
         this.maxDataPoints = 24 * 60 // 24 hours * 60 minutes
-        
+
         // Track last cleanup to avoid too frequent operations
         this.lastCleanup = Date.now()
-        
+
         debug('Statistics store initialized')
     }
 
@@ -26,8 +26,18 @@ class StatisticsStore {
      */
     initialize(count) {
         this.currentCount = count
-        this.historicalTotal = count
         debug(`Initialized with ${count} emails`)
+    }
+
+    /**
+     * Update largest UID (all-time total emails processed)
+     * @param {number} uid - Largest UID from mailbox (0 if no emails)
+     */
+    updateLargestUid(uid) {
+        if (uid >= 0 && uid > this.largestUid) {
+            this.largestUid = uid
+            debug(`Largest UID updated to ${uid}`)
+        }
     }
 
     /**
@@ -35,9 +45,8 @@ class StatisticsStore {
      */
     recordReceive() {
         this.currentCount++
-        this.historicalTotal++
-        this._addDataPoint('receive')
-        debug(`Email received. Current: ${this.currentCount}, Historical: ${this.historicalTotal}`)
+            this._addDataPoint('receive')
+        debug(`Email received. Current: ${this.currentCount}`)
     }
 
     /**
@@ -79,12 +88,12 @@ class StatisticsStore {
      */
     getStats() {
         this._cleanup()
-        
+
         const last24h = this._getLast24Hours()
-        
+
         return {
             currentCount: this.currentCount,
-            historicalTotal: this.historicalTotal,
+            allTimeTotal: this.largestUid,
             last24Hours: {
                 receives: last24h.receives,
                 deletes: last24h.deletes,
@@ -102,7 +111,7 @@ class StatisticsStore {
     _addDataPoint(type) {
         const now = Date.now()
         const minute = Math.floor(now / 60000) * 60000 // Round to minute
-        
+
         // Find or create entry for this minute
         let entry = this.hourlyData.find(e => e.timestamp === minute)
         if (!entry) {
@@ -114,10 +123,10 @@ class StatisticsStore {
             }
             this.hourlyData.push(entry)
         }
-        
+
         entry[type + 's']++
-        
-        this._cleanup()
+
+            this._cleanup()
     }
 
     /**
@@ -126,20 +135,20 @@ class StatisticsStore {
      */
     _cleanup() {
         const now = Date.now()
-        
+
         // Only cleanup every 5 minutes to avoid constant filtering
         if (now - this.lastCleanup < 5 * 60 * 1000) {
             return
         }
-        
+
         const cutoff = now - (24 * 60 * 60 * 1000)
         const beforeCount = this.hourlyData.length
         this.hourlyData = this.hourlyData.filter(entry => entry.timestamp >= cutoff)
-        
+
         if (beforeCount !== this.hourlyData.length) {
             debug(`Cleaned up ${beforeCount - this.hourlyData.length} old data points`)
         }
-        
+
         this.lastCleanup = now
     }
 
@@ -151,7 +160,7 @@ class StatisticsStore {
     _getLast24Hours() {
         const cutoff = Date.now() - (24 * 60 * 60 * 1000)
         const recent = this.hourlyData.filter(e => e.timestamp >= cutoff)
-        
+
         return {
             receives: recent.reduce((sum, e) => sum + e.receives, 0),
             deletes: recent.reduce((sum, e) => sum + e.deletes, 0),
@@ -168,7 +177,7 @@ class StatisticsStore {
         const now = Date.now()
         const cutoff = now - (24 * 60 * 60 * 1000)
         const hourly = {}
-        
+
         // Aggregate by hour
         this.hourlyData
             .filter(e => e.timestamp >= cutoff)
@@ -181,7 +190,7 @@ class StatisticsStore {
                 hourly[hour].deletes += entry.deletes
                 hourly[hour].forwards += entry.forwards
             })
-        
+
         // Convert to sorted array
         return Object.values(hourly).sort((a, b) => a.timestamp - b.timestamp)
     }

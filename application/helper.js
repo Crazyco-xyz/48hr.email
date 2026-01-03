@@ -172,7 +172,8 @@ class Helper {
     }
 
     async getLargestUid(imapService) {
-        return await imapService.getLargestUid();
+        const uid = await imapService.getLargestUid();
+        return uid || 0;
     }
 
     /**
