@@ -33,7 +33,7 @@ class UserRepository {
             debug(`Connected to user database: ${this.dbPath}`)
 
             // Load and execute schema
-            const schemaPath = path.join(__dirname, '../db/schema.sql')
+            const schemaPath = path.join(__dirname, '../schema.sql')
             const schema = fs.readFileSync(schemaPath, 'utf8')
             this.db.exec(schema)
             debug('Database schema initialized')
