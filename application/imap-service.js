@@ -101,8 +101,17 @@ class ImapService extends EventEmitter {
     }
 
     async connectAndLoadMessages() {
-        const configWithListener = {
-            ...this.config,
+        // Map config.imap.secure to config.imap.tls for imap-simple library compatibility
+        const imapConfig = {
+            imap: {
+                user: this.config.imap.user,
+                password: this.config.imap.password,
+                host: this.config.imap.host,
+                port: this.config.imap.port,
+                tls: this.config.imap.secure,
+                authTimeout: this.config.imap.authTimeout,
+                tlsOptions: { rejectUnauthorized: false }
+            },
             // 'onmail' adds a callback when new mails arrive. With this we can keep the imap refresh interval very low (or even disable it).
             onmail: () => this._doOnNewMail()
         }
@@ -111,7 +120,7 @@ class ImapService extends EventEmitter {
             this._doAfterInitialLoad()
         )
 
-        await this._connectWithRetry(configWithListener)
+        await this._connectWithRetry(imapConfig)
 
         // Load all messages in the background. (ASYNC)
         this._loadMailSummariesAndEmitAsEvents()
