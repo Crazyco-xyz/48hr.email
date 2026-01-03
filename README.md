@@ -34,6 +34,7 @@ All data is being removed 48hrs after they have reached the mail server.
 - View the raw email, showing all the headers etc.
 - Download Attachments with one click
 - <u>Optional</u> User Account System with email forwarding and inbox locking
+- <u>Optional</u> Statistics System, tracking public data for as long as your mails stay
 - and more...
 
 <br>

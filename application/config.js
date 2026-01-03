@@ -49,7 +49,7 @@ const config = {
         password: parseValue(process.env.IMAP_PASSWORD),
         host: parseValue(process.env.IMAP_SERVER),
         port: Number(process.env.IMAP_PORT),
-        tls: parseBool(process.env.IMAP_TLS),
+        secure: parseBool(process.env.IMAP_SECURE),
         authTimeout: Number(process.env.IMAP_AUTH_TIMEOUT),
         refreshIntervalSeconds: Number(process.env.IMAP_REFRESH_INTERVAL_SECONDS),
         fetchChunkSize: Number(process.env.IMAP_FETCH_CHUNK) || 100,
@@ -58,11 +58,11 @@ const config = {
 
     smtp: {
         enabled: parseBool(process.env.SMTP_ENABLED) || false,
-        host: parseValue(process.env.SMTP_HOST),
-        port: Number(process.env.SMTP_PORT) || 465,
-        secure: parseBool(process.env.SMTP_SECURE) || true,
         user: parseValue(process.env.SMTP_USER),
-        password: parseValue(process.env.SMTP_PASSWORD)
+        password: parseValue(process.env.SMTP_PASSWORD),
+        server: parseValue(process.env.SMTP_SERVER),
+        port: Number(process.env.SMTP_PORT) || 465,
+        secure: parseBool(process.env.SMTP_SECURE) || true
     },
 
     http: {
@@ -70,7 +70,8 @@ const config = {
         baseUrl: parseValue(process.env.HTTP_BASE_URL) || 'http://localhost:3000',
         branding: parseValue(process.env.HTTP_BRANDING),
         displaySort: Number(process.env.HTTP_DISPLAY_SORT),
-        hideOther: parseBool(process.env.HTTP_HIDE_OTHER)
+        hideOther: parseBool(process.env.HTTP_HIDE_OTHER),
+        statisticsEnabled: parseBool(process.env.HTTP_STATISTICS_ENABLED) || false
     },
 
     user: {

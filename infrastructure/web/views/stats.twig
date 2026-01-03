@@ -34,7 +34,7 @@
 {% block body %}
 <div class="stats-container">
     <h1 class="page-title">Email Statistics</h1>
-    <p class="stats-subtitle">Real-time email activity and 24-hour trends</p>
+    <p class="stats-subtitle">Historical patterns, real-time activity, and predictions over {{ purgeTime|striptags }}</p>
 
     <div class="stats-grid">
         <!-- Current Count -->
@@ -43,34 +43,34 @@
             <div class="stat-label">Emails in System</div>
         </div>
 
-        <!-- Historical Total -->
+        <!-- All-Time Total -->
         <div class="stat-card">
             <div class="stat-value" id="historicalTotal">{{ stats.allTimeTotal }}</div>
-            <div class="stat-label">All Time Total</div>
+            <div class="stat-label">All-Time Total</div>
         </div>
 
-        <!-- 24h Receives -->
+        <!-- Receives (Purge Window) -->
         <div class="stat-card">
             <div class="stat-value" id="receives24h">{{ stats.last24Hours.receives }}</div>
-            <div class="stat-label">Received (24h)</div>
+            <div class="stat-label">Received</div>
         </div>
 
-        <!-- 24h Deletes -->
+        <!-- Deletes (Purge Window) -->
         <div class="stat-card">
             <div class="stat-value" id="deletes24h">{{ stats.last24Hours.deletes }}</div>
-            <div class="stat-label">Deleted (24h)</div>
+            <div class="stat-label">Deleted</div>
         </div>
 
-        <!-- 24h Forwards -->
+        <!-- Forwards (Purge Window) -->
         <div class="stat-card">
             <div class="stat-value" id="forwards24h">{{ stats.last24Hours.forwards }}</div>
-            <div class="stat-label">Forwarded (24h)</div>
+            <div class="stat-label">Forwarded</div>
         </div>
     </div>
 
     <!-- Chart -->
     <div class="chart-container">
-        <h2>Activity Timeline (24 Hours)</h2>
+        <h2>Email Activity Timeline</h2>
         <canvas id="statsChart"></canvas>
     </div>
 </div>
@@ -78,5 +78,7 @@
 <script>
     // Set initial data for stats.js to consume
     window.initialStatsData = {{ stats.last24Hours.timeline|json_encode|raw }};
+    window.historicalData = {{ stats.historical|json_encode|raw }};
+    window.predictionData = {{ stats.prediction|json_encode|raw }};
 </script>
 {% endblock %}

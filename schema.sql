@@ -44,6 +44,18 @@ CREATE INDEX IF NOT EXISTS idx_locked_inboxes_user_id ON user_locked_inboxes(use
 CREATE INDEX IF NOT EXISTS idx_locked_inboxes_address ON user_locked_inboxes(inbox_address);
 CREATE INDEX IF NOT EXISTS idx_locked_inboxes_last_accessed ON user_locked_inboxes(last_accessed);
 
+-- Statistics storage for persistence across restarts
+CREATE TABLE IF NOT EXISTS statistics (
+    id INTEGER PRIMARY KEY CHECK (id = 1), -- Single row table
+    largest_uid INTEGER NOT NULL DEFAULT 0,
+    hourly_data TEXT, -- JSON array of 24h rolling data
+    last_updated INTEGER NOT NULL
+);
+
+-- Initialize with default row if not exists
+INSERT OR IGNORE INTO statistics (id, largest_uid, hourly_data, last_updated)
+VALUES (1, 0, '[]', 0);
+
 -- Trigger to enforce max 5 locked inboxes per user
 CREATE TRIGGER IF NOT EXISTS check_locked_inbox_limit
 BEFORE INSERT ON user_locked_inboxes

@@ -92,7 +92,11 @@
     {% block footer %}
     <section class="container footer">
       <hr>
-      <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime | raw }} | <a href="/stats" style="text-decoration:underline">See daily Stats</a></h4>
+      {% if config.http.statisticsEnabled %}
+      <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime | raw }} | Check out our public <a href="/stats" style="text-decoration:underline">Statistics</a></h4>
+      {% else %}
+      <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime | raw }} | Currently handling {{ mailCount | raw }}</h4>
+      {% endif %}
       <h4 class="container footer-two"> This project is <a href="https://github.com/crazyco-xyz/48hr.email" style="text-decoration:underline" target="_blank">open-source ♥</a></h4>
     </section>
     {% endblock %}

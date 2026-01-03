@@ -6,8 +6,15 @@ const debug = require('debug')('48hr-email:stats-routes')
 router.get('/', async(req, res) => {
     try {
         const config = req.app.get('config')
+
+        // Check if statistics are enabled
+        if (!config.http.statisticsEnabled) {
+            return res.status(404).send('Statistics are disabled')
+        }
+
         const statisticsStore = req.app.get('statisticsStore')
         const imapService = req.app.get('imapService')
+        const mailProcessingService = req.app.get('mailProcessingService')
         const Helper = require('../../../application/helper')
         const helper = new Helper()
 
@@ -17,10 +24,16 @@ router.get('/', async(req, res) => {
             statisticsStore.updateLargestUid(largestUid)
         }
 
-        const stats = statisticsStore.getStats()
+        // Analyze all existing emails for historical data
+        if (mailProcessingService) {
+            const allMails = mailProcessingService.getAllMailSummaries()
+            statisticsStore.analyzeHistoricalData(allMails)
+        }
+
+        const stats = statisticsStore.getEnhancedStats()
         const purgeTime = helper.purgeTimeElemetBuilder()
 
-        debug(`Stats page requested: ${stats.currentCount} current, ${stats.allTimeTotal} all-time total`)
+        debug(`Stats page requested: ${stats.currentCount} current, ${stats.allTimeTotal} all-time total, ${stats.historical.length} historical points`)
 
         res.render('stats', {
             title: `Statistics | ${config.http.branding[0]}`,
@@ -51,7 +64,8 @@ router.get('/api', async(req, res) => {
             statisticsStore.updateLargestUid(largestUid)
         }
 
-        const stats = statisticsStore.getStats()
+        // Use lightweight stats - no historical analysis on API calls
+        const stats = statisticsStore.getLightweightStats()
 
         res.json(stats)
     } catch (error) {

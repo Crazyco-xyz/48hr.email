@@ -25,7 +25,7 @@ class SmtpService {
     _isConfigured() {
         return !!(
             this.config.smtp.enabled &&
-            this.config.smtp.host &&
+            this.config.smtp.server &&
             this.config.smtp.user &&
             this.config.smtp.password
         )
@@ -38,7 +38,7 @@ class SmtpService {
     _initializeTransporter() {
         try {
             this.transporter = nodemailer.createTransport({
-                host: this.config.smtp.host,
+                host: this.config.smtp.server,
                 port: this.config.smtp.port,
                 secure: this.config.smtp.secure,
                 auth: {
@@ -52,7 +52,7 @@ class SmtpService {
                 }
             })
 
-            debug(`SMTP transporter initialized: ${this.config.smtp.host}:${this.config.smtp.port}`)
+            debug(`SMTP transporter initialized: ${this.config.smtp.server}:${this.config.smtp.port}`)
         } catch (error) {
             debug('Failed to initialize SMTP transporter:', error.message)
             throw new Error(`SMTP initialization failed: ${error.message}`)

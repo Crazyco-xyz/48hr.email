@@ -95,12 +95,28 @@ Twig.extendFilter('readablePurgeTime', readablePurgeTime)
 // Middleware to expose user session to all templates
 app.use((req, res, next) => {
     res.locals.authEnabled = config.user.authEnabled
+    res.locals.config = config
     res.locals.currentUser = null
     if (req.session && req.session.userId && req.session.username && req.session.isAuthenticated) {
         res.locals.currentUser = {
             id: req.session.userId,
             username: req.session.username
         }
+    }
+    next()
+})
+
+// Middleware to expose mail count to all templates
+app.use((req, res, next) => {
+    const mailProcessingService = req.app.get('mailProcessingService')
+    const Helper = require('../../application/helper')
+    const helper = new Helper()
+
+    if (mailProcessingService) {
+        const count = mailProcessingService.getCount()
+        res.locals.mailCount = helper.mailCountBuilder(count)
+    } else {
+        res.locals.mailCount = ''
     }
     next()
 })

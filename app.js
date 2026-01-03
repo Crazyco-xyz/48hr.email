@@ -30,15 +30,13 @@ const verificationStore = new VerificationStore()
 debug('Verification store initialized')
 app.set('verificationStore', verificationStore)
 
-const statisticsStore = new StatisticsStore()
-debug('Statistics store initialized')
-app.set('statisticsStore', statisticsStore)
-
 // Set config in app for route access
 app.set('config', config)
 
 // Initialize user repository and auth service (if enabled)
 let inboxLock = null
+let statisticsStore = null
+
 if (config.user.authEnabled) {
     // Migrate legacy database files for backwards compatibility
     Helper.migrateDatabase(config.user.databasePath)
@@ -46,6 +44,11 @@ if (config.user.authEnabled) {
     const userRepository = new UserRepository(config.user.databasePath)
     debug('User repository initialized')
     app.set('userRepository', userRepository)
+
+    // Initialize statistics store with database connection
+    statisticsStore = new StatisticsStore(userRepository.db)
+    debug('Statistics store initialized with database persistence')
+    app.set('statisticsStore', statisticsStore)
 
     const authService = new AuthService(userRepository, config)
     debug('Auth service initialized')
@@ -74,6 +77,11 @@ if (config.user.authEnabled) {
 
     console.log('User authentication system enabled')
 } else {
+    // No auth enabled - initialize statistics store without persistence
+    statisticsStore = new StatisticsStore()
+    debug('Statistics store initialized (in-memory only, no database)')
+    app.set('statisticsStore', statisticsStore)
+
     app.set('userRepository', null)
     app.set('authService', null)
     app.set('inboxLock', null)

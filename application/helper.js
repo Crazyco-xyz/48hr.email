@@ -107,6 +107,25 @@ class Helper {
     }
 
     /**
+     * Build a mail count html element with tooltip for the footer
+     * @param {number} count - Current mail count
+     * @returns {String}
+     */
+    mailCountBuilder(count) {
+        const imapService = require('./imap-service')
+        const largestUid = imapService.getLargestUid ? imapService.getLargestUid() : null
+        let tooltip = ''
+
+        if (largestUid && largestUid > 0) {
+            tooltip = `All-time total: ${largestUid} emails`
+        }
+
+        return `<label title="${tooltip}">
+		<h4 style="display: inline;"><u><i>${count} mails</i></u></h4>
+		</label>`
+    }
+
+    /**
      * Shuffle an array using the Durstenfeld shuffle algorithm
      * @param {Array} array
      * @returns {Array}

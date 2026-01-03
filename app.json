@@ -44,7 +44,7 @@
             "description": "Port of the server (usually 993)",
             "value": 993
         },
-        "IMAP_TLS": {
+        "IMAP_SECURE": {
             "description": "Use tls or not",
             "value": true
         },

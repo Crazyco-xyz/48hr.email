@@ -2494,6 +2494,20 @@ body.light-mode .theme-icon-light {
     margin-bottom: 3rem;
 }
 
+.stats-subtitle .purge-time-inline {
+    display: inline;
+}
+
+.stats-subtitle .purge-time-inline label,
+.stats-subtitle .purge-time-inline h4 {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    font-weight: inherit;
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -2548,6 +2562,77 @@ body.light-mode .theme-icon-light {
 
 .chart-container canvas {
     max-height: 400px;
+}
+
+
+/* Custom legend for stats chart */
+
+.chart-legend-custom {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.legend-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: var(--overlay-white-05);
+    border: 2px solid var(--overlay-purple-30);
+    border-radius: 8px;
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.legend-btn:hover {
+    background: var(--overlay-white-10);
+    border-color: var(--color-accent-purple);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(155, 77, 202, 0.2);
+}
+
+.legend-btn.active {
+    background: var(--overlay-purple-20);
+    border-color: var(--color-accent-purple);
+}
+
+.legend-btn:not(.active) {
+    opacity: 0.4;
+    background: var(--overlay-white-02);
+}
+
+.legend-btn:not(.active):hover {
+    opacity: 0.6;
+}
+
+.legend-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.legend-label {
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .chart-legend-custom {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .legend-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 
