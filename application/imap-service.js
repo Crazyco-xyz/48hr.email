@@ -242,13 +242,9 @@ class ImapService extends EventEmitter {
     async deleteOldMails(deleteMailsBefore) {
         let uids;
 
-        // Only do heavy IMAP date filtering if the cutoff is older than 1 day
-        const useDateFilter = helper.moreThanOneDay(new Date(), deleteMailsBefore);
-
-        const searchQuery = useDateFilter ? [
-            ['!DELETED'],
-            ['BEFORE', deleteMailsBefore]
-        ] : [
+        // IMAP date filters are unreliable - some servers search internal date, not Date header
+        // Always fetch all UIDs and filter by date header in JavaScript instead
+        const searchQuery = [
             ['!DELETED']
         ];
 
