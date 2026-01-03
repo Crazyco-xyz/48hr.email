@@ -1,34 +1,48 @@
 /**
  * Statistics page functionality
- * Handles Chart.js initialization and auto-refresh of statistics data
+ * Handles Chart.js initialization and real-time updates via Socket.IO
  */
 
 // Initialize stats chart if on stats page
 document.addEventListener('DOMContentLoaded', function() {
     const chartCanvas = document.getElementById('statsChart');
     if (!chartCanvas) return; // Not on stats page
-    
+
     // Get initial data from global variable (set by template)
     if (typeof window.initialStatsData === 'undefined') {
         console.error('Initial stats data not found');
         return;
     }
-    
+
     const initialData = window.initialStatsData;
-    
+
+    // Set up Socket.IO connection for real-time updates
+    if (typeof io !== 'undefined') {
+        const socket = io();
+
+        // Listen for stats updates (any email event: receive, delete, forward)
+        socket.on('stats-update', () => {
+            console.log('Stats update received, reloading page...');
+            location.reload();
+        });
+
+        socket.on('reconnect', () => {
+            console.log('Reconnected to server');
+        });
+    }
+
     // Prepare chart data
     const labels = initialData.map(d => {
         const date = new Date(d.timestamp);
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     });
-    
+
     const ctx = chartCanvas.getContext('2d');
     const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [
-                {
+            datasets: [{
                     label: 'Received',
                     data: initialData.map(d => d.receives),
                     borderColor: '#9b4dca',
@@ -95,32 +109,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-
-    // Auto-refresh stats every 30 seconds
-    setInterval(async () => {
-        try {
-            const response = await fetch('/stats/api');
-            const data = await response.json();
-            
-            // Update stat cards
-            document.getElementById('currentCount').textContent = data.currentCount;
-            document.getElementById('historicalTotal').textContent = data.historicalTotal;
-            document.getElementById('receives24h').textContent = data.last24Hours.receives;
-            document.getElementById('deletes24h').textContent = data.last24Hours.deletes;
-            document.getElementById('forwards24h').textContent = data.last24Hours.forwards;
-            
-            // Update chart
-            const timeline = data.last24Hours.timeline;
-            chart.data.labels = timeline.map(d => {
-                const date = new Date(d.timestamp);
-                return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            });
-            chart.data.datasets[0].data = timeline.map(d => d.receives);
-            chart.data.datasets[1].data = timeline.map(d => d.deletes);
-            chart.data.datasets[2].data = timeline.map(d => d.forwards);
-            chart.update('none'); // Update without animation
-        } catch (error) {
-            console.error('Failed to refresh stats:', error);
-        }
-    }, 30000);
 });

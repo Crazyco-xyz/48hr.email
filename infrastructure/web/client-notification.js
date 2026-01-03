@@ -83,6 +83,13 @@ class ClientNotification extends EventEmitter {
             this.pendingNotifications.set(address, prev + 1);
             debug(`No listeners for ${address}, queued notification (${prev + 1} pending)`);
         }
+
+        // Also emit a global stats-update event for stats page
+        if (this.io) {
+            this.io.emit('stats-update');
+            debug('Emitted stats-update to all connected clients');
+        }
+
         return hadListeners;
     }
 }
