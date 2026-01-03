@@ -15,9 +15,6 @@ router.get('/:address/:errorCode', async(req, res, next) => {
             throw new Error('Mail processing service not available')
         }
         debug(`Error page requested: ${req.params.errorCode} for ${req.params.address}`)
-        const count = await mailProcessingService.getCount()
-        const largestUid = await req.app.locals.imapService.getLargestUid()
-        const totalcount = helper.countElementBuilder(count, largestUid)
         const errorCode = parseInt(req.params.errorCode) || 404
         const message = req.query.message || (req.session && req.session.errorMessage) || 'An error occurred'
 
@@ -27,8 +24,6 @@ router.get('/:address/:errorCode', async(req, res, next) => {
             title: `${config.http.branding[0]} | ${errorCode}`,
             purgeTime: purgeTime,
             address: req.params.address,
-            count: count,
-            totalcount: totalcount,
             message: message,
             status: errorCode,
             branding: config.http.branding

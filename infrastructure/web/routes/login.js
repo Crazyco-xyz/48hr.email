@@ -17,17 +17,11 @@ router.get('/', async(req, res, next) => {
             throw new Error('Mail processing service not available')
         }
         debug('Login page requested')
-        const count = await mailProcessingService.getCount()
-        const largestUid = await req.app.locals.imapService.getLargestUid()
-        const totalcount = helper.countElementBuilder(count, largestUid)
-        debug(`Rendering login page with ${count} total mails`)
         res.render('login', {
             title: `${config.http.branding[0]} | Your temporary Inbox`,
             username: randomWord(),
             purgeTime: purgeTime,
             domains: helper.getDomains(),
-            count: count,
-            totalcount: totalcount,
             branding: config.http.branding,
             example: config.email.examples.account,
         })
@@ -59,7 +53,6 @@ router.post(
                 throw new Error('Mail processing service not available')
             }
             const errors = validationResult(req)
-            const count = await mailProcessingService.getCount()
             if (!errors.isEmpty()) {
                 debug(`Login validation failed for ${req.body.username}@${req.body.domain}: ${errors.array().map(e => e.msg).join(', ')}`)
                 return res.render('login', {
@@ -68,7 +61,6 @@ router.post(
                     purgeTime: purgeTime,
                     username: randomWord(),
                     domains: helper.getDomains(),
-                    count: count,
                     branding: config.http.branding,
                 })
             }

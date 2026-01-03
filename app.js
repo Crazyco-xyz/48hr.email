@@ -16,6 +16,7 @@ const MailRepository = require('./domain/mail-repository')
 const InboxLock = require('./domain/inbox-lock')
 const VerificationStore = require('./domain/verification-store')
 const UserRepository = require('./domain/user-repository')
+const StatisticsStore = require('./domain/statistics-store')
 
 const clientNotification = new ClientNotification()
 debug('Client notification service initialized')
@@ -28,6 +29,10 @@ app.set('smtpService', smtpService)
 const verificationStore = new VerificationStore()
 debug('Verification store initialized')
 app.set('verificationStore', verificationStore)
+
+const statisticsStore = new StatisticsStore()
+debug('Statistics store initialized')
+app.set('statisticsStore', statisticsStore)
 
 // Set config in app for route access
 app.set('config', config)
@@ -84,9 +89,17 @@ const mailProcessingService = new MailProcessingService(
     clientNotification,
     config,
     smtpService,
-    verificationStore
+    verificationStore,
+    statisticsStore
 )
 debug('Mail processing service initialized')
+
+// Initialize statistics with current count
+imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, () => {
+    const count = mailProcessingService.getCount()
+    statisticsStore.initialize(count)
+    debug(`Statistics initialized with ${count} emails`)
+})
 
 // Set up timer sync broadcasting after IMAP is ready
 imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, () => {

@@ -18,14 +18,12 @@ function checkLockAccess(req, res, next) {
 
     // Block access to locked inbox without proper authentication
     if (isLocked && !hasAccess) {
-        const count = req.app.get('mailProcessingService').getCount()
         const unlockError = req.session ? req.session.unlockError : undefined
         if (req.session) delete req.session.unlockError
 
         return res.render('error', {
             purgeTime: require('../../../application/helper').prototype.purgeTimeElemetBuilder(),
             address: address,
-            count: count,
             message: 'This inbox is locked by another user. Only the owner can access it.',
             branding: req.app.get('config').http.branding,
             currentUser: req.session && req.session.username,

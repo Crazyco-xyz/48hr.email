@@ -74,6 +74,8 @@
     <script src="/javascripts/utils.js"></script>
     <script src="/socket.io/socket.io.js" defer="true"></script>
     <script src="/javascripts/notifications.js" defer="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer="true"></script>
+    <script src="/javascripts/stats.js" defer="true"></script>
 
   </head>
   <body{% if bodyClass %} class="{{ bodyClass }}"{% endif %}>
@@ -90,7 +92,7 @@
     {% block footer %}
     <section class="container footer">
       <hr>
-      <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime | raw }} | Currently handling {{ totalcount | raw }}</h4>
+      <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime | raw }} | <a href="/stats" style="text-decoration:underline">See daily Stats</a></h4>
       <h4 class="container footer-two"> This project is <a href="https://github.com/crazyco-xyz/48hr.email" style="text-decoration:underline" target="_blank">open-source ♥</a></h4>
     </section>
     {% endblock %}

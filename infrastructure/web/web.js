@@ -17,6 +17,7 @@ const errorRouter = require('./routes/error')
 const lockRouter = require('./routes/lock')
 const authRouter = require('./routes/auth')
 const accountRouter = require('./routes/account')
+const statsRouter = require('./routes/stats')
 const { sanitizeHtmlTwigFilter } = require('./views/twig-filters')
 
 const Helper = require('../../application/helper')
@@ -120,6 +121,7 @@ if (config.user.authEnabled) {
 app.use('/inbox', inboxRouter)
 app.use('/error', errorRouter)
 app.use('/lock', lockRouter)
+app.use('/stats', statsRouter)
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -130,8 +132,6 @@ app.use((req, res, next) => {
 app.use(async(err, req, res, _next) => {
     try {
         debug('Error handler triggered:', err.message)
-        const mailProcessingService = req.app.get('mailProcessingService')
-        const count = await mailProcessingService.getCount()
 
         // Set locals, only providing error in development
         res.locals.message = err.message
@@ -142,7 +142,6 @@ app.use(async(err, req, res, _next) => {
         res.render('error', {
             purgeTime: purgeTime,
             address: req.params && req.params.address,
-            count: count,
             branding: config.http.branding
         })
     } catch (renderError) {

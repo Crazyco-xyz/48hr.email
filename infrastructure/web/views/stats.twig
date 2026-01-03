@@ -1,0 +1,82 @@
+{% extends 'layout.twig' %}
+
+{% block header %}
+    <div class="action-links">
+        {% if currentUser %}
+            <!-- Account Dropdown (logged in) -->
+            {% if authEnabled %}
+                <div class="action-dropdown">
+                    <button class="dropdown-toggle" aria-label="Account menu">Account ▾</button>
+                    <div class="dropdown-menu">
+                        <a href="/account" aria-label="Account settings">Settings</a>
+                        <a href="/logout?redirect=/stats" aria-label="Logout">Logout</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            {% if authEnabled %}
+                <a href="/auth" aria-label="Login or Register">Account</a>
+            {% endif %}
+        {% endif %}
+
+        <a href="/" aria-label="Return to home">Home</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+            <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+        </button>
+    </div>
+{% endblock %}
+
+{% block body %}
+<div class="stats-container">
+    <h1 class="page-title">Email Statistics</h1>
+    <p class="stats-subtitle">Real-time email activity and 24-hour trends</p>
+
+    <div class="stats-grid">
+        <!-- Current Count -->
+        <div class="stat-card">
+            <div class="stat-value" id="currentCount">{{ stats.currentCount }}</div>
+            <div class="stat-label">Emails in System</div>
+        </div>
+
+        <!-- Historical Total -->
+        <div class="stat-card">
+            <div class="stat-value" id="historicalTotal">{{ stats.historicalTotal }}</div>
+            <div class="stat-label">All Time Total</div>
+        </div>
+
+        <!-- 24h Receives -->
+        <div class="stat-card">
+            <div class="stat-value" id="receives24h">{{ stats.last24Hours.receives }}</div>
+            <div class="stat-label">Received (24h)</div>
+        </div>
+
+        <!-- 24h Deletes -->
+        <div class="stat-card">
+            <div class="stat-value" id="deletes24h">{{ stats.last24Hours.deletes }}</div>
+            <div class="stat-label">Deleted (24h)</div>
+        </div>
+
+        <!-- 24h Forwards -->
+        <div class="stat-card">
+            <div class="stat-value" id="forwards24h">{{ stats.last24Hours.forwards }}</div>
+            <div class="stat-label">Forwarded (24h)</div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+        <h2>Activity Timeline (24 Hours)</h2>
+        <canvas id="statsChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Set initial data for stats.js to consume
+    window.initialStatsData = {{ stats.last24Hours.timeline|json_encode|raw }};
+</script>
+{% endblock %}

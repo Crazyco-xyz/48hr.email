@@ -163,6 +163,18 @@ a:hover {
 
 h1 {
     font-size: 3rem;
+    color: var(--color-text-light);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+h1.page-title {
+    background: linear-gradient(135deg, var(--color-accent-purple-light), var(--color-accent-purple-alt));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
 }
 
 h3 {
@@ -1951,6 +1963,78 @@ body.light-mode .theme-icon-light {
     color: var(--color-accent-purple-light);
     min-width: 2ch;
     text-align: center;
+}
+
+
+/* Statistics Page */
+
+.stats-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.stats-subtitle {
+    color: var(--color-text-dim);
+    text-align: center;
+    margin-top: -1rem;
+    margin-bottom: 3rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: var(--overlay-white-05);
+    border: 1px solid var(--overlay-purple-30);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    background: var(--overlay-white-08);
+    border-color: var(--overlay-purple-40);
+    transform: translateY(-2px);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-accent-purple-light);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.chart-container {
+    background: var(--overlay-white-05);
+    border: 1px solid var(--overlay-purple-30);
+    border-radius: 15px;
+    padding: 2rem;
+    height: 500px;
+    position: relative;
+}
+
+.chart-container h2 {
+    margin-top: 0;
+    margin-bottom: 2rem;
+    color: var(--color-text-light);
+    text-align: center;
+}
+
+.chart-container canvas {
+    max-height: 400px;
 }
 
 

@@ -7,7 +7,7 @@ const helper = new(Helper)
 
 
 class MailProcessingService extends EventEmitter {
-    constructor(mailRepository, imapService, clientNotification, config, smtpService = null, verificationStore = null) {
+    constructor(mailRepository, imapService, clientNotification, config, smtpService = null, verificationStore = null, statisticsStore = null) {
         super()
         this.mailRepository = mailRepository
         this.clientNotification = clientNotification
@@ -15,6 +15,7 @@ class MailProcessingService extends EventEmitter {
         this.config = config
         this.smtpService = smtpService
         this.verificationStore = verificationStore
+        this.statisticsStore = statisticsStore
         this.helper = new(Helper)
 
         // Cached methods:
@@ -164,6 +165,11 @@ class MailProcessingService extends EventEmitter {
         if (this.initialLoadDone) {
             // For now, only log messages if they arrive after the initial load
             debug('New mail for', mail.to[0])
+
+            // Track email received
+            if (this.statisticsStore) {
+                this.statisticsStore.recordReceive()
+            }
         }
 
         mail.to.forEach(to => {
@@ -178,6 +184,11 @@ class MailProcessingService extends EventEmitter {
 
     onMailDeleted(uid) {
         debug('Mail deleted:', uid)
+
+        // Track email deleted
+        if (this.statisticsStore) {
+            this.statisticsStore.recordDelete()
+        }
 
         // Clear cache for this specific UID
         try {
@@ -266,6 +277,11 @@ class MailProcessingService extends EventEmitter {
 
             if (result.success) {
                 debug(`Email forwarded successfully. MessageId: ${result.messageId}`)
+
+                // Track email forwarded
+                if (this.statisticsStore) {
+                    this.statisticsStore.recordForward()
+                }
             } else {
                 debug(`Email forwarding failed: ${result.error}`)
             }

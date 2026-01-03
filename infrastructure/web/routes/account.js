@@ -26,11 +26,7 @@ router.get('/account', requireAuth, async(req, res) => {
         const config = req.app.get('config')
         const stats = userRepository.getUserStats(req.session.userId, config.user)
 
-        // Get mail count for footer
-        const count = await mailProcessingService.getCount()
-        const imapService = req.app.locals.imapService
-        const largestUid = await imapService.getLargestUid()
-        const totalcount = helper.countElementBuilder(count, largestUid)
+        // Get purge time for footer
         const purgeTime = helper.purgeTimeElemetBuilder()
 
         res.render('account', {
@@ -41,7 +37,6 @@ router.get('/account', requireAuth, async(req, res) => {
             stats,
             branding: config.http.branding,
             purgeTime: purgeTime,
-            totalcount: totalcount,
             successMessage: req.session.accountSuccess,
             errorMessage: req.session.accountError
         })

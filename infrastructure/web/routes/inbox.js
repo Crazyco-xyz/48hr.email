@@ -106,10 +106,6 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, optiona
         }
         debug(`Inbox request for ${req.params.address}`)
         const inboxLock = req.app.get('inboxLock')
-        const count = await mailProcessingService.getCount()
-        const largestUid = await req.app.locals.imapService.getLargestUid()
-        const totalcount = helper.countElementBuilder(count, largestUid)
-        debug(`Rendering inbox with ${count} total mails`)
 
         // Check lock status
         const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
@@ -151,8 +147,6 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, optiona
             title: `${config.http.branding[0]} | ` + req.params.address,
             purgeTime: purgeTime,
             address: req.params.address,
-            count: count,
-            totalcount: totalcount,
             mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
             branding: config.http.branding,
             authEnabled: config.user.authEnabled,
@@ -189,9 +183,6 @@ router.get(
         try {
             const mailProcessingService = req.app.get('mailProcessingService')
             debug(`Viewing email ${req.params.uid} for ${req.params.address}`)
-            const count = await mailProcessingService.getCount()
-            const largestUid = await req.app.locals.imapService.getLargestUid()
-            const totalcount = helper.countElementBuilder(count, largestUid)
             const mail = await mailProcessingService.getOneFullMail(
                 req.params.address,
                 req.params.uid
@@ -246,8 +237,6 @@ router.get(
                     title: mail.subject + " | " + req.params.address,
                     purgeTime: purgeTime,
                     address: req.params.address,
-                    count: count,
-                    totalcount: totalcount,
                     mail,
                     cryptoAttachments: cryptoAttachments,
                     uid: req.params.uid,
@@ -336,7 +325,6 @@ router.get(
             const mailProcessingService = req.app.get('mailProcessingService')
             debug(`Fetching attachment ${req.params.checksum} for email ${req.params.uid} (${req.params.address})`)
             const uid = parseInt(req.params.uid, 10)
-            const count = await mailProcessingService.getCount()
 
             // Validate UID is a valid integer
             if (isNaN(uid) || uid <= 0) {
@@ -397,9 +385,6 @@ router.get(
             const mailProcessingService = req.app.get('mailProcessingService')
             debug(`Fetching raw email ${req.params.uid} for ${req.params.address}`)
             const uid = parseInt(req.params.uid, 10)
-            const count = await mailProcessingService.getCount()
-            const largestUid = await req.app.locals.imapService.getLargestUid()
-            const totalcount = helper.countElementBuilder(count, largestUid)
 
             // Validate UID is a valid integer
             if (isNaN(uid) || uid <= 0) {
@@ -440,8 +425,7 @@ router.get(
                 res.render('raw', {
                     title: req.params.uid + " | raw | " + req.params.address,
                     mail: rawMail,
-                    decoded: decodedMail,
-                    totalcount: totalcount
+                    decoded: decodedMail
                 })
             } else {
                 debug(`Raw email ${uid} not found for ${req.params.address}`)
