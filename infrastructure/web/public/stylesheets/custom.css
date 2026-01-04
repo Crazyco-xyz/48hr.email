@@ -2554,10 +2554,27 @@ body.light-mode .theme-icon-light {
 }
 
 .chart-container h2 {
+    background: linear-gradient(135deg, var(--color-accent-purple-light), var(--color-accent-purple-alt));
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-top: 0;
     margin-bottom: 2rem;
-    color: var(--color-text-light);
+    font-size: 2rem;
+    font-weight: 600;
     text-align: center;
+}
+
+.chart-container .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--overlay-purple-30);
+}
+
+.chart-container .section-icon {
+    font-size: 1.5rem;
 }
 
 .chart-container canvas {
@@ -2639,6 +2656,46 @@ body.light-mode .theme-icon-light {
 /* Responsive Styles */
 
 @media (max-width: 768px) {
+    /* Stats page mobile fixes */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .stat-card {
+        padding: 1.5rem;
+    }
+    .stat-value {
+        font-size: 2rem;
+    }
+    .chart-container {
+        padding: 1.5rem;
+        height: auto;
+        min-height: 400px;
+    }
+    .chart-container h2,
+    .chart-container .section-header {
+        font-size: 1.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+    .chart-container .section-icon {
+        font-size: 1.3rem;
+    }
+    .chart-container canvas {
+        max-height: 300px;
+    }
+    .chart-legend-custom {
+        gap: 0.75rem;
+    }
+    .legend-btn {
+        padding: 0.5rem 0.9rem;
+        font-size: 0.85rem;
+    }
+    .stats-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
     .action-links {
         position: relative;
     }
