@@ -169,6 +169,8 @@ class MailProcessingService extends EventEmitter {
             // Track email received
             if (this.statisticsStore) {
                 this.statisticsStore.recordReceive()
+                    // Update all-time total with new UID
+                this.statisticsStore.updateLargestUid(mail.uid)
             }
         }
 
