@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tension: 0.4,
                     pointRadius: 4,
                     pointBackgroundColor: 'rgba(100, 149, 237, 0.8)',
-                    spanGaps: false,
+                    spanGaps: true,
                     fill: true,
                     hidden: false
                 },
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tension: 0.4,
                     pointRadius: 4,
                     pointBackgroundColor: '#2ecc71',
-                    spanGaps: false,
+                    spanGaps: true,
                     fill: true,
                     hidden: false
                 },
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tension: 0.4,
                     pointRadius: 4,
                     pointBackgroundColor: '#ff9f43',
-                    spanGaps: false,
+                    spanGaps: true,
                     fill: true,
                     hidden: false
                 }
