@@ -28,6 +28,7 @@ router.get('/', async(req, res) => {
         if (mailProcessingService) {
             const allMails = mailProcessingService.getAllMailSummaries()
             statisticsStore.analyzeHistoricalData(allMails)
+            statisticsStore.calculateEnhancedStatistics(allMails)
         }
 
         const stats = statisticsStore.getEnhancedStats()

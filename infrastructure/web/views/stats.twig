@@ -88,6 +88,103 @@
         </div>
     </div>
 
+    {% if stats.enhanced %}
+    <!-- Enhanced Statistics Grid -->
+    <div class="enhanced-stats-grid">
+        <!-- Top Sender Domains -->
+        <div class="stat-card-detailed">
+            <h3 class="section-header-small">
+                Top Sender Domains
+            </h3>
+            {% if stats.enhanced.topSenderDomains|length > 0 %}
+                <ul class="stat-list">
+                    {% for item in stats.enhanced.topSenderDomains|slice(0, 5) %}
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">{{ item.domain }}</span>
+                            <span class="stat-list-value">{{ item.count }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p class="stat-footer">{{ stats.enhanced.uniqueSenderDomains }} unique domains</p>
+            {% else %}
+                <p class="stat-empty">No data yet</p>
+            {% endif %}
+        </div>
+
+        <!-- Top Recipient Domains -->
+        <div class="stat-card-detailed">
+            <h3 class="section-header-small">
+                Top Recipient Domains
+            </h3>
+            {% if stats.enhanced.topRecipientDomains|length > 0 %}
+                <ul class="stat-list">
+                    {% for item in stats.enhanced.topRecipientDomains|slice(0, 5) %}
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">{{ item.domain }}</span>
+                            <span class="stat-list-value">{{ item.count }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p class="stat-footer">{{ stats.enhanced.uniqueRecipientDomains }} unique domains</p>
+            {% else %}
+                <p class="stat-empty">No data yet</p>
+            {% endif %}
+        </div>
+
+        <!-- Busiest Hours -->
+        <div class="stat-card-detailed">
+            <h3 class="section-header-small">
+                Busiest Hours
+            </h3>
+            {% if stats.enhanced.busiestHours|length > 0 %}
+                <ul class="stat-list">
+                    {% for item in stats.enhanced.busiestHours %}
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">{{ item.hour }}:00 - {{ item.hour + 1 }}:00</span>
+                            <span class="stat-list-value">{{ item.count }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="stat-empty">No data yet</p>
+            {% endif %}
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stat-card-detailed">
+            <h3 class="section-header-small">
+                Quick Insights
+            </h3>
+            <div class="quick-stats">
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ stats.enhanced.averageSubjectLength }}</div>
+                    <div class="quick-stat-label">Avg Subject Length</div>
+                </div>
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ stats.enhanced.uniqueSenderDomains }}</div>
+                    <div class="quick-stat-label">Unique Senders</div>
+                </div>
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ stats.enhanced.uniqueRecipientDomains }}</div>
+                    <div class="quick-stat-label">Unique Recipients</div>
+                </div>
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ stats.enhanced.peakHourPercentage }}%</div>
+                    <div class="quick-stat-label">Peak Hour Traffic</div>
+                </div>
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ stats.enhanced.emailsPerHour }}</div>
+                    <div class="quick-stat-label">Emails per Hour</div>
+                </div>
+                <div class="quick-stat-item">
+                    <div class="quick-stat-value">{{ stats.enhanced.dayPercentage }}%</div>
+                    <div class="quick-stat-label">Daytime (6am-6pm)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Chart -->
     <div class="chart-container">
         <h2>Email Activity Timeline</h2>

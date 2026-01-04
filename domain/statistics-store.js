@@ -26,6 +26,11 @@ class StatisticsStore {
         this.lastAnalysisTime = 0
         this.analysisCacheDuration = 5 * 60 * 1000 // Cache for 5 minutes
 
+        // Enhanced statistics (calculated from current emails)
+        this.enhancedStats = null
+        this.lastEnhancedStatsTime = 0
+        this.enhancedStatsCacheDuration = 5 * 60 * 1000 // Cache for 5 minutes
+
         // Load persisted data if database is available
         if (this.db) {
             this._loadFromDatabase()
@@ -199,6 +204,138 @@ class StatisticsStore {
     }
 
     /**
+     * Calculate enhanced statistics from current emails
+     * Privacy-friendly: uses domain analysis, time patterns, and aggregates
+     * @param {Array} allMails - Array of all mail summaries
+     */
+    calculateEnhancedStatistics(allMails) {
+        if (!allMails || allMails.length === 0) {
+            this.enhancedStats = null
+            return
+        }
+
+        const now = Date.now()
+        if (this.enhancedStats && (now - this.lastEnhancedStatsTime) < this.enhancedStatsCacheDuration) {
+            debug(`Using cached enhanced stats (age: ${Math.round((now - this.lastEnhancedStatsTime) / 1000)}s)`)
+            return
+        }
+
+        debug(`Calculating enhanced statistics from ${allMails.length} emails`)
+
+        // Track sender domains (privacy-friendly: domain only, not full address)
+        const senderDomains = new Map()
+        const recipientDomains = new Map()
+        const hourlyActivity = Array(24).fill(0)
+        let totalSubjectLength = 0
+        let subjectCount = 0
+        let withAttachments = 0
+        let dayTimeEmails = 0 // 6am-6pm
+        let nightTimeEmails = 0 // 6pm-6am
+
+        allMails.forEach(mail => {
+            try {
+                // Sender domain analysis
+                if (mail.from && mail.from[0] && mail.from[0].address) {
+                    const parts = mail.from[0].address.split('@')
+                    const domain = parts[1] ? parts[1].toLowerCase() : null
+                    if (domain) {
+                        senderDomains.set(domain, (senderDomains.get(domain) || 0) + 1)
+                    }
+                }
+
+                // Recipient domain analysis
+                if (mail.to && mail.to[0]) {
+                    const parts = mail.to[0].split('@')
+                    const domain = parts[1] ? parts[1].toLowerCase() : null
+                    if (domain) {
+                        recipientDomains.set(domain, (recipientDomains.get(domain) || 0) + 1)
+                    }
+                }
+
+                // Hourly activity pattern
+                if (mail.date) {
+                    const date = new Date(mail.date)
+                    if (!isNaN(date.getTime())) {
+                        const hour = date.getHours()
+                        hourlyActivity[hour]++
+
+                            // Day vs night distribution (6am-6pm = day, 6pm-6am = night)
+                            if (hour >= 6 && hour < 18) {
+                                dayTimeEmails++
+                            } else {
+                                nightTimeEmails++
+                            }
+                    }
+                }
+
+                // Subject length analysis (privacy-friendly: only length, not content)
+                if (mail.subject) {
+                    totalSubjectLength += mail.subject.length
+                    subjectCount++
+                }
+
+                // Check if email likely has attachments (would need full fetch to confirm)
+                // For now, we'll track this separately when we fetch full emails
+            } catch (e) {
+                // Skip invalid entries
+            }
+        })
+
+        // Get top sender domains (limit to top 10)
+        const topSenderDomains = Array.from(senderDomains.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([domain, count]) => ({ domain, count }))
+
+        // Get top recipient domains
+        const topRecipientDomains = Array.from(recipientDomains.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10)
+            .map(([domain, count]) => ({ domain, count }))
+
+        // Find busiest hours (top 5)
+        const busiestHours = hourlyActivity
+            .map((count, hour) => ({ hour, count }))
+            .filter(h => h.count > 0)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5)
+
+        // Calculate peak hour concentration (% of emails in busiest hour)
+        const peakHourCount = busiestHours.length > 0 ? busiestHours[0].count : 0
+        const peakHourPercentage = allMails.length > 0 ?
+            Math.round((peakHourCount / allMails.length) * 100) :
+            0
+
+        // Calculate emails per hour rate (average across all active hours)
+        const activeHours = hourlyActivity.filter(count => count > 0).length
+        const emailsPerHour = activeHours > 0 ?
+            (allMails.length / activeHours).toFixed(1) :
+            '0.0'
+
+        // Calculate day/night percentage
+        const totalDayNight = dayTimeEmails + nightTimeEmails
+        const dayPercentage = totalDayNight > 0 ?
+            Math.round((dayTimeEmails / totalDayNight) * 100) :
+            50
+
+        this.enhancedStats = {
+            topSenderDomains,
+            topRecipientDomains,
+            busiestHours,
+            averageSubjectLength: subjectCount > 0 ? Math.round(totalSubjectLength / subjectCount) : 0,
+            totalEmails: allMails.length,
+            uniqueSenderDomains: senderDomains.size,
+            uniqueRecipientDomains: recipientDomains.size,
+            peakHourPercentage,
+            emailsPerHour: parseFloat(emailsPerHour),
+            dayPercentage
+        }
+
+        this.lastEnhancedStatsTime = now
+        debug(`Enhanced stats calculated: ${this.enhancedStats.uniqueSenderDomains} unique sender domains, ${this.enhancedStats.busiestHours.length} busy hours`)
+    }
+
+    /**
      * Analyze all existing emails to build historical statistics
      * @param {Array} allMails - Array of all mail summaries with date property
      */
@@ -276,7 +413,8 @@ class StatisticsStore {
                 timeline: timeline
             },
             historical: historicalTimeline,
-            prediction: prediction
+            prediction: prediction,
+            enhanced: this.enhancedStats
         }
     }
 
