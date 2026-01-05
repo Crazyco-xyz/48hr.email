@@ -2,6 +2,22 @@
 
 /* eslint unicorn/no-process-exit: 0 */
 
+// Check .env file permissions before loading config
+const fs = require('fs')
+const path = require('path')
+const envPath = path.resolve('.env')
+if (fs.existsSync(envPath)) {
+    const mode = fs.statSync(envPath).mode
+    const perms = (mode & parseInt('777', 8)).toString(8)
+    const groupReadable = parseInt(perms[1], 10) >= 4
+    const otherReadable = parseInt(perms[2], 10) >= 4
+    if (groupReadable || otherReadable) {
+        console.error(`\nSECURITY ERROR: .env file has insecure permissions (${perms})`)
+        console.error(`Run: chmod 600 ${envPath}\n`)
+        process.exit(1)
+    }
+}
+
 const config = require('./application/config')
 const debug = require('debug')('48hr-email:app')
 const Helper = require('./application/helper')
@@ -90,6 +106,7 @@ if (config.user.authEnabled) {
 
 const imapService = new ImapService(config, inboxLock)
 debug('IMAP service initialized')
+app.set('imapService', imapService)
 
 const mailProcessingService = new MailProcessingService(
     new MailRepository(),

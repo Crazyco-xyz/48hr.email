@@ -1,6 +1,6 @@
 {
     "name": "48hr.email",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "private": false,
     "description": "48hr.email is your favorite open-source tempmail client.",
     "keywords": [
@@ -27,7 +27,8 @@
     "scripts": {
         "start": "node --trace-warnings ./app.js",
         "debug": "DEBUG=48hr-email:* node --nolazy --inspect-brk=9229 --trace-warnings ./app.js",
-        "test": "xo"
+        "test": "xo",
+        "env:check": "node scripts/check-env.js"
     },
     "dependencies": {
         "async-retry": "^1.3.3",

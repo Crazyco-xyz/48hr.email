@@ -79,6 +79,20 @@ const loginRateLimiter = (req, res, next) => {
         next()
 }
 
+// Middleware to capture redirect URL
+router.use((req, res, next) => {
+    if (req.method === 'GET' && req.path === '/auth') {
+        const referer = req.get('Referer')
+        const redirectParam = req.query.redirect
+        const redirectUrl = redirectParam || (referer && !referer.includes('/auth') ? referer : null)
+
+        if (redirectUrl) {
+            req.session.redirectAfterLogin = redirectUrl
+        }
+    }
+    next()
+})
+
 // GET /auth - Show unified auth page (login or register)
 router.get('/auth', redirectIfAuthenticated, (req, res) => {
     const config = req.app.get('config')
@@ -90,8 +104,8 @@ router.get('/auth', redirectIfAuthenticated, (req, res) => {
     delete req.session.successMessage
 
     res.render('auth', {
-        title: `Login or Register | ${config.http.branding[0]}`,
-        branding: config.http.branding,
+        title: `Login or Register | ${(config.http.features.branding || ['48hr.email'])[0]}`,
+        branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com'],
         purgeTime: purgeTime,
         errorMessage,
         successMessage

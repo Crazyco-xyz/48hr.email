@@ -2,13 +2,9 @@ const express = require('express')
 const router = new express.Router()
 const { check, validationResult } = require('express-validator')
 const debug = require('debug')('48hr-email:routes')
-
 const randomWord = require('random-word')
 const config = require('../../../application/config')
-const Helper = require('../../../application/helper')
-const helper = new(Helper)
-
-const purgeTime = helper.purgeTimeElemetBuilder()
+const templateContext = require('../template-context')
 
 router.get('/', async(req, res, next) => {
     try {
@@ -17,14 +13,12 @@ router.get('/', async(req, res, next) => {
             throw new Error('Mail processing service not available')
         }
         debug('Login page requested')
+        const context = templateContext.build(req, {
+            username: randomWord()
+        })
         res.render('login', {
-            title: `${config.http.branding[0]} | Your temporary Inbox`,
-            username: randomWord(),
-            purgeTime: purgeTime,
-            purgeTimeRaw: config.email.purgeTime,
-            domains: helper.getDomains(),
-            branding: config.http.branding,
-            example: config.email.examples.account,
+            ...context,
+            title: `${context.branding[0]} | Your temporary Inbox`
         })
     } catch (error) {
         debug('Error loading login page:', error.message)
@@ -56,14 +50,13 @@ router.post(
             const errors = validationResult(req)
             if (!errors.isEmpty()) {
                 debug(`Login validation failed for ${req.body.username}@${req.body.domain}: ${errors.array().map(e => e.msg).join(', ')}`)
-                return res.render('login', {
+                const context = templateContext.build(req, {
                     userInputError: true,
-                    title: `${config.http.branding[0]} | Your temporary Inbox`,
-                    purgeTime: purgeTime,
-                    purgeTimeRaw: config.email.purgeTime,
-                    username: randomWord(),
-                    domains: helper.getDomains(),
-                    branding: config.http.branding,
+                    username: randomWord()
+                })
+                return res.render('login', {
+                    ...context,
+                    title: `${context.branding[0]} | Your temporary Inbox`
                 })
             }
 

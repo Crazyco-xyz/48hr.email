@@ -9,7 +9,9 @@
             <div class="action-dropdown">
                 <button class="dropdown-toggle" aria-label="Email actions">Email ▾</button>
                 <div class="dropdown-menu" data-section-title="Email Actions">
-                    <a href="#" id="forwardBtn" aria-label="Forward this email">Forward</a>
+                    {% if smtpEnabled %}
+                        <a href="#" id="forwardBtn" aria-label="Forward this email">Forward</a>
+                    {% endif %}
                     <a href="/inbox/{{ address }}/{{ uid }}/delete" aria-label="Delete this email">Delete</a>
                     <a href="/inbox/{{ address }}/{{ uid }}/raw" target="_blank" aria-label="View raw email">View Raw</a>
                 </div>
@@ -127,6 +129,7 @@
     </div>
 
     <!-- Forward Email Modal -->
+    {% if smtpEnabled %}
     <div id="forwardModal" class="modal" style="display: none;">
         <div class="modal-content frosted-glass">
             <span class="close" id="closeForward">&times;</span>
@@ -165,6 +168,7 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
 
 {% endblock %}
 

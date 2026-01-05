@@ -19,14 +19,15 @@ router.get('/:address/:errorCode', async(req, res, next) => {
         const message = req.query.message || (req.session && req.session.errorMessage) || 'An error occurred'
 
         debug(`Rendering error page ${errorCode} with message: ${message}`)
+        const branding = config.http.features.branding || ['48hr.email', 'Service', 'https://example.com']
         res.status(errorCode)
         res.render('error', {
-            title: `${config.http.branding[0]} | ${errorCode}`,
+            title: `${branding[0]} | ${errorCode}`,
             purgeTime: purgeTime,
             address: req.params.address,
             message: message,
             status: errorCode,
-            branding: config.http.branding
+            branding: branding
         })
     } catch (error) {
         debug('Error loading error page:', error.message)

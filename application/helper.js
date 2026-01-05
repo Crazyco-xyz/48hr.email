@@ -109,11 +109,10 @@ class Helper {
     /**
      * Build a mail count html element with tooltip for the footer
      * @param {number} count - Current mail count
+     * @param {number} largestUid - Largest UID from IMAP
      * @returns {String}
      */
-    mailCountBuilder(count) {
-        const imapService = require('./imap-service')
-        const largestUid = imapService.getLargestUid ? imapService.getLargestUid() : null
+    mailCountBuilder(count, largestUid = null) {
         let tooltip = ''
 
         if (largestUid && largestUid > 0) {
@@ -156,10 +155,10 @@ class Helper {
      * @returns {Array}
      */
     hideOther(array) {
-        if (config.http.hideOther) {
-            return array[0]
+        if (config.http.features.hideOther) {
+            return array && array.length > 0 ? [array[0]] : []
         } else {
-            return array
+            return array || []
         }
     }
 
@@ -168,9 +167,13 @@ class Helper {
      * @returns {Array}
      */
     getDomains() {
-        debug(`Getting domains with displaySort: ${config.http.displaySort}`)
+        debug(`Getting domains with displaySort: ${config.http.features.displaySort}`)
+        if (!config.email.domains || !Array.isArray(config.email.domains) || !config.email.domains.length) {
+            debug('ERROR: config.email.domains is not a valid array')
+            return []
+        }
         let result;
-        switch (config.http.displaySort) {
+        switch (config.http.features.displaySort) {
             case 0:
                 result = this.hideOther(config.email.domains) // No modification
                 debug(`Domain sort 0: no modification, ${result.length} domains`)
@@ -187,6 +190,9 @@ class Helper {
                 result = this.hideOther(this.shuffleArray(config.email.domains)) // Shuffle all
                 debug(`Domain sort 3: shuffle all, ${result.length} domains`)
                 return result
+            default:
+                debug(`Unknown displaySort value: ${config.http.features.displaySort}, using case 0`)
+                return this.hideOther(config.email.domains)
         }
     }
 
@@ -212,7 +218,7 @@ class Helper {
      * @returns {string} - HMAC signature (hex)
      */
     signCookie(email) {
-        const secret = config.user.sessionSecret
+        const secret = config.http.sessionSecret
         const hmac = crypto.createHmac('sha256', secret)
         hmac.update(email.toLowerCase())
         const signature = hmac.digest('hex')

@@ -8,8 +8,12 @@ router.get('/', async(req, res) => {
         const config = req.app.get('config')
 
         // Check if statistics are enabled
-        if (!config.http.statisticsEnabled) {
-            return res.status(404).send('Statistics are disabled')
+        if (!config.http.features.statistics) {
+            req.session.alertMessage = 'Statistics are disabled'
+            const referer = req.get('Referer')
+                // Don't redirect to /stats itself to avoid infinite loops
+            const redirectUrl = (referer && !referer.includes('/stats')) ? referer : '/'
+            return res.redirect(redirectUrl)
         }
 
         const statisticsStore = req.app.get('statisticsStore')
@@ -33,12 +37,13 @@ router.get('/', async(req, res) => {
 
         const stats = statisticsStore.getEnhancedStats()
         const purgeTime = helper.purgeTimeElemetBuilder()
+        const branding = config.http.features.branding || ['48hr.email', 'Service', 'https://example.com']
 
         debug(`Stats page requested: ${stats.currentCount} current, ${stats.allTimeTotal} all-time total, ${stats.historical.length} historical points`)
 
         res.render('stats', {
-            title: `Statistics | ${config.http.branding[0]}`,
-            branding: config.http.branding,
+            title: `Statistics | ${branding[0]}`,
+            branding: branding,
             purgeTime: purgeTime,
             stats: stats,
             authEnabled: config.user.authEnabled,

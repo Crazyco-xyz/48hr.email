@@ -144,12 +144,13 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, optiona
         const verificationEmail = req.query.email || ''
 
         res.render('inbox', {
-            title: `${config.http.branding[0]} | ` + req.params.address,
+            title: `${(config.http.features.branding || ['48hr.email'])[0]} | ` + req.params.address,
             purgeTime: purgeTime,
             address: req.params.address,
             mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
             branding: config.http.branding,
             authEnabled: config.user.authEnabled,
+            smtpEnabled: config.email.features.smtp,
             isAuthenticated: req.session && req.session.userId ? true : false,
             userForwardEmails: userForwardEmails,
             isLocked: isLocked,
@@ -240,8 +241,9 @@ router.get(
                     mail,
                     cryptoAttachments: cryptoAttachments,
                     uid: req.params.uid,
-                    branding: config.http.branding,
+                    branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com'],
                     authEnabled: config.user.authEnabled,
+                    smtpEnabled: config.email.features.smtp,
                     isAuthenticated: req.session && req.session.userId ? true : false,
                     userForwardEmails: userForwardEmails,
                     isLocked: isLocked,
@@ -440,10 +442,21 @@ router.get(
     }
 )
 
+// Middleware to check if SMTP is enabled
+const smtpEnabled = (req, res, next) => {
+    if (!config.email.features.smtp) {
+        debug('SMTP forwarding is disabled')
+        req.session.errorMessage = 'Email forwarding is currently disabled.'
+        return res.redirect(`/inbox/${req.params.address}` + (req.params.uid ? `/${req.params.uid}` : ''))
+    }
+    next()
+}
+
 // POST route for forwarding a single email (requires authentication)
 router.post(
     '^/:address/:uid/forward',
     requireAuth,
+    smtpEnabled,
     forwardLimiter,
     validateDomain,
     checkLockAccess,
@@ -503,6 +516,7 @@ router.post(
 router.post(
     '^/:address/forward-all',
     requireAuth,
+    smtpEnabled,
     forwardLimiter,
     validateDomain,
     checkLockAccess,

@@ -2,6 +2,13 @@
 require("dotenv").config({ quiet: true });
 const debug = require('debug')('48hr-email:config')
 
+// Migration helper: warn about deprecated env vars
+if (process.env.USER_SESSION_SECRET && !process.env.HTTP_SESSION_SECRET) {
+    console.warn('\nDEPRECATION WARNING: USER_SESSION_SECRET is deprecated.')
+    console.warn('   Please rename it to HTTP_SESSION_SECRET in your .env file.')
+    console.warn('   The old name still works but will be removed in a future version.\n')
+}
+
 /**
  * Safely parse a value from env.
  * Returns `undefined` if the value is missing or invalid.
@@ -31,7 +38,7 @@ function parseBool(v) {
 
 const config = {
     email: {
-        domains: parseValue(process.env.EMAIL_DOMAINS),
+        domains: parseValue(process.env.EMAIL_DOMAINS) || [],
         purgeTime: {
             time: Number(process.env.EMAIL_PURGE_TIME),
             unit: parseValue(process.env.EMAIL_PURGE_UNIT),
@@ -41,7 +48,16 @@ const config = {
             account: parseValue(process.env.EMAIL_EXAMPLE_ACCOUNT),
             uids: parseValue(process.env.EMAIL_EXAMPLE_UIDS)
         },
-        blacklistedSenders: parseValue(process.env.EMAIL_BLACKLISTED_SENDERS) || []
+        blacklistedSenders: parseValue(process.env.EMAIL_BLACKLISTED_SENDERS) || [],
+        features: {
+            imap: {
+                enabled: true, // IMAP is always required
+                refreshIntervalSeconds: Number(process.env.IMAP_REFRESH_INTERVAL_SECONDS),
+                fetchChunkSize: Number(process.env.IMAP_FETCH_CHUNK) || 100,
+                fetchConcurrency: Number(process.env.IMAP_CONCURRENCY) || 6
+            },
+            smtp: parseBool(process.env.SMTP_ENABLED) || false
+        }
     },
 
     imap: {
@@ -66,12 +82,19 @@ const config = {
     },
 
     http: {
+        // Server settings
         port: Number(process.env.HTTP_PORT),
         baseUrl: parseValue(process.env.HTTP_BASE_URL) || 'http://localhost:3000',
-        branding: parseValue(process.env.HTTP_BRANDING),
-        displaySort: Number(process.env.HTTP_DISPLAY_SORT),
-        hideOther: parseBool(process.env.HTTP_HIDE_OTHER),
-        statisticsEnabled: parseBool(process.env.HTTP_STATISTICS_ENABLED) || false
+        sessionSecret: parseValue(process.env.HTTP_SESSION_SECRET) || parseValue(process.env.USER_SESSION_SECRET) || 'change-me-in-production',
+
+        // UI Features & Display
+        features: {
+            branding: parseValue(process.env.HTTP_BRANDING),
+            displaySort: Number(process.env.HTTP_DISPLAY_SORT) || 0,
+            hideOther: parseBool(process.env.HTTP_HIDE_OTHER),
+            statistics: parseBool(process.env.HTTP_STATISTICS_ENABLED) || false,
+            infoSection: parseBool(process.env.HTTP_SHOW_INFO_SECTION) !== false // default true
+        }
     },
 
     user: {
@@ -80,9 +103,6 @@ const config = {
 
         // Database
         databasePath: parseValue(process.env.USER_DATABASE_PATH) || './db/data.db',
-
-        // Session & Auth
-        sessionSecret: parseValue(process.env.USER_SESSION_SECRET) || 'change-me-in-production',
 
         // Feature Limits
         maxForwardEmails: Number(process.env.USER_MAX_FORWARD_EMAILS) || 5,

@@ -45,11 +45,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
 // Cookie parser for signed cookies (email verification)
-app.use(cookieParser(config.user.sessionSecret))
+app.use(cookieParser(config.http.sessionSecret))
 
 // Session support (always enabled for forward verification and inbox locking)
 app.use(session({
-    secret: config.user.sessionSecret,
+    secret: config.http.sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
@@ -97,6 +97,13 @@ app.use((req, res, next) => {
     res.locals.authEnabled = config.user.authEnabled
     res.locals.config = config
     res.locals.currentUser = null
+    res.locals.alertMessage = req.session ? req.session.alertMessage : null
+
+    // Clear alert after reading
+    if (req.session && req.session.alertMessage) {
+        delete req.session.alertMessage
+    }
+
     if (req.session && req.session.userId && req.session.username && req.session.isAuthenticated) {
         res.locals.currentUser = {
             id: req.session.userId,
@@ -107,14 +114,25 @@ app.use((req, res, next) => {
 })
 
 // Middleware to expose mail count to all templates
-app.use((req, res, next) => {
+app.use(async(req, res, next) => {
     const mailProcessingService = req.app.get('mailProcessingService')
+    const imapService = req.app.get('imapService')
     const Helper = require('../../application/helper')
     const helper = new Helper()
 
     if (mailProcessingService) {
         const count = mailProcessingService.getCount()
-        res.locals.mailCount = helper.mailCountBuilder(count)
+        let largestUid = null
+
+        if (imapService) {
+            try {
+                largestUid = await imapService.getLargestUid()
+            } catch (e) {
+                debug('Error getting largest UID:', e.message)
+            }
+        }
+
+        res.locals.mailCount = helper.mailCountBuilder(count, largestUid)
     } else {
         res.locals.mailCount = ''
     }
@@ -159,7 +177,7 @@ app.use(async(err, req, res, _next) => {
         res.render('error', {
             purgeTime: purgeTime,
             address: req.params && req.params.address,
-            branding: config.http.branding
+            branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com']
         })
     } catch (renderError) {
         debug('Error in error handler:', renderError.message)

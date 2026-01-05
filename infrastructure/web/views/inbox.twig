@@ -4,22 +4,22 @@
     <div class="action-links">
         {% if currentUser %}
             <!-- Inbox Dropdown (multiple actions when logged in) -->
-            <div class="action-dropdown">
-                <button class="dropdown-toggle" aria-label="Inbox actions">Inbox ▾</button>
-                <div class="dropdown-menu" data-section-title="Inbox Actions">
-                    <a href="#" id="forwardAllBtn" aria-label="Forward all emails">Forward All</a>
-                    {% if authEnabled %}
-                        {% if isLocked and hasAccess %}
-                            <a href="#" id="removeLockBtn" aria-label="Remove lock">Remove Lock</a>
-                        {% elseif not isLocked %}
-                            <a href="#" id="lockBtn" aria-label="Lock inbox to your account">Lock Inbox</a>
+                <div class="action-dropdown">
+                    <button class="dropdown-toggle" aria-label="Inbox actions">Inbox ▾</button>
+                    <div class="dropdown-menu" data-section-title="Inbox Actions">
+                        {% if smtpEnabled %}
+                            <a href="#" id="forwardAllBtn" aria-label="Forward all emails">Forward All</a>
                         {% endif %}
-                    {% endif %}
-                    <a href="/inbox/{{ address }}/delete-all" aria-label="Delete all emails">Wipe Inbox</a>
-                </div>
-            </div>
-
-            <!-- Account Dropdown (logged in) -->
+                        {% if authEnabled %}
+                            {% if isLocked and hasAccess %}
+                                <a href="#" id="removeLockBtn" aria-label="Remove lock">Remove Lock</a>
+                            {% elseif not isLocked %}
+                                <a href="#" id="lockBtn" aria-label="Lock inbox to your account">Lock Inbox</a>
+                            {% endif %}
+                        {% endif %}
+                        <a href="/inbox/{{ address }}/delete-all" aria-label="Delete all emails">Wipe Inbox</a>
+                    </div>
+                </div>            <!-- Account Dropdown (logged in) -->
             {% if authEnabled %}
                 <div class="action-dropdown">
                     <button class="dropdown-toggle" aria-label="Account menu">Account ▾</button>
@@ -178,6 +178,7 @@
     </div>
 
     <!-- Forward All Modal -->
+    {% if smtpEnabled %}
     <div id="forwardAllModal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close" id="closeForwardAll">&times;</span>
@@ -216,4 +217,5 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
 {% endblock %}

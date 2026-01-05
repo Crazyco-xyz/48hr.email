@@ -89,22 +89,27 @@
         </form>
     </div>
 
-    <div class="features-grid">
-        <div class="feature-card frosted-glass">
-            <h3>Privacy First</h3>
-            <p>No tracking, no bullshit. Your temporary email is completely anonymous.</p>
-        </div>
-        <div class="feature-card frosted-glass">
-            <h3>Instant Access</h3>
-            <p>Create unlimited temporary email addresses in seconds. No waiting, no verification.</p>
-        </div>
-        <div class="feature-card frosted-glass">
-            <h3>Auto-Delete</h3>
-            <p>All emails automatically purge after {{ purgeTimeRaw|readablePurgeTime }}. Clean and secure by default.</p>
-        </div>
-    </div>
-
+    {% if showInfoSection %}
     <div class="info-section">
+        <div class="features-grid">
+            <div class="feature-card frosted-glass">
+                <h3>Privacy First</h3>
+                {% if statisticsEnabled %}
+                <p>No tracking, no personal data collection. We only store email metadata for system analytics.</p>
+                {% else %}
+                <p>No tracking, no data collection. Your temporary email is completely anonymous.</p>
+                {% endif %}
+            </div>
+            <div class="feature-card frosted-glass">
+                <h3>Instant Access</h3>
+                <p>Create unlimited temporary email addresses in seconds. No waiting, no verification.</p>
+            </div>
+            <div class="feature-card frosted-glass">
+                <h3>Auto-Delete</h3>
+                <p>All emails automatically purge after {{ purgeTimeRaw|readablePurgeTime }}. Clean and secure by default.</p>
+            </div>
+        </div>
+
         <div class="info-content frosted-glass">
             <h2>What is a Temporary Email?</h2>
             <p>A temporary email (also known as disposable email or throwaway email) is a service that allows you to receive emails at a temporary address that self-destructs after a certain time. It's perfect for signing up to websites, testing services, or protecting your real inbox from spam.</p>
@@ -129,8 +134,9 @@
                 <li><strong>{{ purgeTimeRaw|readablePurgeTime|title }} Retention:</strong> Emails stay accessible for the full duration before auto-deletion</li>
             </ul>
 
-            <p class="note">For extended features like email forwarding and inbox locking, you can optionally create a free account. But for basic temporary email needs, no registration is ever required.</p>
+            <p class="note">{% if smtpEnabled or authEnabled %}For extended features like{% if smtpEnabled %} email forwarding{% endif %}{% if smtpEnabled and authEnabled %} and{% endif %}{% if authEnabled %} inbox locking{% endif %}, you can optionally create a free account. {% endif %}For basic temporary email needs, no registration is ever required.</p>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

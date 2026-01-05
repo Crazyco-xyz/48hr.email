@@ -274,7 +274,7 @@ class MailProcessingService extends EventEmitter {
 
             // Forward via SMTP service
             debug(`Forwarding email to ${destinationEmail}`)
-            const branding = this.config.http.branding[0] || '48hr.email'
+            const branding = this.config.http.features.branding[0] || '48hr.email'
             const result = await this.smtpService.forwardMail(fullMail, destinationEmail, branding)
 
             if (result.success) {
@@ -354,7 +354,7 @@ class MailProcessingService extends EventEmitter {
 
             // Send verification email
             const baseUrl = this.config.http.baseUrl
-            const branding = this.config.http.branding[0] || '48hr.email'
+            const branding = this.config.http.features.branding[0] || '48hr.email'
 
             debug(`Sending verification email to ${destinationEmail} for source ${sourceAddress}`)
             const result = await this.smtpService.sendVerificationEmail(

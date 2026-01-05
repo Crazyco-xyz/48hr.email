@@ -88,13 +88,20 @@
       </a>
       {% block header %}{% endblock %}
     </div>
+    {% if alertMessage %}
+      <div class="container" style="margin-top: 1rem;">
+        <div class="alert alert-warning" style="font-size: 0.85rem;">
+          {{ alertMessage }}
+        </div>
+      </div>
+    {% endif %}
     {% block body %}{% endblock %}
   </main>
 
     {% block footer %}
     <section class="container footer">
       <hr>
-      {% if config.http.statisticsEnabled %}
+      {% if config.http.features.statistics %}
       <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime | raw }} | Check out our public <a href="/stats" style="text-decoration:underline">Statistics</a></h4>
       {% else %}
       <h4>{{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime | raw }} | Currently handling {{ mailCount | raw }}</h4>

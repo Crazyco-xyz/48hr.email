@@ -2887,7 +2887,7 @@ body.light-mode .theme-icon-light {
     }
     .action-dropdown .dropdown-menu a {
         padding: 10px 0;
-        text-align: left;
+        text-align: right;
         border: none !important;
     }
     .action-dropdown .dropdown-menu a:hover {
@@ -2924,7 +2924,7 @@ body.light-mode .theme-icon-light {
     .action-links.mobile-open>button:not(.hamburger-menu) {
         display: block;
         width: 100%;
-        text-align: left;
+        text-align: right;
         padding: 10px 0;
         border: none;
         border-radius: 0;

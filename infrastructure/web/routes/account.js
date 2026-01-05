@@ -35,7 +35,7 @@ router.get('/account', requireAuth, async(req, res) => {
             forwardEmails,
             lockedInboxes,
             stats,
-            branding: config.http.branding,
+            branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com'],
             purgeTime: purgeTime,
             successMessage: req.session.accountSuccess,
             errorMessage: req.session.accountError
@@ -94,7 +94,7 @@ router.post('/account/forward-email/add',
 
             // Send verification email
             const baseUrl = config.http.baseUrl
-            const branding = config.http.branding[0]
+            const branding = (config.http.features.branding || ['48hr.email'])[0]
 
             await smtpService.sendVerificationEmail(
                 email,
