@@ -1,6 +1,6 @@
 {
     "name": "48hr.email",
-    "version": "2.2.1",
+    "version": "2.3.0",
     "private": false,
     "description": "48hr.email is your favorite open-source tempmail client.",
     "keywords": [
@@ -37,6 +37,7 @@
         "better-sqlite3": "^12.5.0",
         "compression": "^1.8.1",
         "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5",
         "debug": "^4.4.3",
         "dotenv": "^17.2.3",
         "express": "^4.22.1",

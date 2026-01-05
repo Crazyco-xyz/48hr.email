@@ -11,6 +11,7 @@ const helmet = require('helmet')
 const socketio = require('socket.io')
 
 const config = require('../../application/config')
+const createApiRouter = require('../../api/router')
 const inboxRouter = require('./routes/inbox')
 const loginRouter = require('./routes/login')
 const errorRouter = require('./routes/error')
@@ -152,6 +153,26 @@ app.use((req, res, next) => {
     next()
 })
 
+// Mount API router (v1)
+app.use('/api/v1', (req, res, next) => {
+    const apiTokenRepository = req.app.get('apiTokenRepository')
+    const dependencies = {
+        apiTokenRepository,
+        mailProcessingService: req.app.get('mailProcessingService'),
+        authService: req.app.get('authService'),
+        userRepository: req.app.get('userRepository'),
+        imapService: req.app.get('imapService'),
+        inboxLock: req.app.get('inboxLock'),
+        statisticsStore: req.app.get('statisticsStore'),
+        smtpService: req.app.get('smtpService'),
+        verificationStore: req.app.get('verificationStore'),
+        config: req.app.get('config')
+    }
+    const apiRouter = createApiRouter(dependencies)
+    apiRouter(req, res, next)
+})
+
+// Web routes
 app.use('/', loginRouter)
 if (config.user.authEnabled) {
     app.use('/', authRouter)

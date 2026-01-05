@@ -37,6 +37,7 @@ function parseBool(v) {
 }
 
 const config = {
+    apiEnabled: parseBool(process.env.API_ENABLED) !== false, // default true
     // UX Debug Mode
     uxDebugMode: parseBool(process.env.UX_DEBUG_MODE) || false,
 

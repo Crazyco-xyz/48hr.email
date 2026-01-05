@@ -44,6 +44,19 @@ CREATE INDEX IF NOT EXISTS idx_locked_inboxes_user_id ON user_locked_inboxes(use
 CREATE INDEX IF NOT EXISTS idx_locked_inboxes_address ON user_locked_inboxes(inbox_address);
 CREATE INDEX IF NOT EXISTS idx_locked_inboxes_last_accessed ON user_locked_inboxes(last_accessed);
 
+-- API tokens (one per user for programmatic access)
+CREATE TABLE IF NOT EXISTS api_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    token TEXT NOT NULL UNIQUE,
+    created_at INTEGER NOT NULL,
+    last_used INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_tokens_token ON api_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_api_tokens_user_id ON api_tokens(user_id);
+
 -- Statistics storage for persistence across restarts
 CREATE TABLE IF NOT EXISTS statistics (
     id INTEGER PRIMARY KEY CHECK (id = 1), -- Single row table

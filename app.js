@@ -37,6 +37,7 @@ const VerificationStore = require('./domain/verification-store')
 const UserRepository = require('./domain/user-repository')
 const MockUserRepository = require('./application/mocks/mock-user-repository')
 const StatisticsStore = require('./domain/statistics-store')
+const ApiTokenRepository = require('./domain/api-token-repository')
 
 const clientNotification = new ClientNotification()
 debug('Client notification service initialized')
@@ -61,6 +62,7 @@ app.set('config', config)
 // Initialize user repository and auth service (if enabled)
 let inboxLock = null
 let statisticsStore = null
+let apiTokenRepository = null
 
 if (config.user.authEnabled && !config.uxDebugMode) {
     // Migrate legacy database files for backwards compatibility
@@ -69,6 +71,11 @@ if (config.user.authEnabled && !config.uxDebugMode) {
     const userRepository = new UserRepository(config.user.databasePath)
     debug('User repository initialized')
     app.set('userRepository', userRepository)
+
+    // Initialize API token repository with same database connection
+    apiTokenRepository = new ApiTokenRepository(userRepository.db)
+    debug('API token repository initialized')
+    app.set('apiTokenRepository', apiTokenRepository)
 
     // Initialize statistics store with database connection
     statisticsStore = new StatisticsStore(userRepository.db)
@@ -122,6 +129,7 @@ if (config.user.authEnabled && !config.uxDebugMode) {
     } else {
         debug('Statistics store initialized (in-memory only, no database)')
         app.set('userRepository', null)
+        app.set('apiTokenRepository', null)
         app.set('authService', null)
         app.set('inboxLock', null)
         debug('User authentication system disabled')
