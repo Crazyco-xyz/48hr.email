@@ -6,6 +6,7 @@ const debug = require('debug')('48hr-email:routes')
 const config = require('../../../application/config')
 const Helper = require('../../../application/helper')
 const CryptoDetector = require('../../../application/crypto-detector')
+const templateContext = require('../template-context')
 const helper = new(Helper)
 const cryptoDetector = new CryptoDetector()
 const { checkLockAccess } = require('../middleware/lock')
@@ -105,68 +106,11 @@ router.get('^/:address([^@/]+@[^@/]+)', sanitizeAddress, validateDomain, optiona
             throw new Error('Mail processing service not available')
         }
         debug(`Inbox request for ${req.params.address}`)
-        const inboxLock = req.app.get('inboxLock')
 
-        // Check lock status
-        const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
-        const userId = req.session && req.session.userId
-        const isAuthenticated = req.session && req.session.isAuthenticated
-
-        // Check if user has access (either owns the lock or has session access)
-        const hasAccess = isAuthenticated && userId && inboxLock ?
-            (inboxLock.isLockedByUser(req.params.address, userId) || req.session.lockedInbox === req.params.address) :
-            (req.session && req.session.lockedInbox === req.params.address)
-
-        // Get user's verified emails if logged in
-        let userForwardEmails = []
-        if (req.session && req.session.userId) {
-            const userRepository = req.app.get('userRepository')
-            if (userRepository) {
-                userForwardEmails = userRepository.getForwardEmails(req.session.userId)
-            }
-        }
-
-        // Pull any lock error from session and clear it after reading
-        const lockError = req.session ? req.session.lockError : undefined
-        const unlockErrorSession = req.session ? req.session.unlockError : undefined
-        const errorMessage = req.session ? req.session.errorMessage : undefined
-        if (req.session) {
-            delete req.session.lockError
-            delete req.session.unlockError
-            delete req.session.errorMessage
-        }
-
-        // Check for forward all success flag
-        const forwardAllSuccess = req.query.forwardedAll ? parseInt(req.query.forwardedAll) : null
-
-        // Check for verification sent flag
-        const verificationSent = req.query.verificationSent === 'true'
-        const verificationEmail = req.query.email || ''
-
-        res.render('inbox', {
+        res.render('inbox', templateContext.build(req, {
             title: `${(config.http.features.branding || ['48hr.email'])[0]} | ` + req.params.address,
-            purgeTime: purgeTime,
-            address: req.params.address,
-            mailSummaries: mailProcessingService.getMailSummaries(req.params.address),
-            branding: config.http.branding,
-            authEnabled: config.user.authEnabled,
-            smtpEnabled: config.email.features.smtp,
-            isAuthenticated: req.session && req.session.userId ? true : false,
-            userForwardEmails: userForwardEmails,
-            isLocked: isLocked,
-            hasAccess: hasAccess,
-            unlockError: unlockErrorSession,
-            locktimer: config.user.lockReleaseHours,
-            error: lockError,
-            redirectTo: req.originalUrl,
-            expiryTime: config.email.purgeTime.time,
-            expiryUnit: config.email.purgeTime.unit,
-            refreshInterval: config.imap.refreshIntervalSeconds,
-            errorMessage: errorMessage,
-            forwardAllSuccess: forwardAllSuccess,
-            verificationSent: verificationSent,
-            verificationEmail: verificationEmail
-        })
+            mailSummaries: mailProcessingService.getMailSummaries(req.params.address)
+        }))
     } catch (error) {
         debug(`Error loading inbox for ${req.params.address}:`, error.message)
         console.error('Error while loading inbox', error)
@@ -201,58 +145,13 @@ router.get(
                 const cryptoAttachments = cryptoDetector.detectCryptoAttachments(mail.attachments)
                 debug(`Found ${cryptoAttachments.length} cryptographic attachments`)
 
-                const inboxLock = req.app.get('inboxLock')
-                const isLocked = inboxLock && inboxLock.isLocked(req.params.address)
-                const userId = req.session && req.session.userId
-                const isAuthenticated = req.session && req.session.isAuthenticated
-
-                // Check if user has access (either owns the lock or has session access)
-                const hasAccess = isAuthenticated && userId && inboxLock ?
-                    (inboxLock.isLockedByUser(req.params.address, userId) || req.session.lockedInbox === req.params.address) :
-                    (req.session && req.session.lockedInbox === req.params.address)
-
-                // Get user's verified emails if logged in
-                let userForwardEmails = []
-                if (req.session && req.session.userId) {
-                    const userRepository = req.app.get('userRepository')
-                    if (userRepository) {
-                        userForwardEmails = userRepository.getForwardEmails(req.session.userId)
-                    }
-                }
-
-                // Pull error message from session and clear it
-                const errorMessage = req.session ? req.session.errorMessage : undefined
-                if (req.session) {
-                    delete req.session.errorMessage
-                }
-
-                // Check for forward success flag
-                const forwardSuccess = req.query.forwarded === 'true'
-
-                // Check for verification sent flag
-                const verificationSent = req.query.verificationSent === 'true'
-                const verificationEmail = req.query.email || ''
-
                 debug(`Rendering email view for UID ${req.params.uid}`)
-                res.render('mail', {
+                res.render('mail', templateContext.build(req, {
                     title: mail.subject + " | " + req.params.address,
-                    purgeTime: purgeTime,
-                    address: req.params.address,
                     mail,
                     cryptoAttachments: cryptoAttachments,
-                    uid: req.params.uid,
-                    branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com'],
-                    authEnabled: config.user.authEnabled,
-                    smtpEnabled: config.email.features.smtp,
-                    isAuthenticated: req.session && req.session.userId ? true : false,
-                    userForwardEmails: userForwardEmails,
-                    isLocked: isLocked,
-                    hasAccess: hasAccess,
-                    errorMessage: errorMessage,
-                    forwardSuccess: forwardSuccess,
-                    verificationSent: verificationSent,
-                    verificationEmail: verificationEmail
-                })
+                    uid: req.params.uid
+                }))
             } else {
                 debug(`Email ${req.params.uid} not found for ${req.params.address}`)
                 req.session.errorMessage = 'This mail could not be found. It either does not exist or has been deleted from our servers!'
@@ -424,11 +323,11 @@ router.get(
                 // Emails are immutable, cache if found
                 res.set('Cache-Control', 'private, max-age=600')
                 debug(`Rendering raw email view for UID ${req.params.uid}`)
-                res.render('raw', {
+                res.render('raw', templateContext.build(req, {
                     title: req.params.uid + " | raw | " + req.params.address,
                     mail: rawMail,
                     decoded: decodedMail
-                })
+                }))
             } else {
                 debug(`Raw email ${uid} not found for ${req.params.address}`)
                 req.session.errorMessage = 'This mail could not be found. It either does not exist or has been deleted from our servers!'

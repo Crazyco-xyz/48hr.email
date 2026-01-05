@@ -4,10 +4,7 @@ const { body, validationResult } = require('express-validator')
 const debug = require('debug')('48hr-email:auth-routes')
 const { redirectIfAuthenticated } = require('../middleware/auth')
 const config = require('../../../application/config')
-const Helper = require('../../../application/helper')
-const helper = new Helper()
-
-const purgeTime = helper.purgeTimeElemetBuilder()
+const templateContext = require('../template-context')
 
 // Simple in-memory rate limiters for registration and login
 const registrationRateLimitStore = new Map()
@@ -96,21 +93,13 @@ router.use((req, res, next) => {
 // GET /auth - Show unified auth page (login or register)
 router.get('/auth', redirectIfAuthenticated, (req, res) => {
     const config = req.app.get('config')
-    const errorMessage = req.session.errorMessage
     const successMessage = req.session.successMessage
-
-    // Clear messages after reading
-    delete req.session.errorMessage
     delete req.session.successMessage
 
-    res.render('auth', {
+    res.render('auth', templateContext.build(req, {
         title: `Login or Register | ${(config.http.features.branding || ['48hr.email'])[0]}`,
-        branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com'],
-        purgeTime: purgeTime,
-        smtpEnabled: config.email.features.smtp,
-        errorMessage,
         successMessage
-    })
+    }))
 })
 
 // POST /register - Process registration

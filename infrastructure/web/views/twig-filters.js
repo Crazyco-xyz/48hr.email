@@ -71,12 +71,7 @@ function convertAndRound(time, unit) {
  */
 exports.readablePurgeTime = function(purgeTime) {
     if (!purgeTime || !purgeTime.time || !purgeTime.unit) {
-        // Fallback to config if not provided
-        if (config.email.purgeTime) {
-            purgeTime = config.email.purgeTime
-        } else {
-            return '48 hours'
-        }
+        purgeTime = config.email.purgeTime
     }
 
     let result = `${purgeTime.time} ${purgeTime.unit}`

@@ -1,6 +1,7 @@
 const express = require('express')
 const router = new express.Router()
 const debug = require('debug')('48hr-email:stats-routes')
+const templateContext = require('../template-context')
 
 // GET /stats - Statistics page with lazy loading
 router.get('/', async(req, res) => {
@@ -16,10 +17,7 @@ router.get('/', async(req, res) => {
             return res.redirect(redirectUrl)
         }
 
-        const Helper = require('../../../application/helper')
-        const helper = new Helper()
         const branding = config.http.features.branding || ['48hr.email', 'Service', 'https://example.com']
-        const purgeTime = helper.purgeTimeElemetBuilder()
 
         // Return page with placeholder data immediately - real data loads via JS
         const placeholderStats = {
@@ -48,15 +46,11 @@ router.get('/', async(req, res) => {
 
         debug(`Stats page requested - returning with lazy loading`)
 
-        res.render('stats', {
+        res.render('stats', templateContext.build(req, {
             title: `Statistics | ${branding[0]}`,
-            branding: branding,
-            purgeTime: purgeTime,
             stats: placeholderStats,
-            authEnabled: config.user.authEnabled,
-            currentUser: req.session && req.session.username,
             lazyLoad: true
-        })
+        }))
     } catch (error) {
         debug(`Error loading stats page: ${error.message}`)
         console.error('Error while loading stats page', error)

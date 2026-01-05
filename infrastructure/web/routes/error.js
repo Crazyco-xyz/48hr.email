@@ -1,12 +1,8 @@
 const express = require('express')
-
 const router = new express.Router()
 const config = require('../../../application/config')
-const Helper = require('../../../application/helper')
-const helper = new(Helper)
+const templateContext = require('../template-context')
 const debug = require('debug')('48hr-email:routes')
-
-const purgeTime = helper.purgeTimeElemetBuilder()
 
 router.get('/:address/:errorCode', async(req, res, next) => {
     try {
@@ -21,14 +17,11 @@ router.get('/:address/:errorCode', async(req, res, next) => {
         debug(`Rendering error page ${errorCode} with message: ${message}`)
         const branding = config.http.features.branding || ['48hr.email', 'Service', 'https://example.com']
         res.status(errorCode)
-        res.render('error', {
+        res.render('error', templateContext.build(req, {
             title: `${branding[0]} | ${errorCode}`,
-            purgeTime: purgeTime,
-            address: req.params.address,
             message: message,
-            status: errorCode,
-            branding: branding
-        })
+            status: errorCode
+        }))
     } catch (error) {
         debug('Error loading error page:', error.message)
         console.error('Error while loading error page', error)

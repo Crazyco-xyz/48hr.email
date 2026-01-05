@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 const { requireAuth } = require('../middleware/auth')
 const { body, validationResult } = require('express-validator')
+const templateContext = require('../template-context')
 
 // GET /account - Account dashboard
 router.get('/account', requireAuth, async(req, res) => {
@@ -26,25 +27,20 @@ router.get('/account', requireAuth, async(req, res) => {
         const config = req.app.get('config')
         const stats = userRepository.getUserStats(req.session.userId, config.user)
 
-        // Get purge time for footer
-        const purgeTime = helper.purgeTimeElemetBuilder()
+        const successMessage = req.session.accountSuccess
+        const errorMessage = req.session.accountError
+        delete req.session.accountSuccess
+        delete req.session.accountError
 
-        res.render('account', {
+        res.render('account', templateContext.build(req, {
             title: 'Account Dashboard',
             username: req.session.username,
             forwardEmails,
             lockedInboxes,
             stats,
-            branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com'],
-            purgeTime: purgeTime,
-            smtpEnabled: config.email.features.smtp,
-            successMessage: req.session.accountSuccess,
-            errorMessage: req.session.accountError
-        })
-
-        // Clear flash messages
-        delete req.session.accountSuccess
-        delete req.session.accountError
+            successMessage,
+            errorMessage
+        }))
     } catch (error) {
         console.error('Account page error:', error)
         res.status(500).render('error', {

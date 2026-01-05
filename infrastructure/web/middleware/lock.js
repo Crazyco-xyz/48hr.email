@@ -1,3 +1,5 @@
+const templateContext = require('../template-context')
+
 function checkLockAccess(req, res, next) {
     const inboxLock = req.app.get('inboxLock')
     const address = req.params.address
@@ -21,14 +23,10 @@ function checkLockAccess(req, res, next) {
         const unlockError = req.session ? req.session.unlockError : undefined
         if (req.session) delete req.session.unlockError
 
-        return res.render('error', {
-            purgeTime: require('../../../application/helper').prototype.purgeTimeElemetBuilder(),
-            address: address,
-            message: 'This inbox is locked by another user. Only the owner can access it.',
-            branding: req.app.get('config').http.branding,
-            currentUser: req.session && req.session.username,
-            authEnabled: req.app.get('config').user.authEnabled
-        })
+        return res.render('error', templateContext.build(req, {
+            title: 'Access Denied',
+            message: 'This inbox is locked by another user. Only the owner can access it.'
+        }))
     }
 
     // Update last access if they have access and are authenticated

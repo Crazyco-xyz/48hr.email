@@ -18,11 +18,8 @@ const lockRouter = require('./routes/lock')
 const authRouter = require('./routes/auth')
 const accountRouter = require('./routes/account')
 const statsRouter = require('./routes/stats')
+const templateContext = require('./template-context')
 const { sanitizeHtmlTwigFilter, readablePurgeTime } = require('./views/twig-filters')
-
-const Helper = require('../../application/helper')
-const helper = new(Helper)
-const purgeTime = helper.purgeTimeElemetBuilder()
 
 // Utility function for consistent error handling in routes
 const handleRouteError = (error, req, res, next, context = 'route') => {
@@ -143,7 +140,9 @@ app.use(async(req, res, next) => {
 app.use((req, res, next) => {
     const isImapReady = req.app.get('isImapReady')
     if (!isImapReady && !req.path.startsWith('/images') && !req.path.startsWith('/javascripts') && !req.path.startsWith('/stylesheets') && !req.path.startsWith('/dependencies')) {
-        return res.render('loading')
+        return res.render('loading', templateContext.build(req, {
+            title: 'Loading...'
+        }))
     }
     next()
 })
@@ -174,11 +173,11 @@ app.use(async(err, req, res, _next) => {
 
         // Render the error page
         res.status(err.status || 500)
-        res.render('error', {
-            purgeTime: purgeTime,
-            address: req.params && req.params.address,
-            branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com']
-        })
+        res.render('error', templateContext.build(req, {
+            title: 'Error',
+            message: err.message,
+            status: err.status || 500
+        }))
     } catch (renderError) {
         debug('Error in error handler:', renderError.message)
         console.error('Critical error in error handler', renderError)
