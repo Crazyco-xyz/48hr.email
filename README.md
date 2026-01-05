@@ -26,16 +26,16 @@ All data is being removed 48hrs after they have reached the mail server.
 
 ## Features
 
-- Create a custom inbox with select name and domain, or get a fully randomized one
-- Receive emails with a clean preview in your inbox, with optional browser notifications
-- Read emails, with support for HTML, CSS & JS just like you are used to from regular email providers
-- Automatic detection and display of cryptographic keys and signatures
-- Delete your emails ahead of time by pressing the delete button
-- View the raw email, showing all the headers etc.
-- Download Attachments with one click
-- <u>Optional</u> User Account System with email forwarding and inbox locking
-- <u>Optional</u> Statistics System, tracking public data for as long as your mails stay
-- and more...
+- **Custom or Random Inboxes** - Choose your own address or get one instantly
+- **Real-time Updates** - Live email reception with Socket.IO and browser notifications
+- **Full Email Rendering** - HTML, CSS, JavaScript support with attachment downloads
+- **Raw Email View** - Inspect headers, MIME structure, and source
+- **Cryptographic Key Detection** - Automatic PGP key and signature display
+- **QR Code Generation** - Easy mobile access to your inbox
+- **Dark/Light Theme** - Fully responsive design with theme toggle
+- **Optional User Accounts** - Email forwarding and inbox locking (requires SMTP)
+- **Optional Statistics** - Real-time metrics, historical analysis, and predictive charts
+- **Highly Configurable** - Customize purge time, domains, branding, features, and limits via `.env`
 
 <br>
 
