@@ -1,4 +1,5 @@
 const express = require('express')
+const router = express.Router()
 const { body, validationResult } = require('express-validator')
 const createAuthenticator = require('../middleware/authenticator')
 
@@ -10,8 +11,7 @@ const createAuthenticator = require('../middleware/authenticator')
  * GET /:address/status - Check if inbox is locked
  */
 function createLocksRouter(dependencies) {
-    const router = express.Router()
-    const { inboxLock, apiTokenRepository, config } = dependencies
+    const { inboxLock, userRepository, apiTokenRepository, config } = dependencies
 
     if (!inboxLock || !config.user.authEnabled) {
         router.all('*', (req, res) => {
@@ -20,7 +20,7 @@ function createLocksRouter(dependencies) {
         return router
     }
 
-    const { requireAuth, optionalAuth } = createAuthenticator(apiTokenRepository)
+    const { requireAuth, optionalAuth } = createAuthenticator(userRepository)
 
     /**
      * GET / - List user's locked inboxes

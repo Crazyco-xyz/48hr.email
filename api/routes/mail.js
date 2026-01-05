@@ -1,4 +1,5 @@
 const express = require('express')
+const router = express.Router()
 const { body, validationResult } = require('express-validator')
 const createAuthenticator = require('../middleware/authenticator')
 const { ApiError } = require('../middleware/error-handler')
@@ -11,7 +12,7 @@ const { ApiError } = require('../middleware/error-handler')
  * POST /forward-all - Forward all emails in inbox
  */
 function createMailRouter(dependencies) {
-    const router = express.Router()
+    // Ensure router is declared before any usage
     const {
         mailProcessingService,
         apiTokenRepository,
@@ -20,6 +21,8 @@ function createMailRouter(dependencies) {
     } = dependencies
 
     const { requireAuth, optionalAuth } = createAuthenticator(apiTokenRepository)
+
+    // All router usage is below this line
 
     /**
      * DELETE /inbox/:address/:uid - Delete single email
@@ -154,8 +157,8 @@ function createMailRouter(dependencies) {
         body('destinationEmail').isEmail().normalizeEmail(),
         async(req, res, next) => {
             try {
-                const errors = validationResult(req)
-                if (!errors.isEmpty()) {
+                const validationErrors = validationResult(req)
+                if (!validationErrors.isEmpty()) {
                     return res.apiError('Invalid input parameters', 'VALIDATION_ERROR', 400)
                 }
 
@@ -191,7 +194,7 @@ function createMailRouter(dependencies) {
 
                 // Forward all emails
                 let successCount = 0
-                const errors = []
+                const forwardErrors = []
 
                 for (const mail of mailsToForward) {
                     try {
@@ -203,10 +206,10 @@ function createMailRouter(dependencies) {
                         if (result.success) {
                             successCount++
                         } else {
-                            errors.push({ uid: mail.uid, error: result.error })
+                            forwardErrors.push({ uid: mail.uid, error: result.error })
                         }
                     } catch (error) {
-                        errors.push({ uid: mail.uid, error: error.message })
+                        forwardErrors.push({ uid: mail.uid, error: error.message })
                     }
                 }
 
@@ -214,13 +217,14 @@ function createMailRouter(dependencies) {
                     message: `Forwarded ${successCount} of ${mailsToForward.length} email(s)`,
                     forwarded: successCount,
                     total: mailsToForward.length,
-                    errors: errors.length > 0 ? errors : undefined
+                    errors: forwardErrors.length > 0 ? forwardErrors : undefined
                 })
             } catch (error) {
                 next(error)
             }
         }
     )
+
 
     return router
 }

@@ -1,4 +1,5 @@
 const express = require('express')
+const router = express.Router()
 const createAuthenticator = require('../middleware/authenticator')
 
 /**
@@ -9,7 +10,6 @@ const createAuthenticator = require('../middleware/authenticator')
  * GET /:address/:uid/attachment/:checksum - Download attachment
  */
 function createInboxRouter(dependencies) {
-    const router = express.Router()
     const { mailProcessingService, apiTokenRepository } = dependencies
 
     const { optionalAuth } = createAuthenticator(apiTokenRepository)

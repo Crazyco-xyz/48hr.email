@@ -1,4 +1,5 @@
 const express = require('express')
+const router = express.Router()
 const { body, validationResult } = require('express-validator')
 const createAuthenticator = require('../middleware/authenticator')
 const { ApiError } = require('../middleware/error-handler')
@@ -14,8 +15,9 @@ const { ApiError } = require('../middleware/error-handler')
  * POST /token - Generate/regenerate API token
  * DELETE /token - Revoke API token
  */
+
 function createAccountRouter(dependencies) {
-    const router = express.Router()
+    // Ensure router is declared before any usage
     const {
         authService,
         userRepository,
@@ -23,6 +25,8 @@ function createAccountRouter(dependencies) {
         inboxLock,
         config
     } = dependencies
+
+    // All router usage is below this line
 
     // Check if auth is enabled
     if (!authService || !config.user.authEnabled) {

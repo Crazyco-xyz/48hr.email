@@ -1,12 +1,14 @@
 const express = require('express')
+const router = express.Router()
 
 /**
  * Statistics API Routes
  * GET / - Get lightweight statistics
  * GET /enhanced - Get full statistics with historical data
  */
+
 function createStatsRouter(dependencies) {
-    const router = express.Router()
+    // Ensure router is declared before any usage
     const { statisticsStore, mailProcessingService, imapService, config } = dependencies
 
     if (!config.http.statisticsEnabled) {

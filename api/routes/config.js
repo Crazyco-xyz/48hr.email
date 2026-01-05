@@ -1,4 +1,5 @@
 const express = require('express')
+const router = express.Router()
 
 /**
  * Configuration API Routes (Public)
@@ -7,6 +8,9 @@ const express = require('express')
  * GET /features - Get enabled features
  */
 function createConfigRouter(dependencies) {
+    // Ensure router is declared before any usage
+    const router = express.Router()
+    const { config } = dependencies
     // API enabled toggle
     router.use((req, res, next) => {
         if (!config.apiEnabled) {
@@ -14,8 +18,6 @@ function createConfigRouter(dependencies) {
         }
         next();
     });
-    const router = express.Router()
-    const { config } = dependencies
 
     /**
      * GET /domains - Get allowed email domains
