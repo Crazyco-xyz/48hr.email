@@ -37,8 +37,7 @@ function parseBool(v) {
 }
 
 const config = {
-    apiEnabled: parseBool(process.env.API_ENABLED) !== false, // default true
-    // UX Debug Mode
+    apiEnabled: parseBool(process.env.HTTP_API_ENABLED) || true,
     uxDebugMode: parseBool(process.env.UX_DEBUG_MODE) || false,
 
     email: {
@@ -80,30 +79,22 @@ const config = {
     },
 
     http: {
-        // Server settings
         port: Number(process.env.HTTP_PORT),
         baseUrl: parseValue(process.env.HTTP_BASE_URL) || 'http://localhost:3000',
         sessionSecret: parseValue(process.env.HTTP_SESSION_SECRET) || parseValue(process.env.USER_SESSION_SECRET) || 'change-me-in-production',
-
-        // UI Features & Display
         features: {
             branding: parseValue(process.env.HTTP_BRANDING),
             displaySort: Number(process.env.HTTP_DISPLAY_SORT) || 0,
             hideOther: parseBool(process.env.HTTP_HIDE_OTHER),
             statistics: parseBool(process.env.HTTP_STATISTICS_ENABLED) || false,
-            infoSection: parseBool(process.env.HTTP_SHOW_INFO_SECTION) !== false // default true
+            infoSection: parseBool(process.env.HTTP_SHOW_INFO_SECTION) || true
         }
     },
 
     user: {
-        // Authentication System
         authEnabled: parseBool(process.env.USER_AUTH_ENABLED) || false,
-
-        // Database
         databasePath: parseValue(process.env.USER_DATABASE_PATH) || './db/data.db',
-
-        // Feature Limits
-        maxForwardEmails: Number(process.env.USER_MAX_FORWARD_EMAILS) || 5,
+        maxForwardEmails: Number(process.env.USER_MAX_FORWARD_EMAILS) || 3,
         maxLockedInboxes: Number(process.env.USER_MAX_LOCKED_INBOXES) || 5,
         lockReleaseHours: Number(process.env.LOCK_RELEASE_HOURS) || 168 // 7 days default
     }
