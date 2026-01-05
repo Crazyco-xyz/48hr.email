@@ -34,10 +34,13 @@ router.get('/', async(req, res) => {
             enhanced: {
                 topSenderDomains: [],
                 topRecipientDomains: [],
+                busiestHours: [],
                 uniqueSenderDomains: '...',
-                averageEmailSize: '...',
-                peakHour: '...',
-                prediction24h: '...'
+                uniqueRecipientDomains: '...',
+                averageSubjectLength: '...',
+                peakHourPercentage: '...',
+                emailsPerHour: '...',
+                dayPercentage: '...'
             },
             historical: [],
             prediction: []

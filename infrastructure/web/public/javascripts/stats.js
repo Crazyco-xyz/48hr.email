@@ -6,6 +6,8 @@
 // Store chart instance globally for updates
 let statsChart = null;
 let chartContext = null;
+let lastReloadTime = 0;
+const RELOAD_COOLDOWN_MS = 2000; // 2 second cooldown between reloads
 
 // Initialize stats chart if on stats page
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Get data from global variables (set by template)
     if (typeof window.initialStatsData === 'undefined') {
-        console.error('Initial stats data not found');
         return;
     }
 
@@ -22,25 +23,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const historicalData = window.historicalData || [];
     const predictionData = window.predictionData || [];
 
-    console.log(`Loaded data: ${historicalData.length} historical, ${realtimeData.length} realtime, ${predictionData.length} predictions`);
-
-    // If no data yet (lazy loading), add a placeholder message
-    const hasData = historicalData.length > 0 || realtimeData.length > 0 || predictionData.length > 0;
-    if (!hasData) {
-        console.log('No chart data yet - will populate after lazy load');
-    }
-
-    // Set up Socket.IO connection for real-time updates
+    // Set up Socket.IO connection for real-time updates with rate limiting
     if (typeof io !== 'undefined') {
         const socket = io();
 
         socket.on('stats-update', () => {
-            console.log('Stats update received (page will not auto-reload)');
-            // Don't auto-reload - user can manually refresh if needed
-        });
-
-        socket.on('reconnect', () => {
-            console.log('Reconnected to server');
+            const now = Date.now();
+            if (now - lastReloadTime >= RELOAD_COOLDOWN_MS) {
+                lastReloadTime = now;
+                reloadStatsData();
+            }
         });
     }
 
@@ -257,15 +249,12 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function rebuildStatsChart() {
     if (!statsChart || !chartContext) {
-        console.log('Chart not initialized, skipping rebuild');
         return;
     }
 
     const realtimeData = window.initialStatsData || [];
     const historicalData = window.historicalData || [];
     const predictionData = window.predictionData || [];
-
-    console.log(`Rebuilding chart with: ${historicalData.length} historical, ${realtimeData.length} realtime, ${predictionData.length} predictions`);
 
     const allTimePoints = [
         ...historicalData.map(d => ({...d, type: 'historical' })),
@@ -274,7 +263,6 @@ function rebuildStatsChart() {
     ].sort((a, b) => a.timestamp - b.timestamp);
 
     if (allTimePoints.length === 0) {
-        console.log('No data points to chart');
         return;
     }
 
@@ -311,87 +299,120 @@ function lazyLoadStats() {
     // Check if this is a lazy-loaded page (has placeholder data)
     const currentCountEl = document.getElementById('currentCount');
     if (!currentCountEl) {
-        console.log('Stats lazy load: currentCount element not found');
         return;
     }
 
     const currentText = currentCountEl.textContent.trim();
-    console.log('Stats lazy load: current count text is:', currentText);
 
     if (currentText !== '...') {
-        console.log('Stats lazy load: already loaded with real data, skipping');
         return; // Already loaded with real data
     }
 
-    console.log('Stats lazy load: fetching data from /stats/api');
+    reloadStatsData();
+}
 
+/**
+ * Reload statistics data from API and update DOM
+ */
+function reloadStatsData() {
     fetch('/stats/api')
         .then(response => response.json())
         .then(data => {
-            console.log('Stats lazy load: received data', data);
-            // Update main stat cards
-            document.getElementById('currentCount').textContent = data.currentCount || '0';
-            document.getElementById('historicalTotal').textContent = data.allTimeTotal || '0';
-            document.getElementById('receives24h').textContent = (data.last24Hours && data.last24Hours.receives) || '0';
-            document.getElementById('deletes24h').textContent = (data.last24Hours && data.last24Hours.deletes) || '0';
-            document.getElementById('forwards24h').textContent = (data.last24Hours && data.last24Hours.forwards) || '0';
-
-            // Update enhanced stats if available
-            if (data.enhanced) {
-                const topSenderDomains = document.querySelector('[data-stats="top-sender-domains"]');
-                const topRecipientDomains = document.querySelector('[data-stats="top-recipient-domains"]');
-
-                if (topSenderDomains && data.enhanced.topSenderDomains && data.enhanced.topSenderDomains.length > 0) {
-                    let html = '';
-                    data.enhanced.topSenderDomains.slice(0, 5).forEach(item => {
-                        html += `<li class="stat-list-item"><span class="stat-list-label">${item.domain}</span><span class="stat-list-value">${item.count}</span></li>`;
-                    });
-                    topSenderDomains.innerHTML = html;
-                }
-
-                if (topRecipientDomains && data.enhanced.topRecipientDomains && data.enhanced.topRecipientDomains.length > 0) {
-                    let html = '';
-                    data.enhanced.topRecipientDomains.slice(0, 5).forEach(item => {
-                        html += `<li class="stat-list-item"><span class="stat-list-label">${item.domain}</span><span class="stat-list-value">${item.count}</span></li>`;
-                    });
-                    topRecipientDomains.innerHTML = html;
-                }
-
-                // Update unique domains count
-                const uniqueSenderDomains = document.querySelector('[data-stats="unique-sender-domains"]');
-                if (uniqueSenderDomains && data.enhanced.uniqueSenderDomains) {
-                    uniqueSenderDomains.textContent = data.enhanced.uniqueSenderDomains;
-                }
-
-                // Update average email size
-                const avgSize = document.querySelector('[data-stats="average-email-size"]');
-                if (avgSize && data.enhanced.averageEmailSize) {
-                    avgSize.textContent = data.enhanced.averageEmailSize;
-                }
-
-                // Update peak hour
-                const peakHour = document.querySelector('[data-stats="peak-hour"]');
-                if (peakHour && data.enhanced.peakHour) {
-                    peakHour.textContent = data.enhanced.peakHour;
-                }
-
-                // Update 24h prediction
-                const prediction24h = document.querySelector('[data-stats="prediction-24h"]');
-                if (prediction24h && data.enhanced.prediction24h) {
-                    prediction24h.textContent = data.enhanced.prediction24h;
-                }
-            }
-
-            // Update window data for charts
-            window.initialStatsData = (data.last24Hours && data.last24Hours.timeline) || [];
-            window.historicalData = data.historical || [];
-            window.predictionData = data.prediction || [];
-
-            // Rebuild chart with new data
-            rebuildStatsChart();
+            updateStatsDOM(data);
         })
         .catch(error => {
-            console.error('Error loading stats:', error);
-            // Stats remain as placeholder
+            console.error('Error reloading stats:', error);
         });
+}
+
+/**
+ * Update DOM with stats data
+ */
+function updateStatsDOM(data) {
+    // Update main stat cards
+    document.getElementById('currentCount').textContent = data.currentCount || '0';
+    document.getElementById('historicalTotal').textContent = data.allTimeTotal || '0';
+    document.getElementById('receives24h').textContent = (data.last24Hours && data.last24Hours.receives) || '0';
+    document.getElementById('deletes24h').textContent = (data.last24Hours && data.last24Hours.deletes) || '0';
+    document.getElementById('forwards24h').textContent = (data.last24Hours && data.last24Hours.forwards) || '0';
+
+    // Update enhanced stats if available
+    if (data.enhanced) {
+        const topSenderDomains = document.querySelector('[data-stats="top-sender-domains"]');
+        const topRecipientDomains = document.querySelector('[data-stats="top-recipient-domains"]');
+        const busiestHours = document.querySelector('[data-stats="busiest-hours"]');
+        if (topSenderDomains && data.enhanced.topSenderDomains && data.enhanced.topSenderDomains.length > 0) {
+            let html = '';
+            data.enhanced.topSenderDomains.slice(0, 5).forEach(item => {
+                html += `<li class="stat-list-item"><span class="stat-list-label">${item.domain}</span><span class="stat-list-value">${item.count}</span></li>`;
+            });
+            topSenderDomains.innerHTML = html;
+        }
+
+        if (topRecipientDomains && data.enhanced.topRecipientDomains && data.enhanced.topRecipientDomains.length > 0) {
+            let html = '';
+            data.enhanced.topRecipientDomains.slice(0, 5).forEach(item => {
+                html += `<li class="stat-list-item"><span class="stat-list-label">${item.domain}</span><span class="stat-list-value">${item.count}</span></li>`;
+            });
+            topRecipientDomains.innerHTML = html;
+        }
+
+        if (busiestHours && data.enhanced.busiestHours && data.enhanced.busiestHours.length > 0) {
+            let html = '';
+            data.enhanced.busiestHours.forEach(item => {
+                html += `<li class="stat-list-item"><span class="stat-list-label">${item.hour}:00 - ${item.hour + 1}:00</span><span class="stat-list-value">${item.count}</span></li>`;
+            });
+            busiestHours.innerHTML = html;
+        }
+
+        // Update unique domains count
+        const uniqueSenderDomains = document.querySelector('[data-stats="unique-sender-domains"]');
+        if (uniqueSenderDomains && data.enhanced.uniqueSenderDomains !== undefined) {
+            uniqueSenderDomains.textContent = data.enhanced.uniqueSenderDomains;
+        }
+
+        const uniqueRecipientDomains = document.querySelector('[data-stats="unique-recipient-domains"]');
+        if (uniqueRecipientDomains && data.enhanced.uniqueRecipientDomains !== undefined) {
+            uniqueRecipientDomains.textContent = data.enhanced.uniqueRecipientDomains;
+        }
+
+        // Update Quick Insights values
+        const avgSubjectLength = document.querySelector('[data-stats="average-subject-length"]');
+        if (avgSubjectLength && data.enhanced.averageSubjectLength !== undefined) {
+            avgSubjectLength.textContent = data.enhanced.averageSubjectLength;
+        }
+
+        const uniqueSenderDomainsValue = document.querySelector('[data-stats="unique-sender-domains-value"]');
+        if (uniqueSenderDomainsValue && data.enhanced.uniqueSenderDomains !== undefined) {
+            uniqueSenderDomainsValue.textContent = data.enhanced.uniqueSenderDomains;
+        }
+
+        const uniqueRecipientDomainsValue = document.querySelector('[data-stats="unique-recipient-domains-value"]');
+        if (uniqueRecipientDomainsValue && data.enhanced.uniqueRecipientDomains !== undefined) {
+            uniqueRecipientDomainsValue.textContent = data.enhanced.uniqueRecipientDomains;
+        }
+
+        const peakHourPercentage = document.querySelector('[data-stats="peak-hour-percentage"]');
+        if (peakHourPercentage && data.enhanced.peakHourPercentage !== undefined) {
+            peakHourPercentage.textContent = data.enhanced.peakHourPercentage + '%';
+        }
+
+        const emailsPerHour = document.querySelector('[data-stats="emails-per-hour"]');
+        if (emailsPerHour && data.enhanced.emailsPerHour !== undefined) {
+            emailsPerHour.textContent = data.enhanced.emailsPerHour;
+        }
+
+        const dayPercentage = document.querySelector('[data-stats="day-percentage"]');
+        if (dayPercentage && data.enhanced.dayPercentage !== undefined) {
+            dayPercentage.textContent = data.enhanced.dayPercentage + '%';
+        }
+    }
+
+    // Update window data for charts
+    window.initialStatsData = (data.last24Hours && data.last24Hours.timeline) || [];
+    window.historicalData = data.historical || [];
+    window.predictionData = data.prediction || [];
+
+    // Rebuild chart with new data
+    rebuildStatsChart();
 }
