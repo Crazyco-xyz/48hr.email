@@ -551,8 +551,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Raw mail tab switcher
+    function initRawTabs() {
+        const buttons = document.querySelectorAll('.raw-tab-button');
+        const panels = document.querySelectorAll('.raw-mail[data-panel]');
+        if (buttons.length === 0) return;
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.target;
+                buttons.forEach(b => b.classList.toggle('active', b === btn));
+                panels.forEach(p => p.classList.toggle('hidden', p.dataset.panel !== target));
+            });
+        });
+    }
+
     // Expose utilities and run them
-    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown, initCryptoKeysToggle, initForwardModal, initForwardAllModal, initAccountModals };
+    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown, initCryptoKeysToggle, initForwardModal, initForwardAllModal, initAccountModals, initRawTabs };
     formatEmailDates();
     formatMailDate();
     initLockModals();
@@ -563,4 +578,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initForwardModal();
     initCryptoKeysToggle();
     initAccountModals();
+    initRawTabs();
 });

@@ -13,19 +13,6 @@
             <pre class="raw-mail hidden" data-panel="decoded">{{ decoded | e }}</pre>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const buttons = document.querySelectorAll('.raw-tab-button');
-            const panels = document.querySelectorAll('.raw-mail[data-panel]');
-            buttons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const target = btn.dataset.target;
-                    buttons.forEach(b => b.classList.toggle('active', b === btn));
-                    panels.forEach(p => p.classList.toggle('hidden', p.dataset.panel !== target));
-                });
-            });
-        });
-    </script>
 {% endblock %}
 
 {% block footer %}{% endblock %}

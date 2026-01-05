@@ -11,25 +11,25 @@
     <!-- SEO Meta Tags -->
     <meta name="description" content="Your temporary Inbox. Create instant throwaway email addresses to protect your privacy. No registration required. Emails auto-delete after {{ purgeTimeRaw | readablePurgeTime }}.">
     <meta name="keywords" content="temporary email, disposable email, throwaway email, fake email, temp mail, anonymous email, 48hr email, privacy protection, burner email">
-    <meta name="author" content="CrazyCo">
+    <meta name="author" content="{{ branding.1 }}">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
-    <link rel="canonical" href="https://48hr.email/">
+    <link rel="canonical" href="{{ config.http.baseUrl }}/">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://48hr.email/">
-    <meta property="og:title" content="48hr.email - Your temporary Inbox">
+    <meta property="og:url" content="{{ config.http.baseUrl }}/">
+    <meta property="og:title" content="{{ branding.0 }} - Your temporary Inbox">
     <meta property="og:description" content="Protect your privacy with free temporary email addresses. No registration required. Emails auto-delete after {{ purgeTimeRaw | readablePurgeTime }}.">
-    <meta property="og:image" content="https://48hr.email/images/logo.png">
-    <meta property="og:site_name" content="48hr.email">
+    <meta property="og:image" content="{{ config.http.baseUrl }}/images/logo.png">
+    <meta property="og:site_name" content="{{ branding.0 }}">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:url" content="https://48hr.email/">
-    <meta name="twitter:title" content="48hr.email - Your temporary Inbox">
+    <meta name="twitter:url" content="{{ config.http.baseUrl }}/">
+    <meta name="twitter:title" content="{{ branding.0 }} - Your temporary Inbox">
     <meta name="twitter:description" content="Free temporary email service. Protect your privacy with disposable email addresses.">
-    <meta name="twitter:image" content="https://48hr.email/images/logo.png">
+    <meta name="twitter:image" content="{{ config.http.baseUrl }}/images/logo.png">
     {% endblock %}
     
     <!-- Additional Meta Tags -->
