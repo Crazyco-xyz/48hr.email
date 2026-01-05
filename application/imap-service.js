@@ -301,8 +301,6 @@ class ImapService extends EventEmitter {
         toDelete.forEach(uid => {
             this.emit(ImapService.EVENT_DELETED_MAIL, uid);
         });
-
-        console.log(`Deleted ${toDelete.length} old messages.`);
     }
 
 
