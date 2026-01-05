@@ -37,7 +37,12 @@ const server = http.createServer(app)
 const io = socketio(server)
 
 app.set('socketio', io)
-app.use(logger('dev'))
+
+// HTTP request logging - only enable with DEBUG environment variable
+if (process.env.DEBUG && process.env.DEBUG.includes('48hr-email')) {
+    app.use(logger('dev'))
+}
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
@@ -200,6 +205,9 @@ server.on('listening', () => {
     const addr = server.address()
     const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port
     debug('Listening on ' + bind)
+
+    // Emit event for app.js to display startup banner
+    server.emit('ready')
 })
 
 module.exports = { app, io, server }

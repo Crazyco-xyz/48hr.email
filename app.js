@@ -25,21 +25,30 @@ const helper = new(Helper)
 const { app, io, server } = require('./infrastructure/web/web')
 const ClientNotification = require('./infrastructure/web/client-notification')
 const ImapService = require('./application/imap-service')
+const MockMailService = require('./application/mocks/mock-mail-service')
 const MailProcessingService = require('./application/mail-processing-service')
 const SmtpService = require('./application/smtp-service')
 const AuthService = require('./application/auth-service')
+const MockAuthService = require('./application/mocks/mock-auth-service')
 const MailRepository = require('./domain/mail-repository')
 const InboxLock = require('./domain/inbox-lock')
+const MockInboxLock = require('./application/mocks/mock-inbox-lock')
 const VerificationStore = require('./domain/verification-store')
 const UserRepository = require('./domain/user-repository')
+const MockUserRepository = require('./application/mocks/mock-user-repository')
 const StatisticsStore = require('./domain/statistics-store')
 
 const clientNotification = new ClientNotification()
 debug('Client notification service initialized')
 clientNotification.use(io)
 
-const smtpService = new SmtpService(config)
-debug('SMTP service initialized')
+// Initialize SMTP service only if not in UX debug mode
+const smtpService = config.uxDebugMode ? null : new SmtpService(config)
+if (smtpService) {
+    debug('SMTP service initialized')
+} else {
+    debug('SMTP service disabled (UX debug mode)')
+}
 app.set('smtpService', smtpService)
 
 const verificationStore = new VerificationStore()
@@ -53,7 +62,7 @@ app.set('config', config)
 let inboxLock = null
 let statisticsStore = null
 
-if (config.user.authEnabled) {
+if (config.user.authEnabled && !config.uxDebugMode) {
     // Migrate legacy database files for backwards compatibility
     Helper.migrateDatabase(config.user.databasePath)
 
@@ -90,22 +99,50 @@ if (config.user.authEnabled) {
             })
         }
     }, config.imap.refreshIntervalSeconds * 1000)
-
-    console.log('User authentication system enabled')
 } else {
-    // No auth enabled - initialize statistics store without persistence
+    // No auth enabled OR UX debug mode - initialize statistics store without persistence
     statisticsStore = new StatisticsStore()
-    debug('Statistics store initialized (in-memory only, no database)')
+    if (config.uxDebugMode) {
+        debug('Statistics store initialized (UX debug mode - clean slate)')
+
+        // In UX debug mode, create mock auth system
+        const mockUserRepository = new MockUserRepository(config)
+        debug('Mock user repository initialized')
+        app.set('userRepository', mockUserRepository)
+
+        const mockAuthService = new MockAuthService()
+        debug('Mock auth service initialized')
+        app.set('authService', mockAuthService)
+
+        inboxLock = new MockInboxLock(mockUserRepository)
+        app.set('inboxLock', inboxLock)
+        debug('Mock inbox lock service initialized')
+
+        debug('Mock authentication system enabled for UX debug mode')
+    } else {
+        debug('Statistics store initialized (in-memory only, no database)')
+        app.set('userRepository', null)
+        app.set('authService', null)
+        app.set('inboxLock', null)
+        debug('User authentication system disabled')
+    }
     app.set('statisticsStore', statisticsStore)
 
-    app.set('userRepository', null)
-    app.set('authService', null)
-    app.set('inboxLock', null)
-    debug('User authentication system disabled')
+    if (!config.uxDebugMode) {
+        debug('User authentication system disabled')
+    }
 }
 
-const imapService = new ImapService(config, inboxLock)
-debug('IMAP service initialized')
+// Initialize IMAP or Mock service based on debug mode
+const imapService = config.uxDebugMode ?
+    new MockMailService(config) :
+    new ImapService(config, inboxLock)
+
+if (config.uxDebugMode) {
+    debug('Mock Mail Service initialized (UX Debug Mode)')
+} else {
+    debug('IMAP service initialized')
+}
 app.set('imapService', imapService)
 
 const mailProcessingService = new MailProcessingService(
@@ -121,18 +158,97 @@ debug('Mail processing service initialized')
 
 // Initialize statistics with current count
 imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, async() => {
+    // In UX debug mode, populate mock emails first
+    if (config.uxDebugMode) {
+        // Load mock emails into repository
+        const mockEmails = imapService.getMockEmails()
+        mockEmails.forEach(({ mail }) => {
+            mailProcessingService.onNewMail(mail)
+        })
+        debug(`UX Debug Mode: Loaded ${mockEmails.length} mock emails`)
+    }
+
+    // Then initialize statistics with the correct count
     const count = mailProcessingService.getCount()
     statisticsStore.initialize(count)
 
-    // Get and set the largest UID for all-time total
-    const largestUid = await helper.getLargestUid(imapService)
-    statisticsStore.updateLargestUid(largestUid)
-    debug(`Statistics initialized with ${count} emails, largest UID: ${largestUid}`)
+    if (config.uxDebugMode) {
+        statisticsStore.updateLargestUid(2) // 2 mock emails
+        debug(`UX Debug Mode: Statistics initialized with ${count} emails, largest UID: 2`)
+    } else {
+        // Get and set the largest UID for all-time total
+        const largestUid = await helper.getLargestUid(imapService)
+        statisticsStore.updateLargestUid(largestUid)
+        debug(`Statistics initialized with ${count} emails, largest UID: ${largestUid}`)
+    }
 })
 
 // Set up timer sync broadcasting after IMAP is ready
 imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, () => {
     clientNotification.startTimerSync(imapService)
+})
+
+// Display startup banner when everything is ready
+let imapReady = false
+let serverReady = false
+
+function displayStartupBanner() {
+    if (!imapReady || !serverReady) return
+
+    const mailCount = mailProcessingService.getCount()
+    const domains = config.email.domains.join(', ')
+    const purgeTime = `${config.email.purgeTime.time} ${config.email.purgeTime.unit}`
+    const refreshInterval = config.uxDebugMode ? 'N/A' : `${config.imap.refreshIntervalSeconds}s`
+
+    // Determine mode based on environment
+    let mode = 'PRODUCTION'
+    if (config.uxDebugMode) {
+        mode = 'UX DEBUG'
+    } else if (process.env.DEBUG) {
+        mode = 'DEBUG'
+    }
+
+    console.log('\n' + '═'.repeat(70))
+    console.log(`  48hr.email - ${mode} MODE`)
+    console.log('═'.repeat(70))
+    console.log(`  Server:          http://localhost:${config.http.port}`)
+    console.log(`  Domains:         ${domains}`)
+    console.log(`  Emails loaded:   ${mailCount}`)
+    console.log(`  Purge after:     ${purgeTime}`)
+    console.log(`  IMAP refresh:    ${refreshInterval}`)
+
+    if (!config.uxDebugMode && config.email.examples.account && config.email.examples.uids) {
+        console.log(`  Example inbox:   ${config.email.examples.account}`)
+        console.log(`  Example UIDs:    ${config.email.examples.uids.join(', ')}`)
+    }
+
+    if (config.uxDebugMode) {
+        console.log(`  Authentication:  Mock (any username/password works)`)
+        const mockUserRepo = app.get('userRepository')
+        if (mockUserRepo) {
+            console.log(`  Demo forward:    ${mockUserRepo.mockForwardEmail}`)
+            console.log(`  Demo locked:     ${mockUserRepo.mockLockedInbox}`)
+        }
+    } else if (config.user.authEnabled) {
+        console.log(`  Authentication:  Enabled`)
+    }
+
+    if (config.http.features.statistics) {
+        console.log(`  Statistics:      Enabled`)
+    }
+
+    console.log('═'.repeat(70))
+    console.log(`  Ready! Press Ctrl+C to stop\n`)
+}
+
+imapService.on(ImapService.EVENT_INITIAL_LOAD_DONE, () => {
+    imapReady = true
+    displayStartupBanner()
+})
+
+server.on('ready', () => {
+    serverReady = true
+    displayStartupBanner()
 })
 
 // Track IMAP initialization state
@@ -158,13 +274,17 @@ debug('Bound IMAP deleted mail event handler')
 mailProcessingService.on('error', err => {
     debug('Fatal error from mail processing service:', err.message)
     console.error('Error from mailProcessingService, stopping.', err)
-    process.exit(1)
+    if (!config.uxDebugMode) {
+        process.exit(1)
+    }
 })
 
 imapService.on(ImapService.EVENT_ERROR, error => {
     debug('Fatal error from IMAP service:', error.message)
     console.error('Fatal error from IMAP service', error)
-    process.exit(1)
+    if (!config.uxDebugMode) {
+        process.exit(1)
+    }
 })
 
 app.set('mailProcessingService', mailProcessingService)
@@ -173,11 +293,18 @@ app.set('config', config)
 app.locals.imapService = imapService
 app.locals.mailProcessingService = mailProcessingService
 
-debug('Starting IMAP connection and message loading')
+if (config.uxDebugMode) {
+    debug('Starting Mock Mail Service (UX Debug Mode)')
+} else {
+    debug('Starting IMAP connection and message loading')
+}
+
 imapService.connectAndLoadMessages().catch(error => {
-    debug('Failed to connect to IMAP:', error.message)
-    console.error('Fatal error from IMAP service', error)
-    process.exit(1)
+    debug('Failed to connect:', error.message)
+    console.error('Fatal error from mail service', error)
+    if (!config.uxDebugMode) {
+        process.exit(1)
+    }
 })
 
 server.on('error', error => {

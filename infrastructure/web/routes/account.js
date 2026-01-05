@@ -8,11 +8,27 @@ const templateContext = require('../template-context')
 // GET /account - Account dashboard
 router.get('/account', requireAuth, async(req, res) => {
     try {
+        const config = req.app.get('config')
         const userRepository = req.app.get('userRepository')
         const inboxLock = req.app.get('inboxLock')
         const mailProcessingService = req.app.get('mailProcessingService')
         const Helper = require('../../../application/helper')
         const helper = new Helper()
+
+        // In UX debug mode, reset mock data to initial state only on fresh page load
+        // (not on redirects after form submissions)
+        if (config.uxDebugMode && userRepository && userRepository.reset) {
+            // Check if this is a redirect from a form submission
+            const isRedirect = req.session.accountSuccess || req.session.accountError
+
+            if (!isRedirect) {
+                // This is a fresh page load, reset to initial state
+                userRepository.reset()
+                if (inboxLock && inboxLock.reset) {
+                    inboxLock.reset()
+                }
+            }
+        }
 
         // Get user's verified forwarding emails
         const forwardEmails = userRepository.getForwardEmails(req.session.userId)
@@ -24,7 +40,6 @@ router.get('/account', requireAuth, async(req, res) => {
         }
 
         // Get user stats
-        const config = req.app.get('config')
         const stats = userRepository.getUserStats(req.session.userId, config.user)
 
         const successMessage = req.session.accountSuccess
@@ -225,6 +240,13 @@ router.post('/account/change-password',
     body('confirmNewPassword').notEmpty().withMessage('Password confirmation is required'),
     async(req, res) => {
         try {
+            const config = req.app.get('config')
+                // Block password change in UX debug mode
+            if (config.uxDebugMode) {
+                req.session.accountError = 'Password changes are disabled in UX debug mode'
+                return res.redirect('/account')
+            }
+
             const errors = validationResult(req)
             if (!errors.isEmpty()) {
                 req.session.accountError = errors.array()[0].msg
@@ -278,6 +300,13 @@ router.post('/account/delete',
     body('confirmText').equals('DELETE').withMessage('You must type DELETE to confirm'),
     async(req, res) => {
         try {
+            const config = req.app.get('config')
+                // Block account deletion in UX debug mode
+            if (config.uxDebugMode) {
+                req.session.accountError = 'Account deletion is disabled in UX debug mode'
+                return res.redirect('/account')
+            }
+
             const errors = validationResult(req)
             if (!errors.isEmpty()) {
                 req.session.accountError = errors.array()[0].msg

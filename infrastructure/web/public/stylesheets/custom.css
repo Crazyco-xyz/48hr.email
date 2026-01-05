@@ -1842,6 +1842,9 @@ label {
     border: 1px solid var(--overlay-white-10);
     width: 100%;
     min-height: 40vh;
+    max-height: 100vh;
+    resize: vertical;
+    overflow: auto;
 }
 
 .mail-text-content {

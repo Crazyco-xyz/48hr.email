@@ -140,10 +140,8 @@ class MailProcessingService extends EventEmitter {
     onInitialLoadDone() {
         this.initialLoadDone = true
         debug('Initial load completed, total mails:', this.mailRepository.mailCount())
-        console.log(`Initial load done, got ${this.mailRepository.mailCount()} mails`)
-        console.log(`Fetching and deleting mails every ${this.config.imap.refreshIntervalSeconds} seconds`)
-        console.log(`Mails older than ${this.config.email.purgeTime.time} ${this.config.email.purgeTime.unit} will be deleted`)
-        console.log(`The example emails are: ${this.config.email.examples.uids.join(', ')}, on the account ${this.config.email.examples.account}`)
+
+        // Don't print old-style logs here, app.js will handle the startup banner
     }
 
     onNewMail(mail) {

@@ -37,6 +37,9 @@ function parseBool(v) {
 }
 
 const config = {
+    // UX Debug Mode
+    uxDebugMode: parseBool(process.env.UX_DEBUG_MODE) || false,
+
     email: {
         domains: parseValue(process.env.EMAIL_DOMAINS) || [],
         purgeTime: {
@@ -107,9 +110,26 @@ const config = {
 
 // validation
 debug('Validating configuration...')
-if (!config.imap.user || !config.imap.password || !config.imap.host) {
-    debug('IMAP configuration validation failed: missing user, password, or host')
-    throw new Error("IMAP is not configured. Check IMAP_* env vars.");
+
+// Skip IMAP validation in UX debug mode
+if (!config.uxDebugMode) {
+    if (!config.imap.user || !config.imap.password || !config.imap.host) {
+        debug('IMAP configuration validation failed: missing user, password, or host')
+        throw new Error("IMAP is not configured. Check IMAP_* env vars.");
+    }
+}
+
+// In UX debug mode, provide default domain if none configured
+if (config.uxDebugMode && !config.email.domains.length) {
+    config.email.domains = ['ux-debug.local']
+    debug('UX Debug Mode: Using default domain "ux-debug.local"')
+}
+
+// In UX debug mode, set example account to show mock emails
+if (config.uxDebugMode) {
+    config.email.examples.account = `demo@${config.email.domains[0]}`
+    config.email.examples.uids = [1, 2]
+    debug(`UX Debug Mode: Example account set to ${config.email.examples.account} with UIDs 1, 2`)
 }
 
 if (!config.email.domains.length) {
@@ -117,6 +137,6 @@ if (!config.email.domains.length) {
     throw new Error("No EMAIL_DOMAINS configured.");
 }
 
-debug(`Configuration validated successfully: ${config.email.domains.length} domains, IMAP host: ${config.imap.host}`)
+debug(`Configuration validated successfully: ${config.email.domains.length} domains${config.uxDebugMode ? ' (UX DEBUG MODE)' : ''}`)
 
 module.exports = config;

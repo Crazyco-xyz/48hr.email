@@ -455,23 +455,23 @@ class StatisticsStore {
         const cutoff = Date.now() - this._getPurgeCutoffMs()
         const relevantHistory = this.historicalData.filter(point => point.timestamp >= cutoff)
 
-        // Aggregate by hour
-        const hourlyBuckets = new Map()
+        // Aggregate by 15-minute intervals for better granularity
+        const intervalBuckets = new Map()
         relevantHistory.forEach(point => {
-            const hour = Math.floor(point.timestamp / 3600000) * 3600000
-            if (!hourlyBuckets.has(hour)) {
-                hourlyBuckets.set(hour, 0)
+            const interval = Math.floor(point.timestamp / 900000) * 900000 // 15 minutes
+            if (!intervalBuckets.has(interval)) {
+                intervalBuckets.set(interval, 0)
             }
-            hourlyBuckets.set(hour, hourlyBuckets.get(hour) + point.receives)
+            intervalBuckets.set(interval, intervalBuckets.get(interval) + point.receives)
         })
 
         // Convert to array and sort
-        const hourlyData = Array.from(hourlyBuckets.entries())
+        const intervalData = Array.from(intervalBuckets.entries())
             .map(([timestamp, receives]) => ({ timestamp, receives }))
             .sort((a, b) => a.timestamp - b.timestamp)
 
-        debug(`Historical timeline: ${hourlyData.length} hourly points within ${config.email.purgeTime.time} ${config.email.purgeTime.unit} window`)
-        return hourlyData
+        debug(`Historical timeline: ${intervalData.length} 15-min interval points within ${config.email.purgeTime.time} ${config.email.purgeTime.unit} window`)
+        return intervalData
     }
 
     /**
@@ -512,12 +512,16 @@ class StatisticsStore {
 
         debug(`Built hourly patterns for ${hourlyAverages.size} hours from ${this.historicalData.length} data points`)
 
-        // Generate predictions for purge duration (in 1-hour intervals)
+        // Generate predictions for a reasonable future window
+        // Limit to 20% of purge duration or 12 hours max to maintain chart balance
+        // Use 15-minute intervals for better granularity
         const purgeMs = this._getPurgeCutoffMs()
-        const predictionHours = Math.ceil(purgeMs / (60 * 60 * 1000))
+        const purgeDurationHours = Math.ceil(purgeMs / (60 * 60 * 1000))
+        const predictionHours = Math.min(12, Math.ceil(purgeDurationHours * 0.2))
+        const predictionIntervals = predictionHours * 4 // Convert hours to 15-min intervals
 
-        for (let i = 1; i <= predictionHours; i++) {
-            const timestamp = now + (i * 60 * 60 * 1000) // 1 hour intervals
+        for (let i = 1; i <= predictionIntervals; i++) {
+            const timestamp = now + (i * 15 * 60 * 1000) // 15 minute intervalsals
             const futureDate = new Date(timestamp)
             const futureHour = futureDate.getHours()
 
@@ -529,8 +533,8 @@ class StatisticsStore {
                 baseCount = allValues.reduce((sum, v) => sum + v, 0) / allValues.length
             }
 
-            // baseCount is already per-minute average, scale to full hour
-            const scaledCount = baseCount * 60
+            // baseCount is already per-minute average, scale to 15 minutes
+            const scaledCount = baseCount * 15
 
             // Add randomization (±20%)
             const randomFactor = 0.8 + (Math.random() * 0.4) // 0.8 to 1.2
@@ -626,23 +630,23 @@ class StatisticsStore {
     _getTimeline() {
         const now = Date.now()
         const cutoff = now - this._getPurgeCutoffMs()
-        const hourly = {}
+        const buckets = {}
 
-        // Aggregate by hour
+        // Aggregate by 15-minute intervals for better granularity
         this.hourlyData
             .filter(e => e.timestamp >= cutoff)
             .forEach(entry => {
-                const hour = Math.floor(entry.timestamp / 3600000) * 3600000
-                if (!hourly[hour]) {
-                    hourly[hour] = { timestamp: hour, receives: 0, deletes: 0, forwards: 0 }
+                const interval = Math.floor(entry.timestamp / 900000) * 900000 // 15 minutes
+                if (!buckets[interval]) {
+                    buckets[interval] = { timestamp: interval, receives: 0, deletes: 0, forwards: 0 }
                 }
-                hourly[hour].receives += entry.receives
-                hourly[hour].deletes += entry.deletes
-                hourly[hour].forwards += entry.forwards
+                buckets[interval].receives += entry.receives
+                buckets[interval].deletes += entry.deletes
+                buckets[interval].forwards += entry.forwards
             })
 
         // Convert to sorted array
-        return Object.values(hourly).sort((a, b) => a.timestamp - b.timestamp)
+        return Object.values(buckets).sort((a, b) => a.timestamp - b.timestamp)
     }
 }
 

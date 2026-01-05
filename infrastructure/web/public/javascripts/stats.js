@@ -8,6 +8,7 @@ let statsChart = null;
 let chartContext = null;
 let lastReloadTime = 0;
 const RELOAD_COOLDOWN_MS = 2000; // 2 second cooldown between reloads
+let allTimePoints = []; // Store globally so segment callbacks can access it
 
 // Initialize stats chart if on stats page
 document.addEventListener('DOMContentLoaded', function() {
@@ -39,10 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Combine all data and create labels
     const now = Date.now();
 
-    // Use a reasonable historical window (show data within the purge time range)
-    // This will adapt based on whether purge time is 48 hours, 7 days, etc.
-    const allTimePoints = [
-        ...historicalData.map(d => ({...d, type: 'historical' })),
+    // Merge historical and realtime into a single continuous dataset
+    // Historical will be blue, current will be green
+    // Only show historical data that doesn't overlap with realtime (exclude any matching timestamps)
+    const realtimeTimestamps = new Set(realtimeData.map(d => d.timestamp));
+    const filteredHistorical = historicalData.filter(d => !realtimeTimestamps.has(d.timestamp));
+
+    allTimePoints = [
+        ...filteredHistorical.map(d => ({...d, type: 'historical' })),
         ...realtimeData.map(d => ({...d, type: 'realtime' })),
         ...predictionData.map(d => ({...d, type: 'prediction' }))
     ].sort((a, b) => a.timestamp - b.timestamp);
@@ -58,47 +63,53 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Prepare datasets
-    const historicalPoints = allTimePoints.map(d => d.type === 'historical' ? d.receives : null);
-    const realtimePoints = allTimePoints.map(d => d.type === 'realtime' ? d.receives : null);
+    // Merge historical and realtime into one dataset with segment coloring
+    const combinedPoints = allTimePoints.map(d =>
+        (d.type === 'historical' || d.type === 'realtime') ? d.receives : null
+    );
     const predictionPoints = allTimePoints.map(d => d.type === 'prediction' ? d.receives : null);
 
     // Create gradient for fading effect on historical data
     const ctx = chartCanvas.getContext('2d');
     chartContext = ctx;
-    const historicalGradient = ctx.createLinearGradient(0, 0, chartCanvas.width * 0.3, 0);
-    historicalGradient.addColorStop(0, 'rgba(100, 100, 255, 0.05)');
-    historicalGradient.addColorStop(1, 'rgba(100, 100, 255, 0.15)');
 
     // Track visibility state for each dataset
-    const datasetVisibility = [true, true, true];
+    const datasetVisibility = [true, true];
 
     statsChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                    label: 'Historical',
-                    data: historicalPoints,
-                    borderColor: 'rgba(100, 149, 237, 0.8)',
-                    backgroundColor: historicalGradient,
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: 'rgba(100, 149, 237, 0.8)',
-                    spanGaps: true,
-                    fill: true,
-                    hidden: false
-                },
-                {
-                    label: 'Current Activity',
-                    data: realtimePoints,
-                    borderColor: '#2ecc71',
+                    label: 'Email Activity',
+                    data: combinedPoints,
+                    segment: {
+                        borderColor: (context) => {
+                            const index = context.p0DataIndex;
+                            const point = allTimePoints[index];
+                            // Blue for historical, green for current
+                            return point && point.type === 'historical' ? 'rgba(100, 149, 237, 0.8)' : '#2ecc71';
+                        },
+                        backgroundColor: (context) => {
+                            const index = context.p0DataIndex;
+                            const point = allTimePoints[index];
+                            return point && point.type === 'historical' ? 'rgba(100, 149, 237, 0.15)' : 'rgba(46, 204, 113, 0.15)';
+                        }
+                    },
+                    borderColor: '#2ecc71', // Default to green
                     backgroundColor: 'rgba(46, 204, 113, 0.15)',
-                    borderWidth: 4,
+                    borderWidth: 3,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#2ecc71',
+                    pointRadius: (context) => {
+                        const index = context.dataIndex;
+                        const point = allTimePoints[index];
+                        return point && point.type === 'historical' ? 3 : 4;
+                    },
+                    pointBackgroundColor: (context) => {
+                        const index = context.dataIndex;
+                        const point = allTimePoints[index];
+                        return point && point.type === 'historical' ? 'rgba(100, 149, 237, 0.8)' : '#2ecc71';
+                    },
                     spanGaps: true,
                     fill: true,
                     hidden: false
@@ -198,14 +209,10 @@ document.addEventListener('DOMContentLoaded', function() {
     legendContainer.className = 'chart-legend-custom';
     legendContainer.innerHTML = `
         <button class="legend-btn active" data-index="0">
-            <span class="legend-indicator" style="background: rgba(100, 149, 237, 0.8);"></span>
-            <span class="legend-label">Historical</span>
+            <span class="legend-indicator" style="background: linear-gradient(to right, rgba(100, 149, 237, 0.8) 0%, #2ecc71 100%);"></span>
+            <span class="legend-label">Email Activity</span>
         </button>
         <button class="legend-btn active" data-index="1">
-            <span class="legend-indicator" style="background: #2ecc71;"></span>
-            <span class="legend-label">Current Activity</span>
-        </button>
-        <button class="legend-btn active" data-index="2">
             <span class="legend-indicator" style="background: #ff9f43; border: 2px dashed rgba(255, 159, 67, 0.5);"></span>
             <span class="legend-label">Predicted</span>
         </button>
@@ -256,8 +263,12 @@ function rebuildStatsChart() {
     const historicalData = window.historicalData || [];
     const predictionData = window.predictionData || [];
 
-    const allTimePoints = [
-        ...historicalData.map(d => ({...d, type: 'historical' })),
+    // Only show historical data that doesn't overlap with realtime (exclude any matching timestamps)
+    const realtimeTimestamps = new Set(realtimeData.map(d => d.timestamp));
+    const filteredHistorical = historicalData.filter(d => !realtimeTimestamps.has(d.timestamp));
+
+    allTimePoints = [
+        ...filteredHistorical.map(d => ({...d, type: 'historical' })),
         ...realtimeData.map(d => ({...d, type: 'realtime' })),
         ...predictionData.map(d => ({...d, type: 'prediction' }))
     ].sort((a, b) => a.timestamp - b.timestamp);
@@ -277,16 +288,16 @@ function rebuildStatsChart() {
         });
     });
 
-    // Prepare datasets
-    const historicalPoints = allTimePoints.map(d => d.type === 'historical' ? d.receives : null);
-    const realtimePoints = allTimePoints.map(d => d.type === 'realtime' ? d.receives : null);
+    // Merge historical and realtime into one dataset with segment coloring
+    const combinedPoints = allTimePoints.map(d =>
+        (d.type === 'historical' || d.type === 'realtime') ? d.receives : null
+    );
     const predictionPoints = allTimePoints.map(d => d.type === 'prediction' ? d.receives : null);
 
     // Update chart data
     statsChart.data.labels = labels;
-    statsChart.data.datasets[0].data = historicalPoints;
-    statsChart.data.datasets[1].data = realtimePoints;
-    statsChart.data.datasets[2].data = predictionPoints;
+    statsChart.data.datasets[0].data = combinedPoints;
+    statsChart.data.datasets[1].data = predictionPoints;
 
     // Update the chart
     statsChart.update();
