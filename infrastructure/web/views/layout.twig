@@ -9,7 +9,7 @@
     
     {% block metaTags %}
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Your temporary Inbox. Create instant throwaway email addresses to protect your privacy. No registration required. Emails auto-delete after {{ purgeTime | raw }}.">
+    <meta name="description" content="Your temporary Inbox. Create instant throwaway email addresses to protect your privacy. No registration required. Emails auto-delete after {{ purgeTimeRaw | readablePurgeTime }}.">
     <meta name="keywords" content="temporary email, disposable email, throwaway email, fake email, temp mail, anonymous email, 48hr email, privacy protection, burner email">
     <meta name="author" content="CrazyCo">
     <meta name="robots" content="index, follow">
@@ -20,7 +20,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://48hr.email/">
     <meta property="og:title" content="48hr.email - Your temporary Inbox">
-    <meta property="og:description" content="Protect your privacy with free temporary email addresses. No registration required. Emails auto-delete after {{ purgeTime | raw }}.">
+    <meta property="og:description" content="Protect your privacy with free temporary email addresses. No registration required. Emails auto-delete after {{ purgeTimeRaw | readablePurgeTime }}.">
     <meta property="og:image" content="https://48hr.email/images/logo.png">
     <meta property="og:site_name" content="48hr.email">
     
