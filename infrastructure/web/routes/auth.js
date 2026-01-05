@@ -107,6 +107,7 @@ router.get('/auth', redirectIfAuthenticated, (req, res) => {
         title: `Login or Register | ${(config.http.features.branding || ['48hr.email'])[0]}`,
         branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com'],
         purgeTime: purgeTime,
+        smtpEnabled: config.email.features.smtp,
         errorMessage,
         successMessage
     })

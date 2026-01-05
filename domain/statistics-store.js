@@ -309,8 +309,8 @@ class StatisticsStore {
         // Calculate emails per hour rate (average across all active hours)
         const activeHours = hourlyActivity.filter(count => count > 0).length
         const emailsPerHour = activeHours > 0 ?
-            (allMails.length / activeHours).toFixed(1) :
-            '0.0'
+            Math.round(allMails.length / activeHours) :
+            0
 
         // Calculate day/night percentage
         const totalDayNight = dayTimeEmails + nightTimeEmails
@@ -327,7 +327,7 @@ class StatisticsStore {
             uniqueSenderDomains: senderDomains.size,
             uniqueRecipientDomains: recipientDomains.size,
             peakHourPercentage,
-            emailsPerHour: parseFloat(emailsPerHour),
+            emailsPerHour: emailsPerHour,
             dayPercentage
         }
 

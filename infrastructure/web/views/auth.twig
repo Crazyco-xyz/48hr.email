@@ -123,9 +123,11 @@
     <div class="auth-features-unified">
         <h3>Account Benefits</h3>
         <div class="features-grid">
+            {% if smtpEnabled %}
             <div class="feature-item">Forward emails to verified addresses</div>
-            <div class="feature-item">Lock up to 5 inboxes to your account</div>
             <div class="feature-item">Manage multiple forwarding destinations</div>
+            {% endif %}
+            <div class="feature-item">Lock up to 5 inboxes to your account</div>
             <div class="feature-item">Access your locked inboxes anywhere</div>
         </div>
         <p class="guest-note">No account needed for basic temporary inboxes • <a href="/">Browse as guest</a></p>

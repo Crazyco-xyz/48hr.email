@@ -9,6 +9,8 @@ class TemplateContext {
     constructor() {
         this.helper = new Helper()
         this.purgeTime = this.helper.purgeTimeElemetBuilder()
+            // Cache domains to avoid reprocessing on every request
+        this.cachedDomains = this.helper.getDomains()
     }
 
     /**
@@ -34,7 +36,7 @@ class TemplateContext {
             currentUser: req.session && req.session.username ? req.session.username : null,
 
             // Common data
-            domains: this.helper.getDomains(),
+            domains: this.cachedDomains,
             example: config.email.examples.account
         }
     }

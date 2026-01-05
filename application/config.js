@@ -50,12 +50,6 @@ const config = {
         },
         blacklistedSenders: parseValue(process.env.EMAIL_BLACKLISTED_SENDERS) || [],
         features: {
-            imap: {
-                enabled: true, // IMAP is always required
-                refreshIntervalSeconds: Number(process.env.IMAP_REFRESH_INTERVAL_SECONDS),
-                fetchChunkSize: Number(process.env.IMAP_FETCH_CHUNK) || 100,
-                fetchConcurrency: Number(process.env.IMAP_CONCURRENCY) || 6
-            },
             smtp: parseBool(process.env.SMTP_ENABLED) || false
         }
     },

@@ -498,8 +498,61 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshTimer.textContent = refreshInterval;
     }
 
+    function initAccountModals() {
+        // Add Email Modal
+        const addEmailBtn = document.getElementById('addEmailBtn');
+        const addEmailModal = document.getElementById('addEmailModal');
+        const closeAddEmail = document.getElementById('closeAddEmail');
+
+        if (addEmailBtn && addEmailModal) {
+            addEmailBtn.onclick = function() {
+                addEmailModal.style.display = 'block';
+            };
+        }
+
+        if (closeAddEmail && addEmailModal) {
+            closeAddEmail.onclick = function() {
+                addEmailModal.style.display = 'none';
+            };
+        }
+
+        // Delete Account Modal
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        const deleteAccountModal = document.getElementById('deleteAccountModal');
+        const closeDeleteAccount = document.getElementById('closeDeleteAccount');
+        const cancelDelete = document.getElementById('cancelDelete');
+
+        if (deleteAccountBtn && deleteAccountModal) {
+            deleteAccountBtn.onclick = function() {
+                deleteAccountModal.style.display = 'block';
+            };
+        }
+
+        if (closeDeleteAccount && deleteAccountModal) {
+            closeDeleteAccount.onclick = function() {
+                deleteAccountModal.style.display = 'none';
+            };
+        }
+
+        if (cancelDelete && deleteAccountModal) {
+            cancelDelete.onclick = function() {
+                deleteAccountModal.style.display = 'none';
+            };
+        }
+
+        // Window click handler for both modals
+        window.addEventListener('click', function(e) {
+            if (addEmailModal && e.target === addEmailModal) {
+                addEmailModal.style.display = 'none';
+            }
+            if (deleteAccountModal && e.target === deleteAccountModal) {
+                deleteAccountModal.style.display = 'none';
+            }
+        });
+    }
+
     // Expose utilities and run them
-    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown, initCryptoKeysToggle, initForwardModal, initForwardAllModal };
+    window.utils = { formatEmailDates, formatMailDate, initLockModals, initCopyAddress, initExpiryTimers, initQrModal, initHamburgerMenu, initThemeToggle, initRefreshCountdown, initCryptoKeysToggle, initForwardModal, initForwardAllModal, initAccountModals };
     formatEmailDates();
     formatMailDate();
     initLockModals();
@@ -509,4 +562,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
     initForwardModal();
     initCryptoKeysToggle();
+    initAccountModals();
 });

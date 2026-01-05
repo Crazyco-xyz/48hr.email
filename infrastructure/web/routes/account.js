@@ -37,6 +37,7 @@ router.get('/account', requireAuth, async(req, res) => {
             stats,
             branding: config.http.features.branding || ['48hr.email', 'Service', 'https://example.com'],
             purgeTime: purgeTime,
+            smtpEnabled: config.email.features.smtp,
             successMessage: req.session.accountSuccess,
             errorMessage: req.session.accountError
         })

@@ -97,7 +97,7 @@
                 Top Sender Domains
             </h3>
             {% if stats.enhanced.topSenderDomains|length > 0 %}
-                <ul class="stat-list">
+                <ul class="stat-list" data-stats="top-sender-domains">
                     {% for item in stats.enhanced.topSenderDomains|slice(0, 5) %}
                         <li class="stat-list-item">
                             <span class="stat-list-label">{{ item.domain }}</span>
@@ -105,7 +105,7 @@
                         </li>
                     {% endfor %}
                 </ul>
-                <p class="stat-footer">{{ stats.enhanced.uniqueSenderDomains }} unique domains</p>
+                <p class="stat-footer"><span data-stats="unique-sender-domains">{{ stats.enhanced.uniqueSenderDomains }}</span> unique domains</p>
             {% else %}
                 <p class="stat-empty">No data yet</p>
             {% endif %}
@@ -117,7 +117,7 @@
                 Top Recipient Domains
             </h3>
             {% if stats.enhanced.topRecipientDomains|length > 0 %}
-                <ul class="stat-list">
+                <ul class="stat-list" data-stats="top-recipient-domains">
                     {% for item in stats.enhanced.topRecipientDomains|slice(0, 5) %}
                         <li class="stat-list-item">
                             <span class="stat-list-label">{{ item.domain }}</span>
@@ -125,7 +125,7 @@
                         </li>
                     {% endfor %}
                 </ul>
-                <p class="stat-footer">{{ stats.enhanced.uniqueRecipientDomains }} unique domains</p>
+                <p class="stat-footer"><span data-stats="unique-recipient-domains">{{ stats.enhanced.uniqueRecipientDomains }}</span> unique domains</p>
             {% else %}
                 <p class="stat-empty">No data yet</p>
             {% endif %}
