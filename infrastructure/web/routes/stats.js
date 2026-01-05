@@ -19,6 +19,35 @@ router.get('/', async(req, res) => {
 
         const branding = config.http.features.branding || ['48hr.email', 'Service', 'https://example.com']
 
+        // Get minimal stats for meta tags (non-blocking, quick)
+        const statisticsStore = req.app.get('statisticsStore')
+        const mailProcessingService = req.app.get('mailProcessingService')
+        let metaStats = {
+            currentCount: 0,
+            allTimeTotal: 0
+        }
+
+        if (statisticsStore) {
+            try {
+                const quickStats = statisticsStore.getEnhancedStats()
+                metaStats = {
+                    currentCount: quickStats.currentCount || 0,
+                    allTimeTotal: quickStats.allTimeTotal || 0
+                }
+            } catch (error) {
+                debug(`Error getting meta stats: ${error.message}`)
+            }
+        }
+
+        // Fallback to mailProcessingService if stats are still 0
+        if (metaStats.currentCount === 0 && mailProcessingService) {
+            try {
+                metaStats.currentCount = mailProcessingService.getCount() || 0
+            } catch (error) {
+                debug(`Error getting count from mailProcessingService: ${error.message}`)
+            }
+        }
+
         // Return page with placeholder data immediately - real data loads via JS
         const placeholderStats = {
             currentCount: '...',
@@ -49,6 +78,7 @@ router.get('/', async(req, res) => {
         res.render('stats', templateContext.build(req, {
             title: `Statistics | ${branding[0]}`,
             stats: placeholderStats,
+            metaStats: metaStats,
             lazyLoad: true
         }))
     } catch (error) {

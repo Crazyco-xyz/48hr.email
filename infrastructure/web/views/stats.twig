@@ -2,21 +2,21 @@
 
 {% block metaTags %}
     <!-- Statistics Page - Custom Meta Tags -->
-    <meta name="description" content="Live email statistics: {{ stats.currentCount }} emails in system, {{ stats.allTimeTotal }} processed all-time. Real-time monitoring, historical patterns, and predictions over {{ purgeTime|striptags }}.">
+    <meta name="description" content="Live email statistics: {{ metaStats.currentCount }} emails in system, {{ metaStats.allTimeTotal }} processed all-time. Real-time monitoring, historical patterns, and predictions over {{ purgeTimeRaw | readablePurgeTime }}.">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://48hr.email/stats">
     <meta property="og:title" content="Email Statistics - {{ branding.0 }}">
-    <meta property="og:description" content="{{ stats.currentCount }} emails in system | {{ stats.allTimeTotal }} all-time total | Real-time monitoring and predictions">
+    <meta property="og:description" content="{{ metaStats.currentCount }} emails in system | {{ metaStats.allTimeTotal }} all-time total | Real-time monitoring and predictions">
     <meta property="og:image" content="https://48hr.email/images/logo.png">
     <meta property="og:site_name" content="{{ branding.0 }}">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:url" content="https://48hr.email/stats">
-    <meta name="twitter:title" content="Email Statistics - {{ branding.0 }}">
-    <meta name="twitter:description" content="{{ stats.currentCount }} emails | {{ stats.allTimeTotal }} all-time | Live monitoring">
+    <meta name="twitter::title" content="Email Statistics - {{ branding.0 }}">
+    <meta name="twitter:description" content="{{ metaStats.currentCount }} emails | {{ metaStats.allTimeTotal }} all-time | Live monitoring">
     <meta name="twitter:image" content="https://48hr.email/images/logo.png">
 {% endblock %}
 
