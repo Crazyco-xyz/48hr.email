@@ -7,7 +7,7 @@ APIs for managing locked inboxes for users. All responses include a `templateCon
 
 ## Endpoints
 
-### GET `/api/locks/`
+### GET `/api/v1/locks/`
 List all inboxes locked by the authenticated user.
 - **Auth:** Required
 - **Response:**
@@ -15,7 +15,7 @@ List all inboxes locked by the authenticated user.
   - `data`: array of locked inboxes
   - `templateContext`: `{ userId, config: { maxLockedInboxes } }`
 
-### POST `/api/locks/`
+### POST `/api/v1/locks/`
 Lock an inbox for the authenticated user.
 - **Auth:** Required
 - **Body:**
@@ -32,7 +32,7 @@ Lock an inbox for the authenticated user.
   - Locked by other: `LOCKED_BY_OTHER`
   - All errors include `templateContext`
 
-### DELETE `/api/locks/:address`
+### DELETE `/api/v1/locks/:address`
 Unlock/release a locked inbox.
 - **Auth:** Required
 - **Response:**
@@ -42,7 +42,7 @@ Unlock/release a locked inbox.
 - **Errors:**
   - Not found/unauthorized: `NOT_FOUND` (includes `templateContext`)
 
-### GET `/api/locks/:address/status`
+### GET `/api/v1/locks/:address/status`
 Check if an inbox is locked and if owned by the user.
 - **Auth:** Optional
 - **Response:**

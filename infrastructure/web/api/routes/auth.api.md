@@ -7,7 +7,7 @@ User registration, login, logout, and session management.
 
 ## Endpoints
 
-### POST `/api/auth/register`
+### POST `/api/v1/auth/register`
 Register a new user.
 - **Body:**
   - `username`: string (3-20 chars, alphanumeric/underscore)
@@ -17,7 +17,7 @@ Register a new user.
 - **Errors:**
   - `VALIDATION_ERROR`, `REGISTRATION_FAILED`, `AUTH_DISABLED`
 
-### POST `/api/auth/login`
+### POST `/api/v1/auth/login`
 Login user.
 - **Body:**
   - `username`, `password`
@@ -26,12 +26,12 @@ Login user.
 - **Errors:**
   - `VALIDATION_ERROR`, `AUTH_DISABLED`
 
-### POST `/api/auth/logout`
+### POST `/api/v1/auth/logout`
 Logout user.
 - **Response:**
   - Success or error
 
-### GET `/api/auth/session`
+### GET `/api/v1/auth/session`
 Get current session info.
 - **Response:**
   - `userId`, `username`, `isAuthenticated`, `createdAt`

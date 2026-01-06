@@ -153,6 +153,18 @@ app.use((req, res, next) => {
     next()
 })
 
+// Redirect /api/* to /api/v1/* if version is missing
+app.use((req, res, next) => {
+    // Only match /api/ (not /api/v1/ or /api/v2/ etc.)
+    const apiMatch = req.path.match(/^\/api\/(?!v\d+\/)([^/?#]+)(.*)/)
+    if (apiMatch) {
+        // Redirect to latest stable version (v1)
+        const rest = apiMatch[1] + (apiMatch[2] || '')
+        return res.redirect(307, `/api/v1/${rest}`)
+    }
+    next()
+})
+
 // Mount API router (v1)
 app.use('/api/v1', (req, res, next) => {
     const apiTokenRepository = req.app.get('apiTokenRepository')

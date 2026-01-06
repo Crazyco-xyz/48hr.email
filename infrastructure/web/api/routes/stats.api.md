@@ -7,12 +7,12 @@ Endpoints for retrieving statistics and historical data.
 
 ## Endpoints
 
-### GET `/api/stats/`
+### GET `/api/v1/stats/`
 Get lightweight statistics (no historical analysis).
 - **Response:**
   - `currentCount`, `allTimeTotal`, `last24Hours` (object with `receives`, `deletes`, `forwards`, `timeline`)
 
-### GET `/api/stats/enhanced`
+### GET `/api/v1/stats/enhanced`
 Get full statistics with historical data and predictions.
 - **Response:**
   - `currentCount`, `allTimeTotal`, `last24Hours`, `historical`, `prediction`, `enhanced`

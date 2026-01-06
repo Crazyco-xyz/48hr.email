@@ -7,13 +7,13 @@ Manage user accounts, forwarding emails, locked inboxes, and API tokens.
 
 ## Endpoints
 
-### GET `/api/account/`
+### GET `/api/v1/account/`
 Get account info and stats for the authenticated user.
 - **Auth:** Required
 - **Response:**
   - `userId`, `username`, `createdAt`, `lastLogin`, `verifiedEmails`, `lockedInboxes`, `apiToken`
 
-### POST `/api/account/verify-email`
+### POST `/api/v1/account/verify-email`
 Add a forwarding email (triggers verification).
 - **Auth:** Required
 - **Body:**
@@ -21,13 +21,13 @@ Add a forwarding email (triggers verification).
 - **Response:**
   - Success or error
 
-### DELETE `/api/account/verify-email/:id`
+### DELETE `/api/v1/account/verify-email/:id`
 Remove a forwarding email by ID.
 - **Auth:** Required
 - **Response:**
   - Success or error
 
-### POST `/api/account/change-password`
+### POST `/api/v1/account/change-password`
 Change account password.
 - **Auth:** Required
 - **Body:**
@@ -35,25 +35,25 @@ Change account password.
 - **Response:**
   - Success or error
 
-### DELETE `/api/account/`
+### DELETE `/api/v1/account/`
 Delete the user account.
 - **Auth:** Required
 - **Response:**
   - Success or error
 
-### GET `/api/account/token`
+### GET `/api/v1/account/token`
 Get API token info (not the token itself).
 - **Auth:** Required
 - **Response:**
   - `hasToken`, `createdAt`, `lastUsed`
 
-### POST `/api/account/token`
+### POST `/api/v1/account/token`
 Generate or regenerate API token.
 - **Auth:** Required
 - **Response:**
   - Success or error
 
-### DELETE `/api/account/token`
+### DELETE `/api/v1/account/token`
 Revoke API token.
 - **Auth:** Required
 - **Response:**

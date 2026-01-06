@@ -7,13 +7,13 @@ Endpoints for listing emails, retrieving full/raw emails, and downloading attach
 
 ## Endpoints
 
-### GET `/api/inbox/:address`
+### GET `/api/v1/inbox/:address`
 List mail summaries for an inbox.
 - **Auth:** Optional
 - **Response:**
   - Array of mail summary objects
 
-### GET `/api/inbox/:address/:uid`
+### GET `/api/v1/inbox/:address/:uid`
 Get full email by UID.
 - **Auth:** Optional
 - **Response:**
@@ -21,7 +21,7 @@ Get full email by UID.
 - **Errors:**
   - `VALIDATION_ERROR`, `NOT_FOUND`
 
-### GET `/api/inbox/:address/:uid/raw`
+### GET `/api/v1/inbox/:address/:uid/raw`
 Get raw email source.
 - **Auth:** Optional
 - **Response:**
@@ -29,7 +29,7 @@ Get raw email source.
 - **Errors:**
   - `VALIDATION_ERROR`, `NOT_FOUND`
 
-### GET `/api/inbox/:address/:uid/attachment/:checksum`
+### GET `/api/v1/inbox/:address/:uid/attachment/:checksum`
 Download attachment by checksum.
 - **Auth:** Optional
 - **Response:**
