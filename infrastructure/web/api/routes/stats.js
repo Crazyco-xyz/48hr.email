@@ -11,7 +11,7 @@ function createStatsRouter(dependencies) {
     // Ensure router is declared before any usage
     const { statisticsStore, mailProcessingService, imapService, config } = dependencies
 
-    if (!config.http.statisticsEnabled) {
+    if (!config.http.features.statistics) {
         router.all('*', (req, res) => {
             res.apiError('Statistics are disabled', 'FEATURE_DISABLED', 503)
         })

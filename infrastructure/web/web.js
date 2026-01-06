@@ -11,7 +11,7 @@ const helmet = require('helmet')
 const socketio = require('socket.io')
 
 const config = require('../../application/config')
-const createApiRouter = require('../../api/router')
+const createApiRouter = require('./api/router')
 const inboxRouter = require('./routes/inbox')
 const loginRouter = require('./routes/login')
 const errorRouter = require('./routes/error')

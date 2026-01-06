@@ -7,9 +7,19 @@ function responseFormatter(req, res, next) {
      * @param {*} data - Data to return
      * @param {number} statusCode - HTTP status code (default: 200)
      */
+    // Determine mode: 'normal', 'debug', or 'ux-debug'
+    let mode = 'normal';
+    const config = req.app && req.app.get ? req.app.get('config') : null;
+    if (config && config.uxDebugMode) {
+        mode = 'ux-debug';
+    } else if (process.env.DEBUG && process.env.DEBUG.includes('48hr-email')) {
+        mode = 'debug';
+    }
+
     res.apiSuccess = function(data = null, statusCode = 200, templateContext = null) {
         const response = {
             success: true,
+            mode: mode,
             data: data
         };
         if (templateContext) response.templateContext = templateContext;
@@ -25,6 +35,7 @@ function responseFormatter(req, res, next) {
     res.apiError = function(message, code = 'ERROR', statusCode = 400, templateContext = null) {
         const response = {
             success: false,
+            mode: mode,
             error: message,
             code: code
         };
@@ -44,6 +55,7 @@ function responseFormatter(req, res, next) {
         }
         const response = {
             success: true,
+            mode: mode,
             data: items,
             count: items.length,
             total: total !== null ? total : items.length

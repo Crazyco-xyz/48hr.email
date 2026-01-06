@@ -45,8 +45,8 @@ function createAccountRouter(dependencies) {
         try {
             const userId = req.user.id
 
-            // Get user stats
-            const stats = userRepository.getUserStats(userId)
+            // Get user stats (pass config.user for mock repo compatibility)
+            const stats = userRepository.getUserStats(userId, config.user)
 
             // Get verified emails
             const verifiedEmails = userRepository.getForwardEmails(userId)

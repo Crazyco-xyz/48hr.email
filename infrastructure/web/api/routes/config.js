@@ -59,8 +59,7 @@ function createConfigRouter(dependencies) {
         res.apiSuccess({
             authentication: config.user.authEnabled,
             forwarding: config.smtp.enabled,
-            statistics: config.http.statisticsEnabled,
-            inboxLocking: config.user.authEnabled
+            statistics: config.http.features.statistics
         })
     })
 

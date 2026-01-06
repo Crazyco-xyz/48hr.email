@@ -13,9 +13,10 @@ const createAuthenticator = require('../middleware/authenticator')
 function createLocksRouter(dependencies) {
     const { inboxLock, userRepository, apiTokenRepository, config } = dependencies
 
+    // Inbox locking is always enabled if authentication is enabled
     if (!inboxLock || !config.user.authEnabled) {
         router.all('*', (req, res) => {
-            res.apiError('Inbox locking is disabled', 'FEATURE_DISABLED', 503)
+            res.apiError('Authentication is required for inbox locking', 'AUTH_REQUIRED', 401)
         })
         return router
     }
