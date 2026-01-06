@@ -32,7 +32,7 @@
 {% endblock %}
 
 {% block body %}
-  <h1 class="page-title">{{message}}</h1>
-  <h2>{{error.status}}</h2>
-  <pre>{{error.stack}}</pre>
+    <h1 class="page-title">{{message|sanitizeHtml}}</h1>
+    <h2>{{error.status|sanitizeHtml}}</h2>
+    <pre>{{error.stack|sanitizeHtml}}</pre>
 {% endblock %}

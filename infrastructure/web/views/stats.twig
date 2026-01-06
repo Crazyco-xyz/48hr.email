@@ -100,8 +100,8 @@
             {% if stats.enhanced.topSenderDomains|length > 0 %}
                 {% for item in stats.enhanced.topSenderDomains|slice(0, 5) %}
                     <li class="stat-list-item">
-                        <span class="stat-list-label">{{ item.domain }}</span>
-                        <span class="stat-list-value">{{ item.count }}</span>
+                        <span class="stat-list-label">{{ item.domain|sanitizeHtml }}</span>
+                        <span class="stat-list-value">{{ item.count|sanitizeHtml }}</span>
                     </li>
                 {% endfor %}
             {% else %}
@@ -120,8 +120,8 @@
             {% if stats.enhanced.topRecipientDomains|length > 0 %}
                 {% for item in stats.enhanced.topRecipientDomains|slice(0, 5) %}
                     <li class="stat-list-item">
-                        <span class="stat-list-label">{{ item.domain }}</span>
-                        <span class="stat-list-value">{{ item.count }}</span>
+                        <span class="stat-list-label">{{ item.domain|sanitizeHtml }}</span>
+                        <span class="stat-list-value">{{ item.count|sanitizeHtml }}</span>
                     </li>
                 {% endfor %}
             {% else %}
@@ -140,8 +140,8 @@
             {% if stats.enhanced.busiestHours|length > 0 %}
                 {% for item in stats.enhanced.busiestHours %}
                     <li class="stat-list-item">
-                        <span class="stat-list-label">{{ item.hour }}:00 - {{ item.hour + 1 }}:00</span>
-                        <span class="stat-list-value">{{ item.count }}</span>
+                        <span class="stat-list-label">{{ item.hour|sanitizeHtml }}:00 - {{ (item.hour + 1)|sanitizeHtml }}:00</span>
+                        <span class="stat-list-value">{{ item.count|sanitizeHtml }}</span>
                     </li>
                 {% endfor %}
             {% else %}

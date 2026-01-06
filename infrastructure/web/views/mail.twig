@@ -64,9 +64,9 @@
     {% endif %}
     <div class="mail-container">
         <div class="mail-header">
-            <h1 class="mail-subject">{{ mail.subject }}</h1>
+            <h1 class="mail-subject">{{ mail.subject|sanitizeHtml }}</h1>
             <div class="mail-meta">
-                <div class="mail-from">From: {{ mail.from.text }}</div>
+                <div class="mail-from">From: {{ mail.from.text|sanitizeHtml }}</div>
                 <div class="mail-date" data-date="{{ mail.date|date('c') }}"></div>
             </div>
         </div>
@@ -104,10 +104,10 @@
                     {% for crypto in cryptoAttachments %}
                         <div class="crypto-item">
                             <div class="crypto-item-header">
-                                <span class="crypto-type">{{ crypto.type }}</span>
-                                <span class="crypto-filename">{{ crypto.filename }}{% if crypto.info %} · {{ crypto.info }}{% endif %}</span>
+                                <span class="crypto-type">{{ crypto.type|sanitizeHtml }}</span>
+                                <span class="crypto-filename">{{ crypto.filename|sanitizeHtml }}{% if crypto.info %} · {{ crypto.info|sanitizeHtml }}{% endif %}</span>
                             </div>
-                            <pre class="crypto-key-content">{{ crypto.content }}</pre>
+                            <pre class="crypto-key-content">{{ crypto.content|sanitizeHtml }}</pre>
                         </div>
                     {% endfor %}
                 </div>
@@ -120,7 +120,7 @@
                 <div class="attachments-list">
                     {% for attachment in mail.attachments %}
                         <a href="/inbox/{{ address }}/{{ uid }}/{{ attachment.checksum }}" class="attachment-link">
-                            📎 {{ attachment.filename }}
+                            📎 {{ attachment.filename|sanitizeHtml }}
                         </a>
                     {% endfor %}
                 </div>

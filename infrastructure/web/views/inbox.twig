@@ -77,7 +77,7 @@
     {% endif %}
     <div class="inbox-container">
         <div class="inbox-header">
-            <h1 class="inbox-title" id="copyAddress" title="Click to copy address">{{ address }}</h1>
+            <h1 class="inbox-title" id="copyAddress" title="Click to copy address">{{ address|sanitizeHtml }}</h1>
             <button id="qrCodeBtn" class="qr-icon-btn" title="Show QR Code" aria-label="Show QR Code">
                 <svg class="qr-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <rect x="3" y="3" width="7" height="7"/>
@@ -95,13 +95,13 @@
                     <div class="email-card frosted-glass">
                         <div class="email-header">
                             <div class="email-sender">
-                                <div class="sender-name">{{ mail.from[0].name }}</div>
-                                <div class="sender-email">{{ mail.from[0].address }}</div>
+                                <div class="sender-name">{{ mail.from[0].name|sanitizeHtml }}</div>
+                                <div class="sender-email">{{ mail.from[0].address|sanitizeHtml }}</div>
                             </div>
                             <div class="email-date" data-date="{{ mail.date|date('c') }}"></div>
                         </div>
                         <div class="email-subject-row">
-                            <div class="email-subject">{{ mail.subject }}</div>
+                            <div class="email-subject">{{ mail.subject|sanitizeHtml }}</div>
                             <div class="email-expiry">
                                 <span class="expiry-timer" data-date="{{ mail.date|date('c') }}">Expires in ...</span>
                             </div>
@@ -173,7 +173,7 @@
             <span class="close" id="closeQr">&times;</span>
             <h3>Scan Email Address</h3>
             <div id="qrcode" class="qr-code-container"></div>
-            <p class="qr-address-label">{{ address }}</p>
+            <p class="qr-address-label">{{ address|sanitizeHtml }}</p>
         </div>
     </div>
 

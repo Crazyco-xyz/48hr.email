@@ -8,6 +8,7 @@ const { errorHandler } = require('./middleware/error-handler')
  * Main API Router (v1)
  * Mounts all API endpoints under /api/v1
  */
+
 function createApiRouter(dependencies) {
     const router = express.Router()
     const { apiTokenRepository } = dependencies
@@ -19,6 +20,9 @@ function createApiRouter(dependencies) {
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization']
     }))
+
+    // Sanitize all input
+    router.use(require('./middleware/sanitize'))
 
     // Response formatting helpers
     router.use(responseFormatter)

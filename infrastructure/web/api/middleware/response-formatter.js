@@ -8,7 +8,7 @@ function responseFormatter(req, res, next) {
      * @param {number} statusCode - HTTP status code (default: 200)
      */
     // Determine mode: 'normal', 'debug', or 'ux-debug'
-    let mode = 'normal';
+    let mode = 'production';
     const config = req.app && req.app.get ? req.app.get('config') : null;
     if (config && config.uxDebugMode) {
         mode = 'ux-debug';
@@ -22,6 +22,9 @@ function responseFormatter(req, res, next) {
             mode: mode,
             data: data
         };
+        if (req.sanitizedInput) {
+            response.sanitized = req.sanitizedInput;
+        }
         if (templateContext) response.templateContext = templateContext;
         res.status(statusCode).json(response);
     }
@@ -39,6 +42,9 @@ function responseFormatter(req, res, next) {
             error: message,
             code: code
         };
+        if (req.sanitizedInput) {
+            response.sanitized = req.sanitizedInput;
+        }
         if (templateContext) response.templateContext = templateContext;
         res.status(statusCode).json(response);
     }

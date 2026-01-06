@@ -18,13 +18,14 @@
 <div id="account" class="account-container">
     <h1 class="page-title">Account Dashboard</h1>
     <p class="account-subtitle">Welcome back, <strong>{{ username }}</strong></p>
+        <p class="account-subtitle">Welcome back, <strong>{{ username|sanitizeHtml }}</strong></p>
 
     {% if successMessage %}
         <div class="alert alert-success">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
                 <path d="M20 6L9 17l-5-5"></path>
             </svg>
-            <p>{{ successMessage }}</p>
+                <p>{{ successMessage|sanitizeHtml }}</p>
         </div>
     {% endif %}
 
@@ -35,7 +36,7 @@
                 <line x1="15" y1="9" x2="9" y2="15"></line>
                 <line x1="9" y1="9" x2="15" y2="15"></line>
             </svg>
-            <p>{{ errorMessage }}</p>
+                <p>{{ errorMessage|sanitizeHtml }}</p>
         </div>
     {% endif %}
 
@@ -72,7 +73,7 @@
                     {% for email in forwardEmails %}
                         <li class="email-item">
                             <div class="email-info">
-                                <span class="email-address">{{ email.email }}</span>
+                                    <span class="email-address">{{ email.email|sanitizeHtml }}</span>
                                 <span class="email-meta">Verified {{ email.verifiedAgo }}</span>
                             </div>
                             <form method="POST" action="/account/forward-email/remove" class="inline-form">
@@ -106,7 +107,7 @@
                     {% for inbox in lockedInboxes %}
                         <li class="inbox-item">
                             <div class="inbox-info">
-                                <a href="/inbox/{{ inbox.address }}" class="inbox-address">{{ inbox.address }}</a>
+                                    <a href="/inbox/{{ inbox.address }}" class="inbox-address">{{ inbox.address|sanitizeHtml }}</a>
                                 <span class="inbox-meta">Last accessed {{ inbox.lastAccessedAgo }}</span>
                             </div>
                             <form method="POST" action="/account/locked-inbox/release" class="inline-form">
