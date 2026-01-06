@@ -405,9 +405,7 @@ class StatisticsStore {
     recordDelete() {
         this.currentCount = Math.max(0, this.currentCount - 1)
         this._addDataPoint('delete')
-        debug(`
-    Email deleted.Current: $ { this.currentCount }
-    `)
+        debug(`Email deleted. Current: ${this.currentCount}`)
     }
 
     /**
@@ -415,8 +413,7 @@ class StatisticsStore {
      */
     recordForward() {
         this._addDataPoint('forward')
-        debug(`
-    Email forwarded `)
+        debug(`Email forwarded. Current: ${this.currentCount}`)
     }
 
     /**
@@ -470,18 +467,12 @@ class StatisticsStore {
 
         const now = Date.now()
         if (this.enhancedStats && (now - this.lastEnhancedStatsTime) < this.enhancedStatsCacheDuration) {
-            debug(`
-    Using cached enhanced stats(age: $ { Math.round((now - this.lastEnhancedStatsTime) / 1000) }
-        s)
-    `)
+            debug(`Using cached enhanced stats(age: ${Math.round((now - this.lastEnhancedStatsTime) / 1000)}s)`)
             return
         }
 
-        debug(`
-    Calculating enhanced statistics from $ { allMails.length }
-    emails `)
-
-        // Track sender domains (privacy-friendly: domain only, not full address)
+        debug(`Calculating enhanced statistics from ${allMails.length} emails `)
+            // Track sender domains (privacy-friendly: domain only, not full address)
         const senderDomains = new Map()
         const recipientDomains = new Map()
         const hourlyActivity = Array(24).fill(0)
@@ -591,10 +582,7 @@ class StatisticsStore {
         }
 
         this.lastEnhancedStatsTime = now
-        debug(`
-    Enhanced stats calculated: $ { this.enhancedStats.uniqueSenderDomains }
-    unique sender domains, $ { this.enhancedStats.busiestHours.length }
-    busy hours `)
+        debug(`Enhanced stats calculated: ${this.enhancedStats.uniqueSenderDomains} unique sender domains, ${this.enhancedStats.busiestHours.length} busy hours `)
     }
 
     /**
@@ -610,18 +598,11 @@ class StatisticsStore {
         // Check cache - if analysis was done recently, skip it
         const now = Date.now()
         if (this.historicalData && (now - this.lastAnalysisTime) < this.analysisCacheDuration) {
-            debug(`
-    Using cached historical data($ { this.historicalData.length }
-        points, age: $ { Math.round((now - this.lastAnalysisTime) / 1000) }
-        s)
-    `)
+            debug(`Using cached historical data(${this.historicalData.length} points, age: ${Math.round((now - this.lastAnalysisTime) / 1000)}s)`)
             return
         }
 
-        debug(`
-    Analyzing $ { allMails.length }
-    emails
-    for historical statistics `)
+        debug(`Analyzing ${allMails.length} emails for historical statistics `)
         const startTime = Date.now()
 
         // Group emails by minute
@@ -651,10 +632,7 @@ class StatisticsStore {
         this.lastAnalysisTime = now
 
         const elapsed = Date.now() - startTime
-        debug(`
-    Built historical data: $ { this.historicalData.length }
-    time buckets in $ { elapsed }
-    ms `)
+        debug(`Built historical data: ${this.historicalData.length} time buckets in ${elapsed} ms `)
     }
 
     /**
@@ -742,11 +720,7 @@ class StatisticsStore {
             .map(([timestamp, receives]) => ({ timestamp, receives }))
             .sort((a, b) => a.timestamp - b.timestamp)
 
-        debug(`
-    Historical timeline: $ { intervalData.length }
-    15 - min interval points within $ { config.email.purgeTime.time }
-    $ { config.email.purgeTime.unit }
-    window `)
+        debug(`Historical timeline: ${intervalData.length} 15 - min interval points within ${config.email.purgeTime.time} ${config.email.purgeTime.unit} window `)
         return intervalData
     }
 
@@ -786,11 +760,7 @@ class StatisticsStore {
             hourlyAverages.set(hour, avg)
         })
 
-        debug(`
-    Built hourly patterns
-    for $ { hourlyAverages.size }
-    hours from $ { this.historicalData.length }
-    data points `)
+        debug(`Built hourly patterns for ${hourlyAverages.size} hours from ${this.historicalData.length} data points `)
 
         // Generate predictions for a reasonable future window
         // Limit to 20% of purge duration or 12 hours max to maintain chart balance
@@ -826,9 +796,7 @@ class StatisticsStore {
             })
         }
 
-        debug(`
-    Generated $ { predictions.length }
-    prediction points based on hourly patterns `)
+        debug(`Generated ${predictions.length} prediction points based on hourly patterns `)
         return predictions
     }
 
@@ -881,12 +849,7 @@ class StatisticsStore {
 
         if (beforeCount !== this.hourlyData.length) {
             this._saveToDatabase() // Save after cleanup
-            debug(`
-    Cleaned up $ { beforeCount - this.hourlyData.length }
-    old data points(keeping data
-        for $ { config.email.purgeTime.time }
-        $ { config.email.purgeTime.unit })
-    `)
+            debug(`Cleaned up ${beforeCount - this.hourlyData.length} old data points(keeping data for ${config.email.purgeTime.time} ${config.email.purgeTime.unit})`)
         }
 
         this.lastCleanup = now

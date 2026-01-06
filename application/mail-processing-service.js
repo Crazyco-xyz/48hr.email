@@ -31,6 +31,22 @@ class MailProcessingService extends EventEmitter {
         setInterval(() => {
             this._deleteOldMails()
         }, this.config.imap.refreshIntervalSeconds * 1000)
+
+        // Periodically ground largestUid to IMAP state every 5 minutes
+        setInterval(async() => {
+            try {
+                if (this.statisticsStore && this.imapService) {
+                    const realLargestUid = await this.imapService.getLargestUid();
+                    if (realLargestUid && realLargestUid !== this.statisticsStore.largestUid) {
+                        this.statisticsStore.largestUid = realLargestUid;
+                        this.statisticsStore._saveToDatabase && this.statisticsStore._saveToDatabase();
+                        debug(`Grounded statisticsStore.largestUid to IMAP: ${realLargestUid}`);
+                    }
+                }
+            } catch (err) {
+                debug('Error grounding largestUid to IMAP:', err.message);
+            }
+        }, 60 * 1000); // 1 minute
     }
 
     _initCache() {
