@@ -207,6 +207,8 @@ function displayStartupBanner() {
     const domains = config.email.domains.join(', ')
     const purgeTime = `${config.email.purgeTime.time} ${config.email.purgeTime.unit}`
     const refreshInterval = config.uxDebugMode ? 'N/A' : `${config.imap.refreshIntervalSeconds}s`
+    const branding = config.http.features.branding[0] || '48hr.email'
+    const baseUrl = config.http.baseUrl
 
     // Determine mode based on environment
     let mode = 'PRODUCTION'
@@ -217,9 +219,9 @@ function displayStartupBanner() {
     }
 
     console.log('\n' + '═'.repeat(70))
-    console.log(`  48hr.email - ${mode} MODE`)
+    console.log(`  ${branding} - ${mode} MODE`)
     console.log('═'.repeat(70))
-    console.log(`  Server:          http://localhost:${config.http.port}`)
+    console.log(`  Server:          ${baseUrl}`)
     console.log(`  Domains:         ${domains}`)
     console.log(`  Emails loaded:   ${mailCount}`)
     console.log(`  Purge after:     ${purgeTime}`)
