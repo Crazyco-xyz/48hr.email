@@ -341,11 +341,16 @@ function reloadStatsData() {
  */
 function updateStatsDOM(data) {
     // Update main stat cards
-    document.getElementById('currentCount').textContent = data.currentCount || '0';
-    document.getElementById('historicalTotal').textContent = data.allTimeTotal || '0';
-    document.getElementById('receives24h').textContent = (data.last24Hours && data.last24Hours.receives) || '0';
-    document.getElementById('deletes24h').textContent = (data.last24Hours && data.last24Hours.deletes) || '0';
-    document.getElementById('forwards24h').textContent = (data.last24Hours && data.last24Hours.forwards) || '0';
+    const elCurrent = document.getElementById('currentCount');
+    if (elCurrent) elCurrent.textContent = data.currentCount || '0';
+    const elTotal = document.getElementById('historicalTotal');
+    if (elTotal) elTotal.textContent = data.allTimeTotal || '0';
+    const elReceives = document.getElementById('receivesPurgeWindow');
+    if (elReceives) elReceives.textContent = (data.purgeWindow && data.purgeWindow.receives) || '0';
+    const elDeletes = document.getElementById('deletesPurgeWindow');
+    if (elDeletes) elDeletes.textContent = (data.purgeWindow && data.purgeWindow.deletes) || '0';
+    const elForwards = document.getElementById('forwardsPurgeWindow');
+    if (elForwards) elForwards.textContent = (data.purgeWindow && data.purgeWindow.forwards) || '0';
 
     // Update enhanced stats if available
     if (data.enhanced) {
@@ -420,7 +425,7 @@ function updateStatsDOM(data) {
     }
 
     // Update window data for charts
-    window.initialStatsData = (data.last24Hours && data.last24Hours.timeline) || [];
+    window.initialStatsData = (data.purgeWindow && data.purgeWindow.timeline) || [];
     window.historicalData = data.historical || [];
     window.predictionData = data.prediction || [];
 

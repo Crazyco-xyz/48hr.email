@@ -52,7 +52,7 @@ router.get('/', async(req, res) => {
         const placeholderStats = {
             currentCount: '...',
             allTimeTotal: '...',
-            last24Hours: {
+            purgeWindow: {
                 receives: '...',
                 deletes: '...',
                 forwards: '...',

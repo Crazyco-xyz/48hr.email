@@ -10,12 +10,12 @@ Endpoints for retrieving statistics and historical data.
 ### GET `/api/v1/stats/`
 Get lightweight statistics (no historical analysis).
 - **Response:**
-  - `currentCount`, `allTimeTotal`, `last24Hours` (object with `receives`, `deletes`, `forwards`, `timeline`)
+  - `currentCount`, `allTimeTotal`, `purgeWindow` (object with `receives`, `deletes`, `forwards`, `timeline`)
 
 ### GET `/api/v1/stats/enhanced`
 Get full statistics with historical data and predictions.
 - **Response:**
-  - `currentCount`, `allTimeTotal`, `last24Hours`, `historical`, `prediction`, `enhanced`
+  - `currentCount`, `allTimeTotal`, `purgeWindow`, `historical`, `prediction`, `enhanced`
 
 ---
 
@@ -41,7 +41,7 @@ Get full statistics with historical data and predictions.
   "data": {
     "currentCount": 123,
     "allTimeTotal": 4567,
-    "last24Hours": {
+    "purgeWindow": {
       "receives": 10,
       "deletes": 2,
       "forwards": 1,

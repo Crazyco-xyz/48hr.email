@@ -71,19 +71,19 @@
 
         <!-- Receives (Purge Window) -->
         <div class="stat-card">
-            <div class="stat-value" id="receives24h">{{ stats.last24Hours.receives }}</div>
+            <div class="stat-value" id="receivesPurgeWindow">{{ stats.purgeWindow.receives }}</div>
             <div class="stat-label">Received</div>
         </div>
 
         <!-- Deletes (Purge Window) -->
         <div class="stat-card">
-            <div class="stat-value" id="deletes24h">{{ stats.last24Hours.deletes }}</div>
+            <div class="stat-value" id="deletesPurgeWindow">{{ stats.purgeWindow.deletes }}</div>
             <div class="stat-label">Deleted</div>
         </div>
 
         <!-- Forwards (Purge Window) -->
         <div class="stat-card">
-            <div class="stat-value" id="forwards24h">{{ stats.last24Hours.forwards }}</div>
+            <div class="stat-value" id="forwardsPurgeWindow">{{ stats.purgeWindow.forwards }}</div>
             <div class="stat-label">Forwarded</div>
         </div>
     </div>
@@ -194,7 +194,7 @@
 
 <script>
     // Set initial data for stats.js to consume
-    window.initialStatsData = {{ stats.last24Hours.timeline|json_encode|raw }};
+    window.initialStatsData = {{ stats.purgeWindow.timeline|json_encode|raw }};
     window.historicalData = {{ stats.historical|json_encode|raw }};
     window.predictionData = {{ stats.prediction|json_encode|raw }};
 </script>
