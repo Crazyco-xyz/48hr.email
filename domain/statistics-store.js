@@ -1,5 +1,6 @@
 const debug = require('debug')('48hr-email:stats-store');
 const config = require('../application/config');
+const crypto = require('crypto');
 
 /**
  * Statistics Store - Tracks email metrics and historical data
@@ -20,10 +21,55 @@ class StatisticsStore {
         this.enhancedStats = null;
         this.lastEnhancedStatsTime = 0;
         this.enhancedStatsCacheDuration = 5 * 60 * 1000; // Cache for 5 minutes
+
+        // Compute IMAP hash (user/server/port)
+        this.imapHash = this._computeImapHash();
+
         if (this.db) {
+            this._autoMigrateInstanceId();
+            this._autoMigrateImapHash();
             this._loadFromDatabase();
         }
         debug('Statistics store initialized');
+    }
+
+    _autoMigrateInstanceId() {
+        // Add and backfill instance_id for statistics table
+        try {
+            const pragma = this.db.prepare("PRAGMA table_info(statistics)").all();
+            const hasInstanceId = pragma.some(col => col.name === 'instance_id');
+            if (!hasInstanceId) {
+                this.db.prepare('ALTER TABLE statistics ADD COLUMN instance_id TEXT').run();
+            }
+            // Backfill all rows
+            this.db.prepare('UPDATE statistics SET instance_id = ? WHERE instance_id IS NULL OR instance_id = ""').run(this.imapHash);
+            debug('Auto-migrated: instance_id column added and backfilled');
+        } catch (e) {
+            debug('Auto-migration for instance_id failed:', e.message);
+        }
+    }
+
+    _autoMigrateImapHash() {
+        // Check if imap_hash column exists, add and backfill if missing
+        try {
+            const pragma = this.db.prepare("PRAGMA table_info(statistics)").all();
+            const hasImapHash = pragma.some(col => col.name === 'imap_hash');
+            if (!hasImapHash) {
+                this.db.prepare('ALTER TABLE statistics ADD COLUMN imap_hash TEXT NULL').run();
+                this.db.prepare('UPDATE statistics SET imap_hash = ?').run(this.imapHash);
+                debug('Auto-migrated: imap_hash column added and backfilled');
+            }
+        } catch (e) {
+            debug('Auto-migration for imap_hash failed:', e.message);
+        }
+    }
+
+    _computeImapHash() {
+        const user = config.imap.user || '';
+        const server = config.imap.server || '';
+        const port = config.imap.port || '';
+        const hash = crypto.createHash('sha256').update(`${user}:${server}:${port}`).digest('hex');
+        return hash;
     }
 
     _getPurgeCutoffMs() {
@@ -48,8 +94,9 @@ class StatisticsStore {
 
     _loadFromDatabase() {
         try {
-            const stmt = this.db.prepare('SELECT largest_uid, hourly_data, last_updated FROM statistics WHERE id = 1');
-            const row = stmt.get();
+            // Try to load row for current imap_hash
+            const stmt = this.db.prepare('SELECT largest_uid, hourly_data, last_updated FROM statistics WHERE imap_hash = ?');
+            const row = stmt.get(this.imapHash);
             if (row) {
                 this.largestUid = row.largest_uid || 0;
                 if (row.hourly_data) {
@@ -64,6 +111,13 @@ class StatisticsStore {
                     }
                 }
                 debug(`Loaded from database: largestUid=${this.largestUid}, hourlyData=${this.hourlyData.length} entries`);
+            } else {
+                // No row for this hash, insert new row
+                const insert = this.db.prepare('INSERT INTO statistics (imap_hash, largest_uid, hourly_data, last_updated) VALUES (?, ?, ?, ?)');
+                insert.run(this.imapHash, 0, JSON.stringify([]), Date.now());
+                this.largestUid = 0;
+                this.hourlyData = [];
+                debug('Created new statistics row for imap_hash');
             }
         } catch (error) {
             debug('Failed to load statistics from database:', error.message);
@@ -76,10 +130,17 @@ class StatisticsStore {
             const stmt = this.db.prepare(`
                 UPDATE statistics 
                 SET largest_uid = ?, hourly_data = ?, last_updated = ?
-                WHERE id = 1
+                WHERE imap_hash = ?
             `);
-            stmt.run(this.largestUid, JSON.stringify(this.hourlyData), Date.now());
-            debug('Statistics saved to database');
+            const result = stmt.run(this.largestUid, JSON.stringify(this.hourlyData), Date.now(), this.imapHash);
+            // If no row was updated, insert new row
+            if (result.changes === 0) {
+                const insert = this.db.prepare('INSERT INTO statistics (imap_hash, largest_uid, hourly_data, last_updated) VALUES (?, ?, ?, ?)');
+                insert.run(this.imapHash, this.largestUid, JSON.stringify(this.hourlyData), Date.now());
+                debug('Inserted new statistics row for imap_hash');
+            } else {
+                debug('Statistics saved to database');
+            }
         } catch (error) {
             debug('Failed to save statistics to database:', error.message);
         }
