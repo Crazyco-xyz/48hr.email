@@ -37,7 +37,7 @@ function parseBool(v) {
 }
 
 const config = {
-    apiEnabled: parseBool(process.env.HTTP_API_ENABLED) || true,
+    apiEnabled: parseBool(process.env.HTTP_API_ENABLED) || false,
     uxDebugMode: parseBool(process.env.UX_DEBUG_MODE) || false,
 
     email: {
@@ -87,7 +87,7 @@ const config = {
             displaySort: Number(process.env.HTTP_DISPLAY_SORT) || 0,
             hideOther: parseBool(process.env.HTTP_HIDE_OTHER),
             statistics: parseBool(process.env.HTTP_STATISTICS_ENABLED) || false,
-            infoSection: parseBool(process.env.HTTP_SHOW_INFO_SECTION) || true
+            infoSection: parseBool(process.env.HTTP_SHOW_INFO_SECTION) || false
         }
     },
 

@@ -1,0 +1,16 @@
+{#
+  _footer-main.twig
+  Usage: {% include '_footer-main.twig' %}
+  Expects: branding, purgeTime, mailCount, config
+#}
+<h4>
+  {{ branding[0] }} offered by <a href="{{ branding[2] }}" style="text-decoration:underline" target="_blank">{{ branding[1] }}</a> | All Emails will be deleted after {{ purgeTime | raw }}
+  {% if config.http.features.statistics %}
+    | <a href="/stats" style="text-decoration:underline">Statistics</a>
+  {% else %}
+    | Currently handling {{ mailCount | raw }}
+  {% endif %}
+  {% if config.apiEnabled %}
+    | <a href="https://github.com/Crazyco-xyz/48hr.email/wiki" style="text-decoration:underline" target="_blank">API Docs</a>
+  {% endif %}
+</h4>
