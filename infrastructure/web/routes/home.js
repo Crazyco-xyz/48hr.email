@@ -12,17 +12,17 @@ router.get('/', async(req, res, next) => {
         if (!mailProcessingService) {
             throw new Error('Mail processing service not available')
         }
-        debug('Login page requested')
+        debug('Home page requested')
         const context = templateContext.build(req, {
             username: randomWord()
         })
-        res.render('login', {
+        res.render('home', {
             ...context,
             title: `${context.branding[0]} | Your temporary Inbox`
         })
     } catch (error) {
-        debug('Error loading login page:', error.message)
-        console.error('Error while loading login page', error)
+        debug('Error loading home page:', error.message)
+        console.error('Error while loading home page', error)
         next(error)
     }
 })
@@ -49,23 +49,23 @@ router.post(
             }
             const errors = validationResult(req)
             if (!errors.isEmpty()) {
-                debug(`Login validation failed for ${req.body.username}@${req.body.domain}: ${errors.array().map(e => e.msg).join(', ')}`)
+                debug(`Home validation failed for ${req.body.username}@${req.body.domain}: ${errors.array().map(e => e.msg).join(', ')}`)
                 const context = templateContext.build(req, {
                     userInputError: true,
                     username: randomWord()
                 })
-                return res.render('login', {
+                return res.render('home', {
                     ...context,
                     title: `${context.branding[0]} | Your temporary Inbox`
                 })
             }
 
             const inbox = `${req.body.username}@${req.body.domain}`
-            debug(`Login successful, redirecting to inbox: ${inbox}`)
+            debug(`Home validation successful, redirecting to inbox: ${inbox}`)
             res.redirect(`/inbox/${inbox}`)
         } catch (error) {
-            debug('Error processing login:', error.message)
-            console.error('Error while processing login', error)
+            debug('Error processing request:', error.message)
+            console.error('Error while processing request', error)
             next(error)
         }
     }

@@ -136,7 +136,20 @@ If desired, you can also move the config file somewhere else (change volume moun
 
 -----
 
-## Support me
+## TODO:
+- Tor mode: 
+  - Light-weight mode that can run either standalone or alongside an http instance
+  - Provides a minimal, js-less instance for our friends on the other side <3
+- Admin Dashboard: 
+  - Admin dashboard allows to edit (almost) all config entries
+  - Includes patch / refactor to allow for hotswapping (almost) all config entries.
+- Polish:
+  - Lots of polish required, consolidating files etc.
+<br>
+
+-----
+
+## Support me ❤️
 
 If you find this project useful, consider supporting its development!
 

@@ -13,7 +13,7 @@ const socketio = require('socket.io')
 const config = require('../../application/config')
 const createApiRouter = require('./api/router')
 const inboxRouter = require('./routes/inbox')
-const loginRouter = require('./routes/login')
+const homeRouter = require('./routes/home')
 const errorRouter = require('./routes/error')
 const lockRouter = require('./routes/lock')
 const authRouter = require('./routes/auth')
@@ -185,7 +185,7 @@ app.use('/api/v1', (req, res, next) => {
 })
 
 // Web routes
-app.use('/', loginRouter)
+app.use('/', homeRouter)
 if (config.user.authEnabled) {
     app.use('/', authRouter)
     app.use('/', accountRouter)
