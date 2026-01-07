@@ -17,9 +17,7 @@
 {% block body %}
 <div id="account" class="account-container">
     <h1 class="page-title">Account Dashboard</h1>
-    <p class="account-subtitle">Welcome back, <strong>{{ username }}</strong></p>
-        <p class="account-subtitle">Welcome back, <strong>{{ username|sanitizeHtml }}</strong></p>
-
+    <p class="account-subtitle">Welcome back, <strong>{{ username|sanitizeHtml }}</strong></p>
     {% if successMessage %}
         <div class="alert alert-success">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:0.5rem">
