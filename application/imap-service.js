@@ -296,11 +296,15 @@ class ImapService extends EventEmitter {
         }
 
         debug(`Deleting mails ${toDelete}`);
-        await this.connection.deleteMessage(toDelete);
-
-        toDelete.forEach(uid => {
-            this.emit(ImapService.EVENT_DELETED_MAIL, uid);
-        });
+        // Batch deletes to avoid IMAP argument limits
+        const BATCH_SIZE = 100;
+        for (let i = 0; i < toDelete.length; i += BATCH_SIZE) {
+            const batch = toDelete.slice(i, i + BATCH_SIZE);
+            await this.connection.deleteMessage(batch);
+            batch.forEach(uid => {
+                this.emit(ImapService.EVENT_DELETED_MAIL, uid);
+            });
+        }
     }
 
 
