@@ -26,11 +26,54 @@ class StatisticsStore {
         this.imapHash = this._computeImapHash();
 
         if (this.db) {
+            this._autoMigrateRemoveIdCheck();
             this._autoMigrateInstanceId();
             this._autoMigrateImapHash();
             this._loadFromDatabase();
         }
         debug('Statistics store initialized');
+    }
+
+    _autoMigrateRemoveIdCheck() {
+        debug('Starting CHECK(id = 1) migration check...');
+        // Remove CHECK(id = 1) constraint from statistics table if present
+        try {
+            const pragma = this.db.prepare("PRAGMA table_info(statistics)").all();
+            // Check if id column exists and if table has only one row (singleton)
+            const hasId = pragma.some(col => col.name === 'id');
+            if (hasId) {
+                // Check for CHECK constraint by inspecting sqlite_master
+                const tableSql = this.db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='statistics'").get();
+                debug('Table SQL:', tableSql && tableSql.sql);
+                if (tableSql && tableSql.sql && tableSql.sql.includes('CHECK(id = 1)')) {
+                    debug('Detected CHECK(id = 1) constraint on statistics table, migrating...');
+                    // Backup data
+                    const rows = this.db.prepare('SELECT * FROM statistics').all();
+                    // Drop and recreate table without CHECK constraint
+                    this.db.prepare('DROP TABLE IF EXISTS statistics').run();
+                    this.db.prepare(`CREATE TABLE IF NOT EXISTS statistics (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        instance_id TEXT NOT NULL,
+                        largest_uid INTEGER NOT NULL DEFAULT 0,
+                        hourly_data TEXT,
+                        last_updated INTEGER NOT NULL,
+                        imap_hash TEXT NULL
+                    )`).run();
+                    // Restore data
+                    const insert = this.db.prepare('INSERT INTO statistics (id, instance_id, largest_uid, hourly_data, last_updated, imap_hash) VALUES (?, ?, ?, ?, ?, ?)');
+                    rows.forEach(row => {
+                        insert.run(row.id, row.instance_id, row.largest_uid, row.hourly_data, row.last_updated, row.imap_hash);
+                    });
+                    debug('Migration complete: CHECK(id = 1) removed from statistics table.');
+                } else {
+                    debug('No CHECK(id = 1) constraint found in statistics table.');
+                }
+            } else {
+                debug('No id column found in statistics table.');
+            }
+        } catch (e) {
+            debug('Auto-migration for CHECK(id = 1) failed:', e.message);
+        }
     }
 
     _autoMigrateInstanceId() {
@@ -113,8 +156,9 @@ class StatisticsStore {
                 debug(`Loaded from database: largestUid=${this.largestUid}, hourlyData=${this.hourlyData.length} entries`);
             } else {
                 // No row for this hash, insert new row
-                const insert = this.db.prepare('INSERT INTO statistics (imap_hash, largest_uid, hourly_data, last_updated) VALUES (?, ?, ?, ?)');
-                insert.run(this.imapHash, 0, JSON.stringify([]), Date.now());
+                const instanceId = config.instanceId || this.imapHash;
+                const insert = this.db.prepare('INSERT OR REPLACE INTO statistics (instance_id, imap_hash, largest_uid, hourly_data, last_updated) VALUES (?, ?, ?, ?, ?)');
+                insert.run(instanceId, this.imapHash, 0, JSON.stringify([]), Date.now());
                 this.largestUid = 0;
                 this.hourlyData = [];
                 debug('Created new statistics row for imap_hash');
@@ -127,17 +171,18 @@ class StatisticsStore {
     _saveToDatabase() {
         if (!this.db) return;
         try {
+            const instanceId = config.instanceId || this.imapHash;
             const stmt = this.db.prepare(`
                 UPDATE statistics 
                 SET largest_uid = ?, hourly_data = ?, last_updated = ?
-                WHERE imap_hash = ?
+                WHERE instance_id = ? AND imap_hash = ?
             `);
-            const result = stmt.run(this.largestUid, JSON.stringify(this.hourlyData), Date.now(), this.imapHash);
+            const result = stmt.run(this.largestUid, JSON.stringify(this.hourlyData), Date.now(), instanceId, this.imapHash);
             // If no row was updated, insert new row
             if (result.changes === 0) {
-                const insert = this.db.prepare('INSERT INTO statistics (imap_hash, largest_uid, hourly_data, last_updated) VALUES (?, ?, ?, ?)');
-                insert.run(this.imapHash, this.largestUid, JSON.stringify(this.hourlyData), Date.now());
-                debug('Inserted new statistics row for imap_hash');
+                const insert = this.db.prepare('INSERT INTO statistics (instance_id, imap_hash, largest_uid, hourly_data, last_updated) VALUES (?, ?, ?, ?, ?)');
+                insert.run(instanceId, this.imapHash, this.largestUid, JSON.stringify(this.hourlyData), Date.now());
+                debug('Inserted new statistics row for instance_id and imap_hash');
             } else {
                 debug('Statistics saved to database');
             }
