@@ -253,17 +253,46 @@ class ImapService extends EventEmitter {
 
         // IMAP date filters are unreliable - some servers search internal date, not Date header
         // Always fetch all UIDs and filter by date header in JavaScript instead
+        const deleteOlderThan = helper.purgeTimeStamp();
         const searchQuery = [
             ['!DELETED']
         ];
-
         uids = await this._searchWithoutFetch(searchQuery);
 
         if (uids.length === 0) return;
 
-        const deleteOlderThan = helper.purgeTimeStamp();
-        const exampleUids = this.config.email.examples.uids.map(x => parseInt(x));
-        const headers = await this._getMailHeaders(uids);
+        debug(`Starting deleteOldMails. Total UIDs: ${uids.length}`);
+        const HEADER_BATCH_SIZE = this.config.imap.fetchChunkSize
+        const concurrency = this.config.imap.fetchConcurrency || 4;
+        // Chunk UIDs
+        const uidChunks = [];
+        for (let i = 0; i < uids.length; i += HEADER_BATCH_SIZE) {
+            uidChunks.push(uids.slice(i, i + HEADER_BATCH_SIZE));
+        }
+        let headers = [];
+        let workerId = 0;
+        const runNext = async() => {
+            if (workerId >= uidChunks.length) return;
+            const chunkId = workerId++;
+            const batch = uidChunks[chunkId];
+            try {
+                const batchHeaders = await Promise.race([
+                    this._getMailHeaders(batch),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Header fetch timeout')), 30000))
+                ]);
+                headers = headers.concat(batchHeaders);
+            } catch (err) {
+                debug(`ERROR in batch ${chunkId+1}: ${err.message}`);
+            }
+            await runNext();
+        };
+        // Start workers
+        const pool = [];
+        const workers = Math.min(concurrency, uidChunks.length);
+        for (let i = 0; i < workers; i++) {
+            pool.push(runNext());
+        }
+        await Promise.all(pool);
 
         // Get locked inboxes if available
         let lockedAddresses = [];
@@ -276,19 +305,26 @@ class ImapService extends EventEmitter {
             }
         }
 
-        // Filter out mails that are too new, whitelisted, or belong to locked inboxes
-        const toDelete = headers
-            .filter(mail => {
-                const date = mail.attributes.date;
-                const uid = parseInt(mail.attributes.uid);
-                const toAddresses = Array.isArray(mail.parts[0].body.to) ?
-                    mail.parts[0].body.to.map(a => a.toLowerCase()) : [String(mail.parts[0].body.to).toLowerCase()];
+        // Ensure exampleUids is defined before filtering
+        const exampleUids = this.config.email.examples && this.config.email.examples.uids ?
+            this.config.email.examples.uids.map(x => parseInt(x)) : [];
 
-                if (exampleUids.includes(uid)) return false;
-                if (toAddresses.some(addr => lockedAddresses.includes(addr))) return false;
-                return date <= deleteOlderThan;
-            })
-            .map(mail => parseInt(mail.attributes.uid));
+        // Filter out mails that are too new, whitelisted, or belong to locked inboxes
+        let filtered = headers;
+
+        // Exclude exampleUids
+        filtered = filtered.filter(mail => !exampleUids.includes(parseInt(mail.attributes.uid)));
+
+        // Exclude locked inboxes
+        filtered = filtered.filter(mail => {
+            const toAddresses = Array.isArray(mail.parts[0].body.to) ?
+                mail.parts[0].body.to.map(a => a.toLowerCase()) : [String(mail.parts[0].body.to).toLowerCase()];
+            return !toAddresses.some(addr => lockedAddresses.includes(addr));
+        });
+
+        // Exclude too new (compare timestamps for Date objects)
+        filtered = filtered.filter(mail => mail.attributes.date && mail.attributes.date.getTime() <= deleteOlderThan.getTime());
+        const toDelete = filtered.map(mail => parseInt(mail.attributes.uid));
 
         if (toDelete.length === 0) {
             debug('No mails to delete. (after locked inbox exclusion)');
@@ -297,7 +333,7 @@ class ImapService extends EventEmitter {
 
         debug(`Deleting mails ${toDelete}`);
         // Batch deletes to avoid IMAP argument limits
-        const BATCH_SIZE = 100;
+        const BATCH_SIZE = this.config.imap.fetchChunkSize;
         for (let i = 0; i < toDelete.length; i += BATCH_SIZE) {
             const batch = toDelete.slice(i, i + BATCH_SIZE);
             await this.connection.deleteMessage(batch);
@@ -342,17 +378,39 @@ class ImapService extends EventEmitter {
      * @private
      */
     async _searchWithoutFetch(searchCriteria) {
-        const imapUnderlying = this.connection.imap
-
-        return new Promise((resolve, reject) => {
-            imapUnderlying.search(searchCriteria, (err, uids) => {
-                if (err) {
-                    reject(err)
-                } else {
-                    resolve(uids || [])
-                }
-            })
-        })
+        const imapUnderlying = this.connection.imap;
+        // If searching by UID and the list is too long, batch it
+        const UID_BATCH_SIZE = 500;
+        // Detect UID search: ['UID', [array]] or ['UID', '1:1000']
+        if (Array.isArray(searchCriteria) && searchCriteria.length === 1 && Array.isArray(searchCriteria[0]) && searchCriteria[0][0] === 'UID' && Array.isArray(searchCriteria[0][1]) && searchCriteria[0][1].length > UID_BATCH_SIZE) {
+            const allUids = searchCriteria[0][1];
+            let allResults = [];
+            for (let i = 0; i < allUids.length; i += UID_BATCH_SIZE) {
+                const batch = allUids.slice(i, i + UID_BATCH_SIZE);
+                const batchCriteria = [
+                    ['UID', batch]
+                ];
+                // eslint-disable-next-line no-await-in-loop
+                const batchResult = await new Promise((resolve, reject) => {
+                    imapUnderlying.search(batchCriteria, (err, uids) => {
+                        if (err) reject(err);
+                        else resolve(uids || []);
+                    });
+                });
+                allResults = allResults.concat(batchResult);
+            }
+            return allResults;
+        } else {
+            return new Promise((resolve, reject) => {
+                imapUnderlying.search(searchCriteria, (err, uids) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(uids || []);
+                    }
+                });
+            });
+        }
     }
 
     _createMailSummary(message) {
