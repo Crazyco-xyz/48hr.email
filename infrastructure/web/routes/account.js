@@ -12,7 +12,7 @@ router.get('/account', requireAuth, async(req, res) => {
         const userRepository = req.app.get('userRepository')
         const inboxLock = req.app.get('inboxLock')
         const mailProcessingService = req.app.get('mailProcessingService')
-        const Helper = require('../../../application/helper')
+        const Helper = require('../../../application/helper-service')
         const helper = new Helper()
 
         // In UX debug mode, reset mock data to initial state only on fresh page load

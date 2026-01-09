@@ -1,8 +1,8 @@
 const EventEmitter = require('events')
 const debug = require('debug')('48hr-email:imap-processor')
 const ImapService = require('./imap-service')
-const Helper = require('./helper')
-const config = require('./config')
+const Helper = require('./helper-service')
+const config = require('./config-service')
 const helper = new(Helper)
 
 

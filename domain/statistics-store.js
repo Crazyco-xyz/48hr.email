@@ -1,5 +1,5 @@
 const debug = require('debug')('48hr-email:stats-store');
-const config = require('../application/config');
+const config = require('../application/config-service');
 const crypto = require('crypto');
 
 /**

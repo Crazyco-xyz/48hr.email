@@ -1,6 +1,6 @@
 const express = require('express')
 const router = new express.Router()
-const config = require('../../../application/config')
+const config = require('../../../application/config-service')
 const templateContext = require('../template-context')
 const debug = require('debug')('48hr-email:routes')
 

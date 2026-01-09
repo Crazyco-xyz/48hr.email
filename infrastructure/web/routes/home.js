@@ -3,7 +3,7 @@ const router = new express.Router()
 const { check, validationResult } = require('express-validator')
 const debug = require('debug')('48hr-email:routes')
 const randomWord = require('random-word')
-const config = require('../../../application/config')
+const config = require('../../../application/config-service')
 const templateContext = require('../template-context')
 
 router.get('/', async(req, res, next) => {

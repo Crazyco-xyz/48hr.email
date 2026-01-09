@@ -1,8 +1,8 @@
-const config = require('./config')
-const debug = require('debug')('48hr-email:helper')
+const config = require('./config-service')
+const debug = require('debug')('48hr-email:helper-service')
 const crypto = require('crypto')
 
-class Helper {
+class HelperService {
 
     /**
      * Normalize our config into a proper timestamp, so we know what emails to purge
@@ -283,4 +283,4 @@ class Helper {
     }
 }
 
-module.exports = Helper
+module.exports = HelperService

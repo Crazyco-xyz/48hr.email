@@ -10,7 +10,7 @@ const compression = require('compression')
 const helmet = require('helmet')
 const socketio = require('socket.io')
 
-const config = require('../../application/config')
+const config = require('../../application/config-service')
 const createApiRouter = require('./api/router')
 const inboxRouter = require('./routes/inbox')
 const homeRouter = require('./routes/home')
@@ -120,7 +120,7 @@ app.use((req, res, next) => {
 app.use(async(req, res, next) => {
     const mailProcessingService = req.app.get('mailProcessingService')
     const imapService = req.app.get('imapService')
-    const Helper = require('../../application/helper')
+    const Helper = require('../../application/helper-service')
     const helper = new Helper()
 
     if (mailProcessingService) {

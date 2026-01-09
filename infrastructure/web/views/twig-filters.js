@@ -1,5 +1,5 @@
 const sanitizeHtml = require('sanitize-html')
-const config = require('../../../application/config')
+const config = require('../../../application/config-service')
 
 /**
  * Transformes <a> tags to always use "noreferrer noopener" and open in a new window.

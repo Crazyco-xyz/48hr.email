@@ -5,9 +5,9 @@ const addressparser = require('nodemailer/lib/addressparser')
 const retry = require('async-retry')
 const debug = require('debug')('48hr-email:imap-manager')
 const Mail = require('../domain/mail')
-const Helper = require('./helper')
+const Helper = require('./helper-service')
 const helper = new(Helper)
-const config = require('./config')
+const config = require('./config-service')
 
 
 // Just adding some missing functions to imap-simple... :-)
@@ -380,8 +380,8 @@ class ImapService extends EventEmitter {
     async _searchWithoutFetch(searchCriteria) {
         const imapUnderlying = this.connection.imap;
         // If searching by UID and the list is too long, batch it
-        const UID_BATCH_SIZE = 500;
-        // Detect UID search: ['UID', [array]] or ['UID', '1:1000']
+        const UID_BATCH_SIZE = this.config.imap.fetchChunkSize;
+        // Detect UID search: ['UID', [array]] or ['UID', '1:500']
         if (Array.isArray(searchCriteria) && searchCriteria.length === 1 && Array.isArray(searchCriteria[0]) && searchCriteria[0][0] === 'UID' && Array.isArray(searchCriteria[0][1]) && searchCriteria[0][1].length > UID_BATCH_SIZE) {
             const allUids = searchCriteria[0][1];
             let allResults = [];

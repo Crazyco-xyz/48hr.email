@@ -3,7 +3,7 @@ const router = new express.Router()
 const { body, validationResult } = require('express-validator')
 const debug = require('debug')('48hr-email:auth-routes')
 const { redirectIfAuthenticated } = require('../middleware/auth')
-const config = require('../../../application/config')
+const config = require('../../../application/config-service')
 const templateContext = require('../template-context')
 
 // Simple in-memory rate limiters for registration and login

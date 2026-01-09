@@ -1,5 +1,5 @@
-const config = require('../../application/config')
-const Helper = require('../../application/helper')
+const config = require('../../application/config-service')
+const Helper = require('../../application/helper-service')
 
 /**
  * Template Context Builder

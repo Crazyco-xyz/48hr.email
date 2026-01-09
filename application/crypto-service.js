@@ -1,9 +1,9 @@
-const debug = require('debug')('48hr-email:crypto-detector')
+const debug = require('debug')('48hr-email:crypto-service')
 
 /**
  * Detects cryptographic keys and signatures in email attachments
  */
-class CryptoDetector {
+class CryptoService {
     constructor() {
         // Common cryptographic file extensions
         this.cryptoExtensions = [
@@ -408,4 +408,4 @@ class CryptoDetector {
     }
 }
 
-module.exports = CryptoDetector
+module.exports = CryptoService

@@ -1,4 +1,4 @@
-const Helper = require('../application/helper')
+const Helper = require('../application/helper-service')
 const helper = new Helper()
 
 class ApiTokenRepository {

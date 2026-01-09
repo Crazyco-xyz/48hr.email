@@ -3,12 +3,12 @@ const router = new express.Router()
 const { param, body, validationResult } = require('express-validator')
 const debug = require('debug')('48hr-email:routes')
 
-const config = require('../../../application/config')
-const Helper = require('../../../application/helper')
-const CryptoDetector = require('../../../application/crypto-detector')
+const config = require('../../../application/config-service')
+const Helper = require('../../../application/helper-service')
+const CryptoService = require('../../../application/crypto-service')
 const templateContext = require('../template-context')
 const helper = new(Helper)
-const cryptoDetector = new CryptoDetector()
+const cryptoService = new CryptoService()
 const { checkLockAccess } = require('../middleware/lock')
 const { requireAuth, optionalAuth } = require('../middleware/auth')
 
@@ -142,7 +142,7 @@ router.get(
                 res.set('Cache-Control', 'private, max-age=600')
 
                 // Detect cryptographic keys in attachments
-                const cryptoAttachments = cryptoDetector.detectCryptoAttachments(mail.attachments)
+                const cryptoAttachments = cryptoService.detectCryptoAttachments(mail.attachments)
                 debug(`Found ${cryptoAttachments.length} cryptographic attachments`)
 
                 debug(`Rendering email view for UID ${req.params.uid}`)

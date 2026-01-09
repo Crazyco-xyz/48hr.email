@@ -101,7 +101,7 @@ router.get('/api', async(req, res) => {
         const statisticsStore = req.app.get('statisticsStore')
         const imapService = req.app.get('imapService')
         const mailProcessingService = req.app.get('mailProcessingService')
-        const Helper = require('../../../application/helper')
+        const Helper = require('../../../application/helper-service')
         const helper = new Helper()
 
         // Update largest UID before getting stats (if IMAP is ready)

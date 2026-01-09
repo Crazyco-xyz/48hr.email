@@ -18,9 +18,9 @@ if (fs.existsSync(envPath)) {
     }
 }
 
-const config = require('./application/config')
+const config = require('./application/config-service')
 const debug = require('debug')('48hr-email:app')
-const Helper = require('./application/helper')
+const Helper = require('./application/helper-service')
 const helper = new(Helper)
 const { app, io, server } = require('./infrastructure/web/web')
 const ClientNotification = require('./infrastructure/web/client-notification')

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+const HelperService = require("../application/helper-service")
+
 // Test script to verify domains are loaded correctly
-const helper = new Helper()
+const helper = new HelperService()
 const domains = helper.getDomains()
 console.log('\nDomains from helper.getDomains():', domains)
 console.log('Length:', domains ? domains.length : undefined)

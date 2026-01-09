@@ -1,6 +1,6 @@
 const debug = require('debug')('48hr-email:mail-summary-store')
 const MultiMap = require('mnemonist/multi-map')
-const config = require('../application/config')
+const config = require('../application/config-service')
 
 class MailRepository {
     constructor() {

@@ -1,6 +1,6 @@
 // config.js
 require("dotenv").config({ quiet: true });
-const debug = require('debug')('48hr-email:config')
+const debug = require('debug')('48hr-email:config-service')
 
 // Migration helper: warn about deprecated env vars
 if (process.env.USER_SESSION_SECRET && !process.env.HTTP_SESSION_SECRET) {
