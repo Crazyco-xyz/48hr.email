@@ -1,3 +1,4 @@
+const botDetect = require('./middleware/bot-detect')
 const path = require('path')
 const http = require('http')
 const debug = require('debug')('48hr-email:server')
@@ -57,6 +58,24 @@ app.use(session({
     saveUninitialized: false,
     cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }))
+
+
+
+// Bot detection middleware (after cookies/session, before routes)
+app.use(botDetect)
+
+// If bot detected and not suppressed, render only the popup page and halt further processing
+app.use((req, res, next) => {
+    // Allow static assets (css, js, images, favicon, etc) and all /api/* routes even if bot detected
+    if (res.locals.suspectedBot && !(req.cookies && req.cookies.bot_check_passed)) {
+        const asset = req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot)$/i);
+        if (asset) return next();
+        if (req.path.startsWith('/api/')) return next();
+        // For non-asset, non-API requests, render only the popup page
+        return res.status(200).render('bot-popup');
+    }
+    next();
+});
 
 // Clear lock session data when user goes Home (but preserve authentication)
 app.get('/', (req, res, next) => {

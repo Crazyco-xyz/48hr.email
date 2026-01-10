@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Automation Detected | 48hr.email</title>
+        <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+        <link rel="shortcut icon" href="/images/favicon.ico">
+        <link rel="apple-touch-icon" href="/images/logo.png">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Automation Detected | 48hr.email</title>
+        <!-- SEO Meta Tags -->
+        <meta name="description" content="Your temporary Inbox. Create instant throwaway email addresses to protect your privacy. No registration required. Emails auto-delete after 48 hours.">
+        <meta name="keywords" content="temporary email, disposable email, throwaway email, fake email, temp mail, anonymous email, 48hr email, privacy protection, burner email">
+        <meta name="author" content="CrazyCo">
+        <meta name="robots" content="index, follow">
+        <meta name="googlebot" content="index, follow">
+        <link rel="canonical" href="https://48hr.email/">
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://48hr.email/">
+        <meta property="og:title" content="48hr.email - Your temporary Inbox">
+        <meta property="og:description" content="Protect your privacy with free temporary email addresses. No registration required. Emails auto-delete after 48 hours.">
+        <meta property="og:image" content="/images/logo.png">
+        <meta property="og:site_name" content="48hr.email">
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:url" content="https://48hr.email/">
+        <meta name="twitter:title" content="48hr.email - Your temporary Inbox">
+        <meta name="twitter:description" content="Free temporary email service. Protect your privacy with disposable email addresses.">
+        <meta name="twitter:image" content="/images/logo.png">
+        <!-- Additional Meta Tags -->
+        <meta name="theme-color" content="#9b4dca">
+        <meta name="darkreader-lock">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="48hr.email">
+        <!-- Favicon -->
+        <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+        <link rel="shortcut icon" href="/images/favicon.ico">
+        <link rel="apple-touch-icon" href="/images/logo.png">
+        <link rel="stylesheet" href="/stylesheets/custom.css">
+    </head>
+    <body class="bot-popup-no-scroll">
+        <div class="bot-detect-popup-overlay" id="bot-detect-popup">
+            <div class="bot-detect-popup-modal">
+            <h2>Automation Detected</h2>
+            <p>We have detected that you may be using automation or a bot to access this site.<br><br>
+                If you want to automate things, please use our <a href="/api" target="_blank">official API</a>.<br><br>
+                See the <a href="https://github.com/Crazyco-xyz/48hr.email/wiki" target="_blank"><b>API Documentation</b></a> for details.<br><br>
+                To continue, please close this popup manually. If you think you're seeing this by mistake, let us know!</p>
+            <button id="bot-popup-close">I Understand</button>
+            </div>
+        </div>
+        <script>
+            function setCookie(name, value, days) {
+            var expires = '';
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days*24*60*60*1000));
+                expires = '; expires=' + date.toUTCString();
+            }
+            document.cookie = name + '=' + (value || '')  + expires + '; path=/';
+            }
+            document.getElementById('bot-popup-close').onclick = function() {
+            setCookie('bot_check_passed', 'true', 7);
+            window.location.reload();
+            };
+            // Prevent all interaction with the rest of the page
+            document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('bot-popup-no-scroll');
+            });
+        </script>
+    </body>
+</html>

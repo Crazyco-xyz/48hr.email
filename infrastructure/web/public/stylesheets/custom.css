@@ -1,3 +1,71 @@
+/* Bot detection popup */
+
+.bot-detect-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--overlay-purple-50, rgba(155, 77, 202, 0.5));
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.bot-detect-popup-modal {
+    background: var(--color-bg-medium, #2F2B36);
+    color: var(--color-text-primary, #cccccc);
+    padding: 2em 2.5em;
+    border-radius: 14px;
+    max-width: 420px;
+    width: 90vw;
+    text-align: center;
+    box-shadow: 0 2px 24px var(--overlay-black-45, rgba(0, 0, 0, 0.45));
+    font-size: 1.1em;
+    border: 1.5px solid var(--color-accent-purple, #9b4dca);
+}
+
+.bot-detect-popup-modal h2 {
+    margin-top: 0;
+    color: var(--color-accent-purple, #9b4dca);
+    font-weight: 700;
+    font-size: 1.6em;
+}
+
+.bot-detect-popup-modal a {
+    color: var(--color-accent-purple-bright, #6c5ce7);
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.bot-detect-popup-modal a:hover {
+    color: var(--color-accent-orange, #ca5414);
+}
+
+.bot-detect-popup-modal button {
+    margin-top: 1.5em;
+    font-size: 1em;
+    border-radius: 6px;
+    background: var(--color-accent-purple, #9b4dca);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 1px 4px var(--overlay-black-30, rgba(0, 0, 0, 0.3));
+    transition: background 0.15s;
+}
+
+.bot-detect-popup-modal button:hover {
+    background: var(--color-accent-purple-bright, #6c5ce7);
+}
+
+.bot-popup-no-scroll {
+    overflow: hidden !important;
+    height: 100vh !important;
+}
+
 :root {
     /* Base colors */
     --color-bg-dark: #131516;
