@@ -57,7 +57,12 @@ app.use(session({
     secret: config.http.sessionSecret,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: config.http.baseUrl.startsWith('https://')
+    }
 }))
 
 
