@@ -67,7 +67,11 @@ jobs:
           \ versions[2]))) return 'agent compatibility review pending';\n  if (!files.length || files.length > 50\
           \ || files.some(file => file.status !== 'modified' ||\n    !policy.dependencyFiles.includes(file.filename)\
           \ && !(review?.allowedFiles.includes(file.filename) && /^\\.github\\/workflows\\/[^/]+\\.ya?ml$/.test(file.filename))))\
-          \ return 'changes outside reviewed dependency files';\n  return null;\n}\nfunction successfulRun(run,\
+          \ return 'changes outside reviewed dependency files';\n  if (policy.deploymentQueue && files.some(file\
+          \ => !file.filename.startsWith('.github/')) &&\n    (!bot || !versions || !compatibleVersion(versions[1],\
+          \ versions[2]) || !/^\\s*update-type: version-update:semver-(patch|minor)\\s*$/m.test(message) || /maintainer\
+          \ changes|\\bbreaking changes?\\b|\\bbreaking-change\\b/i.test(pr.body || ''))) return 'guest runtime\
+          \ deployment profile needs agent compatibility extension';\n  return null;\n}\nfunction successfulRun(run,\
           \ jobs, workflow) {\n  return run.status === 'completed' && run.conclusion === 'success' && jobs.length\
           \ > 0 &&\n    jobs.filter(job => job.conclusion !== 'skipped').every(job => job.status === 'completed'\
           \ && job.conclusion === 'success') &&\n    workflow.steps.every(name => jobs.some(job => job.conclusion\
@@ -130,12 +134,13 @@ jobs:
           \ before deploy; no dispatch submitted');\n      await github.rest.actions.createWorkflowDispatch({...repo,\
           \ workflow_id: policy.deployWorkflow, ref: policy.branch,\n        inputs: {kind: 'dependencies', reason:\
           \ `Tested compatible Dependabot PR ${pr.number}`, dry_run: 'false', skip_docker_smoke: 'false', expected_sha:\
-          \ merged.sha}});\n    }\n    if (policy.deploymentQueue) {\n      await github.rest.repos.createDeployment({...repo,\
-          \ ref: merged.sha, environment: 'production', task: 'dependency-update', auto_merge: false, required_contexts:\
-          \ [],\n        description: `Tested compatible Dependabot PR ${pr.number}`, payload: {schema: 1, kind:\
-          \ 'compatible-dependency-update', pr: pr.number, tested_head: pr.head.sha, workflow_run: context.runId}});\n\
-          \    }\n    // One merge per run: later branches must rebase and rerun their tests.\n    break;\n  }\n\
-          \  core.info(JSON.stringify(summary));\n  await core.summary.addHeading('Dependency update gate').addCodeBlock(JSON.stringify(summary,null,2),'json').write();\n\
+          \ merged.sha}});\n    }\n    if (policy.deploymentQueue && files.some(file => !file.filename.startsWith('.github/')))\
+          \ {\n      await github.rest.repos.createDeployment({...repo, ref: merged.sha, environment: 'production',\
+          \ task: 'dependency-update', auto_merge: false, required_contexts: [],\n        description: `Tested compatible\
+          \ Dependabot PR ${pr.number}`, payload: {schema: 1, kind: 'compatible-dependency-update', pr: pr.number,\
+          \ tested_head: pr.head.sha, workflow_run: context.runId}});\n    }\n    // One merge per run: later branches\
+          \ must rebase and rerun their tests.\n    break;\n  }\n  core.info(JSON.stringify(summary));\n  await\
+          \ core.summary.addHeading('Dependency update gate').addCodeBlock(JSON.stringify(summary,null,2),'json').write();\n\
           \  return summary;\n}\n\nawait run(github, context, core, policy);\n"
       env:
         DEPENDENCY_REVIEWS: ${{ vars.DEPENDENCY_REVIEWS }}
