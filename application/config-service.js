@@ -1,6 +1,7 @@
 // config.js
 require("dotenv").config({ quiet: true });
 const debug = require('debug')('48hr-email:config-service')
+const { isIP } = require('node:net')
 
 // Migration helper: warn about deprecated env vars
 if (process.env.USER_SESSION_SECRET && !process.env.HTTP_SESSION_SECRET) {
@@ -34,6 +35,20 @@ function parseValue(v) {
 function parseBool(v) {
     if (v === undefined) return undefined;
     return v === true || v === "true";
+}
+
+function parseTrustedProxies(value) {
+    const proxies = parseValue(value) || []
+    if (!Array.isArray(proxies) || !proxies.every(proxy => {
+        if (typeof proxy !== 'string') return false
+        const parts = proxy.split('/')
+        const family = isIP(parts[0])
+        if (!family || parts.length > 2) return false
+        return parts.length === 1 || (/^(0|[1-9]\d*)$/.test(parts[1]) && Number(parts[1]) <= (family === 4 ? 32 : 128))
+    })) {
+        throw new Error('HTTP_TRUST_PROXY must be a JSON array of proxy IP addresses or CIDR ranges')
+    }
+    return proxies
 }
 
 const config = {
@@ -81,6 +96,7 @@ const config = {
     },
 
     http: {
+        trustedProxies: parseTrustedProxies(process.env.HTTP_TRUST_PROXY),
         port: Number(process.env.HTTP_PORT),
         baseUrl: parseValue(process.env.HTTP_BASE_URL) || 'http://localhost:3000',
         sessionSecret: parseValue(process.env.HTTP_SESSION_SECRET) || parseValue(process.env.USER_SESSION_SECRET) || 'change-me-in-production',

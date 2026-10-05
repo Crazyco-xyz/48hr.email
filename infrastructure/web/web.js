@@ -32,6 +32,7 @@ const handleRouteError = (error, req, res, next, context = 'route') => {
 
 // Init express middleware
 const app = express()
+app.set('trust proxy', config.http.trustedProxies)
 app.use(helmet())
 app.use(compression())
 app.set('config', config)
@@ -67,7 +68,7 @@ app.use(botDetect)
 // If bot detected and not suppressed, render only the popup page and halt further processing
 app.use((req, res, next) => {
     // Allow static assets (css, js, images, favicon, etc) and all /api/* routes even if bot detected
-    if (res.locals.suspectedBot && !(req.cookies && req.cookies.bot_check_passed)) {
+    if (res.locals.suspectedBot) {
         const asset = req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot)$/i);
         if (asset) return next();
         if (req.path.startsWith('/api/')) return next();
