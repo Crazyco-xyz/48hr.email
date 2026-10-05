@@ -13,9 +13,6 @@ updates:
     prefix: '[chore] deps'
   cooldown:
     default-days: 1
-    semver-major-days: 7
-    semver-minor-days: 3
-    semver-patch-days: 1
 - package-ecosystem: docker
   directories:
   - /
@@ -29,9 +26,6 @@ updates:
     prefix: '[chore] deps'
   cooldown:
     default-days: 1
-    semver-major-days: 7
-    semver-minor-days: 3
-    semver-patch-days: 1
 - package-ecosystem: github-actions
   directories:
   - /
@@ -45,6 +39,3 @@ updates:
     prefix: '[chore] deps'
   cooldown:
     default-days: 1
-    semver-major-days: 7
-    semver-minor-days: 3
-    semver-patch-days: 1
