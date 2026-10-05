@@ -98,6 +98,14 @@ class ImapService extends EventEmitter {
         this.initialLoadDone = false
         this.loadingInProgress = false
         this.lastRefreshTime = null
+
+        // Reconnection state. A dropped connection is recovered from instead of
+        // being treated as fatal (see issue #24).
+        this._imapConfig = null
+        this.reconnecting = false
+        this.reconnectAttempts = 0
+        this.intentionallyClosed = false
+        this._reconnectPromise = null
     }
 
     async connectAndLoadMessages() {
@@ -116,6 +124,9 @@ class ImapService extends EventEmitter {
             onmail: () => this._doOnNewMail()
         }
 
+        // Reuse the same IMAP options for every reconnect attempt.
+        this._imapConfig = imapConfig
+
         this.once(ImapService.EVENT_INITIAL_LOAD_DONE, () =>
             this._doAfterInitialLoad()
         )
@@ -123,26 +134,18 @@ class ImapService extends EventEmitter {
         await this._connectWithRetry(imapConfig)
 
         // Load all messages in the background. (ASYNC)
-        this._loadMailSummariesAndEmitAsEvents()
+        this._loadMailSummariesAndEmitAsEvents().catch(error =>
+            debug('Initial load failed:', error.message))
     }
 
-    async _connectWithRetry(configWithListener) {
+    async _connectWithRetry(configWithListener, retries = 5) {
         try {
             await retry(
                 async _bail => {
                     // If anything throws, we retry
-                    this.connection = await imaps.connect(configWithListener)
-
-                    this.connection.on('error', err => {
-                        // We assume that the app will be restarted after a crash.
-                        console.error('Got fatal error during imap operation, stop app.', err)
-                        this.emit('error', err)
-                    })
-
-                    await this.connection.openBox('INBOX')
-                    debug('Connected to imap Server at ' + this.config.imap.host)
+                    await this._connectOnce(configWithListener)
                 }, {
-                    retries: 5
+                    retries
                 }
             )
         } catch (error) {
@@ -151,17 +154,148 @@ class ImapService extends EventEmitter {
         }
     }
 
+    /**
+     * Open a single connection, select INBOX and start watching it for drops.
+     * The previous connection (if any) is abandoned; its late events are ignored.
+     * @param {Object} configWithListener
+     * @private
+     */
+    async _connectOnce(configWithListener) {
+        const connection = await imaps.connect(configWithListener)
+
+        try {
+            await connection.openBox('INBOX')
+        } catch (error) {
+            // Don't leak a half-open connection and don't let its events schedule
+            // a reconnect for a connection we never adopted.
+            try { connection.end() } catch { /* ignore */ }
+            throw error
+        }
+
+        this._attachConnection(connection)
+        debug('Connected to imap Server at ' + this.config.imap.host)
+    }
+
+    /**
+     * Adopt a live connection and watch it for failure. A dropped connection is no
+     * longer fatal: it schedules a reconnect instead of taking the whole app down.
+     * @param {Object} connection
+     * @private
+     */
+    _attachConnection(connection) {
+        this.connection = connection
+
+        const onError = error => {
+            if (connection !== this.connection) return
+            debug('IMAP connection error:', error.message)
+            console.error('IMAP connection error:', error.message)
+            this._onConnectionLost(error)
+        }
+        const onClose = () => {
+            if (connection !== this.connection) return
+            if (this.intentionallyClosed) return
+            debug('IMAP connection closed')
+            this._onConnectionLost(new Error('IMAP connection closed'))
+        }
+
+        connection.on('error', onError)
+        connection.on('close', onClose)
+        connection.on('end', onClose)
+    }
+
+    _onConnectionLost(error) {
+        // Drop the dead reference so callers fail fast and loading pauses until
+        // a live connection is back.
+        this.connection = null
+        this.emit(ImapService.EVENT_CONNECTION_LOST, error)
+        this._scheduleReconnect()
+    }
+
+    /**
+     * Start the reconnect loop if one is not already running. Safe to call repeatedly.
+     * @private
+     */
+    _scheduleReconnect() {
+        if (this.intentionallyClosed || this.reconnecting) return
+
+        this.reconnecting = true
+        this.reconnectAttempts = 0
+        this.emit(ImapService.EVENT_RECONNECTING)
+
+        this._reconnectPromise = this._reconnectLoop()
+            .catch(error => {
+                debug('Reconnect loop ended unexpectedly:', error.message)
+            })
+            .finally(() => {
+                this.reconnecting = false
+                this._reconnectPromise = null
+            })
+    }
+
+    /**
+     * Keep trying until a live connection is re-established, with exponential backoff.
+     * On success the connection is adopted, INBOX is re-opened and messages are re-synced.
+     * @private
+     */
+    async _reconnectLoop() {
+        const baseDelay = this.config.imap.reconnectBaseDelayMs || 1000
+        const maxDelay = this.config.imap.reconnectMaxDelayMs || 30000
+
+        while (!this.intentionallyClosed) {
+            this.reconnectAttempts++
+            const delay = Math.min(maxDelay, baseDelay * Math.pow(2, this.reconnectAttempts - 1))
+            debug(`IMAP reconnect attempt ${this.reconnectAttempts} in ${delay}ms`)
+            await this._sleep(delay)
+
+            if (this.intentionallyClosed) break
+
+            try {
+                await this._connectOnce(this._imapConfig)
+                const attempts = this.reconnectAttempts
+                this.reconnectAttempts = 0
+                // Announce only once the loop is no longer reconnecting.
+                this.reconnecting = false
+                this.emit(ImapService.EVENT_RECONNECTED, { attempts })
+                debug(`Reconnected to IMAP after ${attempts} attempt(s)`)
+
+                // Catch up on whatever arrived while we were disconnected.
+                this._loadMailSummariesAndEmitAsEvents().catch(error =>
+                    debug('Post-reconnect load failed:', error.message))
+                return
+            } catch (error) {
+                debug(`IMAP reconnect attempt ${this.reconnectAttempts} failed:`, error.message)
+            }
+        }
+    }
+
+    _sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms))
+    }
+
+    /**
+     * Stop watching and close the connection without triggering a reconnect.
+     */
+    close() {
+        this.intentionallyClosed = true
+        if (this.connection) {
+            try { this.connection.end() } catch { /* ignore */ }
+            this.connection = null
+        }
+    }
+
     _doOnNewMail() {
         // Only react to new mails after the initial load, otherwise it might load the same mails twice.
         if (this.initialLoadDone) {
-            this._loadMailSummariesAndEmitAsEvents()
+            this._loadMailSummariesAndEmitAsEvents().catch(error =>
+                debug('On-new-mail load failed:', error.message))
         }
     }
 
     _doAfterInitialLoad() {
         // During initial load we ignored new incoming emails. In order to catch up with those, we have to refresh
         // the mails once after the initial load. (async)
-        this._loadMailSummariesAndEmitAsEvents()
+        this._loadMailSummariesAndEmitAsEvents().catch(error =>
+            debug('Post-initial-load refresh failed:', error.message))
 
         // If the above trigger on new mails does not work reliable, we have to regularly check
         // for new mails on the server. This is done only after all the mails have been loaded for the
@@ -173,7 +307,8 @@ class ImapService extends EventEmitter {
             setInterval(
                 () => {
                     this.lastRefreshTime = Date.now()
-                    this._loadMailSummariesAndEmitAsEvents()
+                    this._loadMailSummariesAndEmitAsEvents().catch(error =>
+                        debug('Scheduled refresh failed:', error.message))
                 },
                 this.config.imap.refreshIntervalSeconds * 1000
             )
@@ -187,63 +322,72 @@ class ImapService extends EventEmitter {
             return
         }
 
+        if (!this.connection) {
+            debug('Load skipped: no live IMAP connection')
+            return
+        }
+
         this.loadingInProgress = true
-        if (this.initialLoadDone) {
-            debug('Updating mail summaries from server...')
-        } else {
-            debug('Fetching mail summaries from server...')
-        }
-
-        const uids = await this._getAllUids()
-        const newUids = uids.filter(uid => !this.loadedUids.has(uid))
-        debug(`UIDs on server: ${uids.length}, new UIDs to fetch: ${newUids.length}, already loaded: ${this.loadedUids.size}`)
-
-        // Tuneable chunk size & concurrency for faster initial loads
-        const chunkSize = this.config.imap.fetchChunkSize
-        const concurrency = this.config.imap.fetchConcurrency
-
-        // Chunk newest-first UIDs to balance speed and first-paint
-        const uidChunks = []
-        for (let i = 0; i < newUids.length; i += chunkSize) {
-            uidChunks.push(newUids.slice(i, i + chunkSize))
-        }
-        debug(`Chunk size: ${chunkSize}, concurrency: ${concurrency}, chunks to process: ${uidChunks.length}`)
-
-        // Limited-concurrency worker
-        const pool = []
-        let workerId = 0
-        const runNext = async() => {
-            if (workerId >= uidChunks.length) return
-            const chunkId = workerId++
-                const chunk = uidChunks[chunkId]
-            try {
-                debug(`Worker processing chunk ${chunkId + 1}/${uidChunks.length} (size: ${chunk.length})`)
-                await this._getMailHeadersAndEmitAsEvents(chunk)
-                debug(`Completed chunk ${chunkId + 1}/${uidChunks.length}; loadedUids size now: ${this.loadedUids.size}`)
-            } finally {
-                await runNext()
+        try {
+            if (this.initialLoadDone) {
+                debug('Updating mail summaries from server...')
+            } else {
+                debug('Fetching mail summaries from server...')
             }
-        }
 
-        // Start workers
-        const workers = Math.min(concurrency, uidChunks.length)
-        for (let i = 0; i < workers; i++) {
-            pool.push(runNext())
-        }
-        await Promise.all(pool)
-        debug(`All chunks processed. Final loadedUids size: ${this.loadedUids.size}`)
+            const uids = await this._getAllUids()
+            const newUids = uids.filter(uid => !this.loadedUids.has(uid))
+            debug(`UIDs on server: ${uids.length}, new UIDs to fetch: ${newUids.length}, already loaded: ${this.loadedUids.size}`)
 
-        // Mark initial load done only after all chunks complete to avoid double-runs
-        if (!this.initialLoadDone) {
-            this.initialLoadDone = true
-            this.emit(ImapService.EVENT_INITIAL_LOAD_DONE)
-            debug('Emitted initial load done')
-        }
+            // Tuneable chunk size & concurrency for faster initial loads
+            const chunkSize = this.config.imap.fetchChunkSize
+            const concurrency = this.config.imap.fetchConcurrency
 
-        this.loadingInProgress = false
-        debug('Finished updating mail summary list')
+            // Chunk newest-first UIDs to balance speed and first-paint
+            const uidChunks = []
+            for (let i = 0; i < newUids.length; i += chunkSize) {
+                uidChunks.push(newUids.slice(i, i + chunkSize))
+            }
+            debug(`Chunk size: ${chunkSize}, concurrency: ${concurrency}, chunks to process: ${uidChunks.length}`)
+
+            // Limited-concurrency worker
+            const pool = []
+            let workerId = 0
+            const runNext = async() => {
+                if (workerId >= uidChunks.length) return
+                const chunkId = workerId++
+                const chunk = uidChunks[chunkId]
+                try {
+                    debug(`Worker processing chunk ${chunkId + 1}/${uidChunks.length} (size: ${chunk.length})`)
+                    await this._getMailHeadersAndEmitAsEvents(chunk)
+                    debug(`Completed chunk ${chunkId + 1}/${uidChunks.length}; loadedUids size now: ${this.loadedUids.size}`)
+                } finally {
+                    await runNext()
+                }
+            }
+
+            // Start workers
+            const workers = Math.min(concurrency, uidChunks.length)
+            for (let i = 0; i < workers; i++) {
+                pool.push(runNext())
+            }
+            await Promise.all(pool)
+            debug(`All chunks processed. Final loadedUids size: ${this.loadedUids.size}`)
+
+            // Mark initial load done only after all chunks complete to avoid double-runs
+            if (!this.initialLoadDone) {
+                this.initialLoadDone = true
+                this.emit(ImapService.EVENT_INITIAL_LOAD_DONE)
+                debug('Emitted initial load done')
+            }
+
+            debug('Finished updating mail summary list')
+        } finally {
+            // Always release the lock: if the connection dropped mid-load, a stuck
+            // flag would silently skip every future refresh.
+            this.loadingInProgress = false
+        }
     }
-
     /**
      *
      * @param {Date} deleteMailsBefore delete mails before this date instance
@@ -349,6 +493,11 @@ class ImapService extends EventEmitter {
      * @param uid delete specific mail per UID
      */
     async deleteSpecificEmail(uid) {
+        if (!this.connection) {
+            debug(`Cannot delete UID ${uid}: no live IMAP connection`)
+            return
+        }
+
         if (!this.config.email.examples.uids.includes(parseInt(uid))) {
             await this.connection.deleteMessage(uid)
             debug(`Deleted UID ${uid}`)
@@ -548,5 +697,8 @@ ImapService.EVENT_NEW_MAIL = 'mail'
 ImapService.EVENT_DELETED_MAIL = 'mailDeleted'
 ImapService.EVENT_INITIAL_LOAD_DONE = 'initial load done'
 ImapService.EVENT_ERROR = 'error'
+ImapService.EVENT_CONNECTION_LOST = 'connection lost'
+ImapService.EVENT_RECONNECTING = 'reconnecting'
+ImapService.EVENT_RECONNECTED = 'reconnected'
 
 module.exports = ImapService

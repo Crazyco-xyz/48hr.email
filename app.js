@@ -281,6 +281,21 @@ imapService.on(ImapService.EVENT_DELETED_MAIL, mail =>
 )
 debug('Bound IMAP deleted mail event handler')
 
+// A dropped IMAP connection is recoverable: ImapService reconnects with backoff,
+// so these are logged rather than treated as fatal (issue #24).
+imapService.on(ImapService.EVENT_CONNECTION_LOST, error => {
+    const message = error && error.message ? error.message : error
+    debug('IMAP connection lost, reconnecting:', message)
+    console.error('IMAP connection lost, reconnecting:', message)
+})
+imapService.on(ImapService.EVENT_RECONNECTING, () => {
+    debug('IMAP reconnect in progress')
+})
+imapService.on(ImapService.EVENT_RECONNECTED, info => {
+    debug('IMAP reconnected after %d attempt(s)', info && info.attempts)
+    console.log(`Reconnected to the mail server (after ${info && info.attempts} attempt(s))`)
+})
+
 mailProcessingService.on('error', err => {
     debug('Fatal error from mail processing service:', err.message)
     console.error('Error from mailProcessingService, stopping.', err)

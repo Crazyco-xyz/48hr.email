@@ -66,7 +66,9 @@ const config = {
         authTimeout: Number(process.env.IMAP_AUTH_TIMEOUT),
         refreshIntervalSeconds: Number(process.env.IMAP_REFRESH_INTERVAL_SECONDS),
         fetchChunkSize: Number(process.env.IMAP_FETCH_CHUNK) || 100,
-        fetchConcurrency: Number(process.env.IMAP_CONCURRENCY) || 6
+        fetchConcurrency: Number(process.env.IMAP_CONCURRENCY) || 6,
+        reconnectBaseDelayMs: Number(process.env.IMAP_RECONNECT_BASE_DELAY_MS) || 1000,
+        reconnectMaxDelayMs: Number(process.env.IMAP_RECONNECT_MAX_DELAY_MS) || 30000
     },
 
     smtp: {
