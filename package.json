@@ -28,13 +28,14 @@
         "start": "node --trace-warnings ./app.js",
         "debug": "DEBUG=48hr-email:* node --nolazy --inspect-brk=9229 --trace-warnings ./app.js",
         "ux-debug": "UX_DEBUG_MODE=true node --trace-warnings ./app.js",
-        "test": "xo",
-        "env:check": "node scripts/check-env.js"
+        "test": "node --test test/*.test.js",
+        "env:check": "node scripts/check-env.js",
+        "lint": "eslint ."
     },
     "dependencies": {
         "async-retry": "^1.3.3",
         "bcrypt": "^6.0.0",
-        "better-sqlite3": "^12.5.0",
+        "better-sqlite3": "^13.0.3",
         "compression": "^1.8.1",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
@@ -45,41 +46,27 @@
         "express-validator": "^7.3.1",
         "helmet": "^3.23.3",
         "imap-simple": "^1.6.3",
-        "mailparser": "^3.9.1",
+        "mailparser": "^3.9.35",
         "mnemonist": "^0.27.2",
-        "morgan": "^1.10.1",
-        "nodemailer": "^7.0.12",
+        "morgan": "^1.12.1",
+        "nodemailer": "^10.0.15",
         "random-word": "^2.0.0",
         "sanitize-html": "^2.17.0",
         "socket.io": "^4.8.3",
-        "twig": "^0.10.3"
+        "twig": "^3.0.0"
     },
     "devDependencies": {
-        "xo": "^0.59.3"
+        "eslint": "^10.12.0",
+        "eslint-config-xo": "^5.0.0",
+        "prettier": "^3.9.6",
+        "globals": "^17.13.0"
     },
     "engines": {
-        "node": "22.x"
+        "node": "^22.13.0 || ^24.0.0"
     },
-    "xo": {
-        "semicolon": false,
-        "prettier": true,
-        "rules": {
-            "no-unused-vars": [
-                "error",
-                {
-                    "argsIgnorePattern": "^_"
-                }
-            ]
-        },
-        "overrides": [{
-            "files": "public/javascripts/*.js",
-            "esnext": false,
-            "env": [
-                "browser"
-            ],
-            "globals": [
-                "io"
-            ]
-        }]
+    "overrides": {
+        "utf7": {
+            "semver": "^5.7.2"
+        }
     }
 }
