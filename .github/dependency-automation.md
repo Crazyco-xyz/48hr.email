@@ -9,3 +9,7 @@ Major versions, pre-1.0 minor changes, maintainer changes, unusual versions and 
 Missing or failing CI, unresolved migrations, custom source changes and explicit hold labels are technical blockers for the agent to resolve. They are not a human review queue. Rebased or edited commits invalidate the recorded review.
 
 Set `DEPENDENCY_AUTOMATION_PAUSED=true` to pause merging. Manual workflow dispatch defaults to audit; schedules and completed CI can apply eligible updates. Privileged merge workflows never check out or run PR code.
+
+For a signed agent-owned update, the administrator review also binds `author` to the PR login and the PR must use a `dependency-review/` branch. The gate preserves the exact tested signed commit through a guarded fast-forward. Source migrations remain separate commits with their own tests.
+
+Workflow-only updates do not enqueue application deployment. This guest runtime profile currently accepts signed compatible bot runtime updates; agent-owned runtime changes and reviewed majors remain a technical deployment-profile migration for the agent before merge.
