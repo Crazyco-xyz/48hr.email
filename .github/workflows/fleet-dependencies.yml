@@ -1,10 +1,10 @@
-# Pause all automatic merges with repository variable DEPENDENCY_AUTOMATION_PAUSED=true.
+# Pause automatic merges with DEPENDENCY_AUTOMATION_PAUSED=true.
 name: Fleet dependency updates
 'on':
   workflow_dispatch:
     inputs:
       mode:
-        description: Audit only or apply tested compatible updates
+        description: Audit or apply tested updates with agent compatibility review
         type: choice
         required: true
         default: audit
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-    - name: Verify and apply compatible updates
+    - name: Verify and apply tested dependency updates
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
       with:
         script: "const policy = {\"repository\":\"Crazyco-xyz/48hr.email\",\"branch\":\"main\",\"dependencyFiles\"\
@@ -44,32 +44,45 @@ jobs:
           \ after) {\n  const parse = value => /^v?(\\d+)\\.(\\d+)\\.(\\d+)$/.exec(value)?.slice(1).map(Number);\n\
           \  const old = parse(before), next = parse(after);\n  if (!old || !next || old[0] !== next[0]) return\
           \ false;\n  if (old[0] === 0 && old[1] !== next[1]) return false;\n  return next[1] > old[1] || next[1]\
-          \ === old[1] && next[2] > old[2];\n}\nfunction classify(pr, commits, files, policy) {\n  if (!policy.requiredWorkflows.length)\
-          \ return 'no meaningful CI configured';\n  if (pr.state !== 'open' || pr.draft || pr.user.login !== 'dependabot[bot]')\
-          \ return 'not an open Dependabot PR';\n  if (pr.base.ref !== policy.branch || pr.head.repo?.full_name\
-          \ !== policy.repository || !pr.head.ref.startsWith('dependabot/')) return 'branch or repository mismatch';\n\
-          \  if (pr.labels.some(label => /^(hold|manual|breaking|do-not-merge|review-required)$/i.test(label.name)))\
-          \ return 'manual hold';\n  if (/maintainer changes|\\bbreaking changes?\\b|\\bbreaking-change\\b/i.test(pr.body\
-          \ || '')) return 'breaking or maintainer changes require review';\n  if (commits.length !== 1 || commits[0].sha\
-          \ !== pr.head.sha || commits[0].author?.login !== 'dependabot[bot]' || !commits[0].commit.verification?.verified)\
-          \ return 'unverified or edited bot commit';\n  const message = commits[0].commit.message;\n  if ((message.match(/^\\\
-          s*-?\\s*dependency-name:/gm) || []).length !== 1) return 'grouped or unknown dependency metadata';\n \
-          \ if (!/^\\s*update-type: version-update:semver-(patch|minor)\\s*$/m.test(message)) return 'major or unknown\
-          \ update type';\n  const versions = /^Bumps .+ from (v?\\d+\\.\\d+\\.\\d+) to (v?\\d+\\.\\d+\\.\\d+)\\\
-          .$/m.exec(message);\n  if (!versions || !compatibleVersion(versions[1], versions[2])) return 'unknown,\
-          \ prerelease, downgrade or breaking version';\n  if (!files.length || files.length > 50 || files.some(file\
-          \ => file.status !== 'modified' || !policy.dependencyFiles.includes(file.filename))) return 'changes outside\
-          \ existing dependency files';\n  return null;\n}\nfunction successfulRun(run, jobs, workflow) {\n  return\
-          \ run.status === 'completed' && run.conclusion === 'success' && jobs.length > 0 &&\n    jobs.filter(job\
-          \ => job.conclusion !== 'skipped').every(job => job.status === 'completed' && job.conclusion === 'success')\
-          \ &&\n    workflow.steps.every(name => jobs.some(job => job.conclusion === 'success' && job.steps?.some(step\
-          \ => step.name === name && step.status === 'completed' && step.conclusion === 'success')));\n}\nasync\
-          \ function run(github, context, core, policy) {\n  const repo = context.repo;\n  if (`${repo.owner}/${repo.repo}`\
-          \ !== policy.repository) throw new Error('Repository policy mismatch');\n  const apply = context.eventName\
-          \ !== 'workflow_dispatch' || context.payload.inputs?.mode === 'apply';\n  const summary = {mode: apply\
-          \ ? 'apply' : 'audit', assessed: 0, merged: [], held: []};\n  const prs = await github.paginate(github.rest.pulls.list,\
-          \ {...repo, state: 'open', base: policy.branch, per_page: 100});\n  for (const item of prs.filter(pr =>\
-          \ pr.user.login === 'dependabot[bot]').sort((a,b) => a.number-b.number)) {\n    const {data: pr} = await\
+          \ === old[1] && next[2] > old[2];\n}\nfunction reviewedUpdate(pr, policy) {\n  return (policy.reviews\
+          \ || []).find(review => review.pr === pr.number &&\n    review.head === pr.head.sha && review.base ===\
+          \ pr.base.sha &&\n    review.compatibility === 'verified' && typeof review.rationale === 'string' && review.rationale.trim().length\
+          \ >= 40 &&\n    Array.isArray(review.evidence) && review.evidence.length > 0 &&\n    review.evidence.every(url\
+          \ => typeof url === 'string' && /^https:\\/\\//.test(url)) &&\n    Array.isArray(review.allowedFiles));\n\
+          }\nfunction classify(pr, commits, files, policy) {\n  if (!policy.requiredWorkflows.length) return 'no\
+          \ meaningful CI configured';\n  const review = reviewedUpdate(pr, policy);\n  const bot = pr.user.login\
+          \ === 'dependabot[bot]';\n  const reviewedAuthor = review?.author === pr.user.login;\n  if (pr.state !==\
+          \ 'open' || pr.draft || !bot && !reviewedAuthor) return 'not an open dependency PR approved by the agent';\n\
+          \  if (pr.base.ref !== policy.branch || pr.head.repo?.full_name?.toLowerCase() !== policy.repository.toLowerCase()\
+          \ || !pr.head.ref.startsWith(bot ? 'dependabot/' : 'dependency-review/')) return 'branch or repository\
+          \ mismatch';\n  if (pr.labels.some(label => /^(hold|manual|breaking|do-not-merge|review-required)$/i.test(label.name)))\
+          \ return 'manual hold';\n  if (!review && /maintainer changes|\\bbreaking changes?\\b|\\bbreaking-change\\\
+          b/i.test(pr.body || '')) return 'agent compatibility review pending';\n  if (commits.length !== 1 || commits[0].sha\
+          \ !== pr.head.sha || commits[0].author?.login !== pr.user.login || !commits[0].commit.verification?.verified)\
+          \ return 'unverified or edited dependency commit';\n  const message = commits[0].commit.message;\n  if\
+          \ ((message.match(/^\\s*-?\\s*dependency-name:/gm) || []).length !== 1) return 'grouped or unknown dependency\
+          \ metadata';\n  if (!review && !/^\\s*update-type: version-update:semver-(patch|minor)\\s*$/m.test(message))\
+          \ return 'agent compatibility review pending';\n  const versions = /^Bumps .+ from (v?\\d+\\.\\d+\\.\\\
+          d+) to (v?\\d+\\.\\d+\\.\\d+)\\.$/m.exec(message);\n  if (!review && (!versions || !compatibleVersion(versions[1],\
+          \ versions[2]))) return 'agent compatibility review pending';\n  if (!files.length || files.length > 50\
+          \ || files.some(file => file.status !== 'modified' ||\n    !policy.dependencyFiles.includes(file.filename)\
+          \ && !(review?.allowedFiles.includes(file.filename) && /^\\.github\\/workflows\\/[^/]+\\.ya?ml$/.test(file.filename))))\
+          \ return 'changes outside reviewed dependency files';\n  return null;\n}\nfunction successfulRun(run,\
+          \ jobs, workflow) {\n  return run.status === 'completed' && run.conclusion === 'success' && jobs.length\
+          \ > 0 &&\n    jobs.filter(job => job.conclusion !== 'skipped').every(job => job.status === 'completed'\
+          \ && job.conclusion === 'success') &&\n    workflow.steps.every(name => jobs.some(job => job.conclusion\
+          \ === 'success' && job.steps?.some(step => step.name === name && step.status === 'completed' && step.conclusion\
+          \ === 'success')));\n}\nasync function run(github, context, core, policy) {\n  const repo = context.repo;\n\
+          \  if (`${repo.owner}/${repo.repo}`.toLowerCase() !== policy.repository.toLowerCase()) throw new Error('Repository\
+          \ policy mismatch');\n  const apply = context.eventName !== 'workflow_dispatch' || context.payload.inputs?.mode\
+          \ === 'apply';\n  const summary = {mode: apply ? 'apply' : 'audit', assessed: 0, merged: [], held: []};\n\
+          \  // Repository variables are controlled by administrators, not by PR content.\n  // Keeping reviews\
+          \ outside Git avoids advancing the base SHA just to record approval.\n  const reviews = JSON.parse(process.env.DEPENDENCY_REVIEWS\
+          \ || '{\"schema\":1,\"reviews\":[]}');\n  if (reviews.schema !== 1 || !Array.isArray(reviews.reviews))\
+          \ throw new Error('Invalid dependency review registry');\n  policy = {...policy, reviews: reviews.reviews};\n\
+          \  const prs = await github.paginate(github.rest.pulls.list, {...repo, state: 'open', base: policy.branch,\
+          \ per_page: 100});\n  for (const item of prs.filter(pr => pr.user.login === 'dependabot[bot]' || reviewedUpdate(pr,\
+          \ policy)?.author === pr.user.login).sort((a,b) => a.number-b.number)) {\n    const {data: pr} = await\
           \ github.rest.pulls.get({...repo, pull_number: item.number});\n    summary.assessed++;\n    const commits\
           \ = await github.paginate(github.rest.pulls.listCommits, {...repo, pull_number: pr.number, per_page: 100});\n\
           \    const files = await github.paginate(github.rest.pulls.listFiles, {...repo, pull_number: pr.number,\
@@ -99,13 +112,22 @@ jobs:
           \      if (fresh.head.sha !== pr.head.sha || fresh.base.sha !== branch.commit.sha || fresh.mergeable !==\
           \ true || fresh.mergeable_state !== 'clean') held = 'PR changed or mergeability not verified';\n    }\n\
           \    if (held) {summary.held.push({pr: pr.number, reason: held}); continue;}\n    if (!apply) {summary.held.push({pr:\
-          \ pr.number, reason: 'eligible; audit mode'}); continue;}\n    // sha is the server-enforced compare-and-swap\
-          \ guard. Never enable blind platform auto-merge.\n    const {data: merged} = await github.rest.pulls.merge({...repo,\
-          \ pull_number: pr.number, sha: pr.head.sha, merge_method: policy.mergeMethod});\n    if (!merged.merged)\
-          \ throw new Error(`Merge was not confirmed for PR ${pr.number}; reconcile before retrying`);\n    summary.merged.push({pr:\
-          \ pr.number, sha: merged.sha});\n    if (policy.deployWorkflow) {\n      const {data: branch} = await\
-          \ github.rest.repos.getBranch({...repo, branch: policy.branch});\n      if (branch.commit.sha !== merged.sha)\
-          \ throw new Error('Branch advanced before deploy; no dispatch submitted');\n      await github.rest.actions.createWorkflowDispatch({...repo,\
+          \ pr.number, reason: 'eligible; audit mode'}); continue;}\n    let merged;\n    if (pr.user.login !==\
+          \ 'dependabot[bot]') {\n      // Preserve the agent's verified signed commit and both identity fields.\n\
+          \      // With one direct parent, fast-forward rejects any concurrently advanced base.\n      if (commits[0].parents?.length\
+          \ !== 1 || commits[0].parents[0].sha !== pr.base.sha) throw new Error('Reviewed commit is not a direct\
+          \ child of the tested base');\n      const {data: ref} = await github.rest.git.updateRef({...repo, ref:\
+          \ `heads/${policy.branch}`, sha: pr.head.sha, force: false});\n      if (ref.object.sha !== pr.head.sha)\
+          \ throw new Error('Reviewed ref update needs reconciliation');\n      const {data: verified} = await github.rest.repos.getBranch({...repo,\
+          \ branch: policy.branch});\n      if (verified.commit.sha !== pr.head.sha) throw new Error('Branch advanced\
+          \ after reviewed ref update; no deployment submitted');\n      merged = {merged: true, sha: pr.head.sha};\n\
+          \    } else {\n      // sha is the server-enforced head guard. Never enable blind platform auto-merge.\n\
+          \      ({data: merged} = await github.rest.pulls.merge({...repo, pull_number: pr.number, sha: pr.head.sha,\
+          \ merge_method: policy.mergeMethod}));\n      if (!merged.merged) throw new Error(`Merge was not confirmed\
+          \ for PR ${pr.number}; reconcile before retrying`);\n    }\n    summary.merged.push({pr: pr.number, sha:\
+          \ merged.sha});\n    if (policy.deployWorkflow) {\n      const {data: branch} = await github.rest.repos.getBranch({...repo,\
+          \ branch: policy.branch});\n      if (branch.commit.sha !== merged.sha) throw new Error('Branch advanced\
+          \ before deploy; no dispatch submitted');\n      await github.rest.actions.createWorkflowDispatch({...repo,\
           \ workflow_id: policy.deployWorkflow, ref: policy.branch,\n        inputs: {kind: 'dependencies', reason:\
           \ `Tested compatible Dependabot PR ${pr.number}`, dry_run: 'false', skip_docker_smoke: 'false', expected_sha:\
           \ merged.sha}});\n    }\n    if (policy.deploymentQueue) {\n      await github.rest.repos.createDeployment({...repo,\
@@ -115,3 +137,5 @@ jobs:
           \    }\n    // One merge per run: later branches must rebase and rerun their tests.\n    break;\n  }\n\
           \  core.info(JSON.stringify(summary));\n  await core.summary.addHeading('Dependency update gate').addCodeBlock(JSON.stringify(summary,null,2),'json').write();\n\
           \  return summary;\n}\n\nawait run(github, context, core, policy);\n"
+      env:
+        DEPENDENCY_REVIEWS: ${{ vars.DEPENDENCY_REVIEWS }}
