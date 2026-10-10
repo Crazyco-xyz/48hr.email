@@ -28,7 +28,7 @@
         "start": "node --trace-warnings ./app.js",
         "debug": "DEBUG=48hr-email:* node --nolazy --inspect-brk=9229 --trace-warnings ./app.js",
         "ux-debug": "UX_DEBUG_MODE=true node --trace-warnings ./app.js",
-        "test": "node --test test/*.test.js",
+        "test": "node scripts/run-tests.js",
         "env:check": "node scripts/check-env.js",
         "lint": "eslint ."
     },
@@ -67,6 +67,9 @@
     "overrides": {
         "utf7": {
             "semver": "^5.7.2"
+        },
+        "micromark-extension-math": {
+            "katex": "0.18.2"
         }
     }
 }
