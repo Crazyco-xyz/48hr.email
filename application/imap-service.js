@@ -106,6 +106,7 @@ class ImapService extends EventEmitter {
         this.reconnectAttempts = 0
         this.intentionallyClosed = false
         this._reconnectPromise = null
+        this._purgeRun = null
     }
 
     async connectAndLoadMessages() {
@@ -393,98 +394,109 @@ class ImapService extends EventEmitter {
      * @param {Date} deleteMailsBefore delete mails before this date instance
      */
     async deleteOldMails(deleteMailsBefore) {
-        let uids;
+        const connection = this.connection
+        if (!connection || this._purgeRun?.connection === connection) return
 
-        // IMAP date filters are unreliable - some servers search internal date, not Date header
-        // Always fetch all UIDs and filter by date header in JavaScript instead
-        const deleteOlderThan = helper.purgeTimeStamp();
-        const searchQuery = [
-            ['!DELETED']
-        ];
-        uids = await this._searchWithoutFetch(searchQuery);
-
-        if (uids.length === 0) return;
-
-        debug(`Starting deleteOldMails. Total UIDs: ${uids.length}`);
-        const HEADER_BATCH_SIZE = this.config.imap.fetchChunkSize
-        const concurrency = this.config.imap.fetchConcurrency || 4;
-        // Chunk UIDs
-        const uidChunks = [];
-        for (let i = 0; i < uids.length; i += HEADER_BATCH_SIZE) {
-            uidChunks.push(uids.slice(i, i + HEADER_BATCH_SIZE));
+        // A timed-out fetch still occupies the IMAP queue. Keep its connection
+        // guarded until those requests settle; a reconnect can start fresh work.
+        const run = { connection, pending: new Set(), running: true, stop: false }
+        this._purgeRun = run
+        try {
+            await this._purgeForConnection(connection, run)
+        } finally {
+            run.running = false
+            this._releasePurge(run)
         }
-        let headers = [];
-        let workerId = 0;
-        const runNext = async() => {
-            if (workerId >= uidChunks.length) return;
-            const chunkId = workerId++;
-            const batch = uidChunks[chunkId];
-            try {
-                const batchHeaders = await Promise.race([
-                    this._getMailHeaders(batch),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Header fetch timeout')), 30000))
-                ]);
-                headers = headers.concat(batchHeaders);
-            } catch (err) {
-                debug(`ERROR in batch ${chunkId+1}: ${err.message}`);
+    }
+
+    _releasePurge(run) {
+        if (!run.running && run.pending.size === 0 && this._purgeRun === run) {
+            this._purgeRun = null
+        }
+    }
+
+    async _purgeForConnection(connection, run) {
+        const cutoff = helper.purgeTimeStamp()
+        const uids = await this._searchWithoutFetch([['!DELETED']], connection)
+        const batchSize = this.config.imap.fetchChunkSize
+        const concurrency = this.config.imap.fetchConcurrency || 4
+        if (!Number.isInteger(batchSize) || batchSize < 1 ||
+            !Number.isInteger(concurrency) || concurrency < 1) {
+            throw new Error('Invalid IMAP purge batch configuration')
+        }
+
+        let offset = 0
+        const worker = async () => {
+            while (offset < uids.length && !run.stop) {
+                const batch = uids.slice(offset, offset + batchSize)
+                offset += batchSize
+                if (this.connection !== connection) return
+                let headers, timer
+                try {
+                    try {
+                        const fetch = Promise.resolve(connection.search([['UID', ...batch]], {
+                            bodies: ['HEADER.FIELDS (TO)'],
+                            envelope: false,
+                            struct: false
+                        }))
+                        run.pending.add(fetch)
+                        const settled = () => {
+                            run.pending.delete(fetch)
+                            this._releasePurge(run)
+                        }
+                        fetch.then(settled, settled)
+                        headers = await Promise.race([
+                            fetch,
+                            new Promise((_, reject) => {
+                                timer = setTimeout(() => reject(new Error('Header fetch timeout')), 30000)
+                            })
+                        ])
+                    } finally {
+                        clearTimeout(timer)
+                    }
+                    if (this.connection !== connection) return
+                    // Resolve current inbox locks after the fetch. Only UID
+                    // numbers survive while deletes wait in the IMAP queue.
+                    const toDelete = this._purgeCandidates(headers, cutoff)
+                    headers = null
+                    if (toDelete.length) {
+                        await connection.deleteMessage(toDelete)
+                        toDelete.forEach(uid => this.emit(ImapService.EVENT_DELETED_MAIL, uid))
+                    }
+                } catch (error) {
+                    debug('Purge batch failed:', error.message)
+                    run.stop = true
+                } finally {
+                    headers = null
+                }
             }
-            await runNext();
-        };
-        // Start workers
-        const pool = [];
-        const workers = Math.min(concurrency, uidChunks.length);
-        for (let i = 0; i < workers; i++) {
-            pool.push(runNext());
         }
-        await Promise.all(pool);
+        await Promise.all(Array.from({ length: Math.min(concurrency, Math.ceil(uids.length / batchSize)) }, worker))
+    }
 
-        // Get locked inboxes if available
-        let lockedAddresses = [];
-        if (this.inboxLock && typeof this.inboxLock.getAllLocked === 'function') {
-            try {
-                lockedAddresses = this.inboxLock.getAllLocked().map(addr => addr.toLowerCase());
-                debug(`Locked inboxes (excluded from purge): ${lockedAddresses.length > 0 ? lockedAddresses.join(', ') : '0'}`);
-            } catch (err) {
-                debug('Could not get locked inboxes for purge:', err.message);
+    _purgeCandidates(headers, cutoff) {
+        const locked = this.inboxLock && typeof this.inboxLock.getAllLocked === 'function'
+            ? this.inboxLock.getAllLocked() : []
+        // A failed lock lookup leaves the batch untouched.
+        if (!Array.isArray(locked) || locked.some(address => typeof address !== 'string')) {
+            throw new Error('Inbox lock lookup failed')
+        }
+        const lockedAddresses = new Set(locked.map(address => address.toLowerCase()))
+        const examples = new Set((this.config.email.examples?.uids || []).map(uid => parseInt(uid)))
+        const result = []
+        for (const mail of headers) {
+            const uid = parseInt(mail.attributes?.uid)
+            if (!Number.isSafeInteger(uid) || uid < 1 || examples.has(uid) ||
+                !mail.attributes?.date || mail.attributes.date.getTime() > cutoff.getTime() ||
+                !Number.isFinite(mail.attributes.date.getTime()) || !mail.parts?.[0]?.body) continue
+            const raw = mail.parts[0].body.to
+            const recipients = (Array.isArray(raw) ? raw : raw == null ? [] : [String(raw)])
+                .flatMap(value => addressparser(value, { flatten: true }))
+            if (!recipients.some(recipient => recipient.address && lockedAddresses.has(recipient.address.toLowerCase()))) {
+                result.push(uid)
             }
         }
-
-        // Ensure exampleUids is defined before filtering
-        const exampleUids = this.config.email.examples && this.config.email.examples.uids ?
-            this.config.email.examples.uids.map(x => parseInt(x)) : [];
-
-        // Filter out mails that are too new, whitelisted, or belong to locked inboxes
-        let filtered = headers;
-
-        // Exclude exampleUids
-        filtered = filtered.filter(mail => !exampleUids.includes(parseInt(mail.attributes.uid)));
-
-        // Exclude locked inboxes
-        filtered = filtered.filter(mail => {
-            const toAddresses = Array.isArray(mail.parts[0].body.to) ?
-                mail.parts[0].body.to.map(a => a.toLowerCase()) : [String(mail.parts[0].body.to).toLowerCase()];
-            return !toAddresses.some(addr => lockedAddresses.includes(addr));
-        });
-
-        // Exclude too new (compare timestamps for Date objects)
-        filtered = filtered.filter(mail => mail.attributes.date && mail.attributes.date.getTime() <= deleteOlderThan.getTime());
-        const toDelete = filtered.map(mail => parseInt(mail.attributes.uid));
-
-        if (toDelete.length === 0) {
-            debug('No mails to delete. (after locked inbox exclusion)');
-            return;
-        }
-
-        debug(`Deleting mails ${toDelete}`);
-        // Batch deletes to avoid IMAP argument limits
-        const BATCH_SIZE = this.config.imap.fetchChunkSize;
-        for (let i = 0; i < toDelete.length; i += BATCH_SIZE) {
-            const batch = toDelete.slice(i, i + BATCH_SIZE);
-            await this.connection.deleteMessage(batch);
-            batch.forEach(uid => {
-                this.emit(ImapService.EVENT_DELETED_MAIL, uid);
-            });
-        }
+        return result
     }
 
 
@@ -526,8 +538,8 @@ class ImapService extends EventEmitter {
      * @returns {Promise<Array<Int>>} Array of UIDs
      * @private
      */
-    async _searchWithoutFetch(searchCriteria) {
-        const imapUnderlying = this.connection.imap;
+    async _searchWithoutFetch(searchCriteria, connection = this.connection) {
+        const imapUnderlying = connection.imap;
         // If searching by UID and the list is too long, batch it
         const UID_BATCH_SIZE = this.config.imap.fetchChunkSize;
         // Detect UID search: ['UID', [array]] or ['UID', '1:500']
