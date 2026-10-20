@@ -5,6 +5,52 @@ const Helper = require('./helper-service')
 const config = require('./config-service')
 const helper = new(Helper)
 
+const CACHE_TTL_MS = 10 * 60 * 1000
+const CACHE_MAX_ENTRIES = 64
+const CACHE_MAX_BYTES = 16 * 1024 * 1024
+
+// Estimate retained storage without serializing/copying MIME bodies. Unknown or
+// excessively complex values are returned normally but are not kept in memory.
+function cacheCost(value) {
+    const pending = [value]
+    const seen = new Set()
+    let bytes = 0
+    let visited = 0
+    while (pending.length) {
+        if (++visited > 4096 || visited + pending.length > 4096) return Infinity
+        const item = pending.pop()
+        if (typeof item === 'string') bytes += item.length * 2 + 48
+        else if (item === null || typeof item !== 'object') {
+            if (typeof item === 'function' || typeof item === 'symbol') return Infinity
+            bytes += 16
+        } else if (!seen.has(item)) {
+            seen.add(item)
+            bytes += 128
+            if (item instanceof ArrayBuffer) bytes += item.byteLength
+            else if (ArrayBuffer.isView(item)) pending.push(item.buffer)
+            else if (item instanceof Map || item instanceof Set) {
+                for (const entry of item) {
+                    if (visited + pending.length > 4096) return Infinity
+                    pending.push(entry)
+                }
+            } else if (!(item instanceof Date)) {
+                const prototype = Object.getPrototypeOf(item)
+                if (!Array.isArray(item) && prototype !== Object.prototype && prototype !== null) return Infinity
+                for (const key in item) {
+                    if (!Object.hasOwn(item, key)) continue
+                    if (visited + pending.length > 4096) return Infinity
+                    const descriptor = Object.getOwnPropertyDescriptor(item, key)
+                    if (!Object.hasOwn(descriptor, 'value')) return Infinity
+                    bytes += key.length * 2 + 32
+                    pending.push(descriptor.value)
+                }
+            }
+        }
+        if (bytes > CACHE_MAX_BYTES) return Infinity
+    }
+    return bytes
+}
+
 
 class MailProcessingService extends EventEmitter {
     constructor(mailRepository, imapService, clientNotification, config, smtpService = null, verificationStore = null, statisticsStore = null) {
@@ -52,28 +98,48 @@ class MailProcessingService extends EventEmitter {
     _initCache() {
         // Create a cache storage to track entries by UID
         this.cacheStorage = new Map() // Map of "address:uid:raw" -> cached result
+        this.cacheSizeBytes = 0
+        this.cacheEpoch = (this.cacheEpoch || 0) + 1
 
         // Wrapper that maintains our own cache with selective deletion
         this.cachedFetchFullMail = async(address, uid, raw) => {
             const cacheKey = `${address}:${uid}:${raw}`
+            const now = Date.now()
+            // Expire all old entries, including messages never requested again.
+            for (const [key, entry] of this.cacheStorage) {
+                if (now - entry.timestamp >= CACHE_TTL_MS) this._removeCachedMail(key)
+            }
 
             // Check our cache first
             if (this.cacheStorage.has(cacheKey)) {
                 const entry = this.cacheStorage.get(cacheKey)
-                if (Date.now() - entry.timestamp < 10 * 60 * 1000) {
+                if (now - entry.timestamp < CACHE_TTL_MS) {
+                    this.cacheStorage.delete(cacheKey)
+                    this.cacheStorage.set(cacheKey, entry)
                     return entry.value
                 } else {
-                    this.cacheStorage.delete(cacheKey)
+                    this._removeCachedMail(cacheKey)
                 }
             }
 
             // Fetch and cache
+            const epoch = this.cacheEpoch
             const result = await this.imapService.fetchOneFullMail(address, uid, raw)
-            this.cacheStorage.set(cacheKey, {
-                value: result,
-                timestamp: Date.now(),
-                uid: uid
-            })
+            const bytes = cacheCost(result) + cacheKey.length * 2 + 128
+            // A deletion/reset during the fetch must not resurrect cached mail.
+            if (epoch === this.cacheEpoch && bytes <= CACHE_MAX_BYTES) {
+                this._removeCachedMail(cacheKey)
+                while (this.cacheStorage.size >= CACHE_MAX_ENTRIES || this.cacheSizeBytes + bytes > CACHE_MAX_BYTES) {
+                    this._removeCachedMail(this.cacheStorage.keys().next().value)
+                }
+                this.cacheStorage.set(cacheKey, {
+                    value: result,
+                    timestamp: Date.now(),
+                    uid: uid,
+                    bytes
+                })
+                this.cacheSizeBytes += bytes
+            }
 
             return result
         }
@@ -81,6 +147,14 @@ class MailProcessingService extends EventEmitter {
         // Wrap it to use in sync context
         this._wrappedCachedFetch = (address, uid, raw) => {
             return this.cachedFetchFullMail(address, uid, raw)
+        }
+    }
+
+    _removeCachedMail(key) {
+        const entry = this.cacheStorage.get(key)
+        if (entry) {
+            this.cacheSizeBytes -= entry.bytes
+            this.cacheStorage.delete(key)
         }
     }
 
@@ -95,11 +169,12 @@ class MailProcessingService extends EventEmitter {
         // Selectively clear cache entries for a specific UID
         // Normalize UID to integer for comparison
         const normalizedUid = parseInt(uid)
+        this.cacheEpoch++
         let cleared = 0
 
         for (const [key, entry] of this.cacheStorage.entries()) {
             if (parseInt(entry.uid) === normalizedUid) {
-                this.cacheStorage.delete(key)
+                this._removeCachedMail(key)
                 cleared++
             }
         }
