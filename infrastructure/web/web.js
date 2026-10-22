@@ -185,22 +185,25 @@ app.use((req, res, next) => {
     next()
 })
 
-// Mount API router (v1)
+// Initialize once, after app.js has registered its service dependencies.
+let apiRouter
 app.use('/api/v1', (req, res, next) => {
-    const apiTokenRepository = req.app.get('apiTokenRepository')
-    const dependencies = {
-        apiTokenRepository,
-        mailProcessingService: req.app.get('mailProcessingService'),
-        authService: req.app.get('authService'),
-        userRepository: req.app.get('userRepository'),
-        imapService: req.app.get('imapService'),
-        inboxLock: req.app.get('inboxLock'),
-        statisticsStore: req.app.get('statisticsStore'),
-        smtpService: req.app.get('smtpService'),
-        verificationStore: req.app.get('verificationStore'),
-        config: req.app.get('config')
+    if (!apiRouter) {
+        const apiTokenRepository = req.app.get('apiTokenRepository')
+        const dependencies = {
+            apiTokenRepository,
+            mailProcessingService: req.app.get('mailProcessingService'),
+            authService: req.app.get('authService'),
+            userRepository: req.app.get('userRepository'),
+            imapService: req.app.get('imapService'),
+            inboxLock: req.app.get('inboxLock'),
+            statisticsStore: req.app.get('statisticsStore'),
+            smtpService: req.app.get('smtpService'),
+            verificationStore: req.app.get('verificationStore'),
+            config: req.app.get('config')
+        }
+        apiRouter = createApiRouter(dependencies)
     }
-    const apiRouter = createApiRouter(dependencies)
     apiRouter(req, res, next)
 })
 

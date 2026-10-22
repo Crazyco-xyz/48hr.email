@@ -1,5 +1,4 @@
 const express = require('express')
-const router = express.Router()
 
 /**
  * Statistics API Routes
@@ -8,6 +7,7 @@ const router = express.Router()
  */
 
 function createStatsRouter(dependencies) {
+    const router = express.Router()
     // Ensure router is declared before any usage
     const { statisticsStore, mailProcessingService, imapService, config } = dependencies
 

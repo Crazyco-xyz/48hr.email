@@ -1,5 +1,4 @@
 const express = require('express')
-const router = express.Router()
 const { body, validationResult } = require('express-validator')
 const createAuthenticator = require('../middleware/authenticator')
 const { ApiError } = require('../middleware/error-handler')
@@ -12,6 +11,7 @@ const { ApiError } = require('../middleware/error-handler')
  * POST /forward-all - Forward all emails in inbox
  */
 function createMailRouter(dependencies) {
+    const router = express.Router()
     // Ensure router is declared before any usage
     const {
         mailProcessingService,

@@ -1,5 +1,4 @@
 const express = require('express')
-const router = express.Router()
 const { body, validationResult } = require('express-validator')
 const { ApiError } = require('../middleware/error-handler')
 
@@ -11,6 +10,7 @@ const { ApiError } = require('../middleware/error-handler')
  * GET /session - Get current session info
  */
 function createAuthRouter(dependencies) {
+    const router = express.Router()
     const { authService, config } = dependencies
 
     // Check if auth is enabled

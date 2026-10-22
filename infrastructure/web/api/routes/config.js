@@ -1,5 +1,4 @@
 const express = require('express')
-const router = express.Router()
 
 /**
  * Configuration API Routes (Public)
