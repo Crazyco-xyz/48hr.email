@@ -137,23 +137,17 @@ app.use((req, res, next) => {
 })
 
 // Middleware to expose mail count to all templates
-app.use(async(req, res, next) => {
+app.use((req, res, next) => {
     const mailProcessingService = req.app.get('mailProcessingService')
-    const imapService = req.app.get('imapService')
+    const statisticsStore = req.app.get('statisticsStore')
     const Helper = require('../../application/helper-service')
     const helper = new Helper()
 
     if (mailProcessingService) {
         const count = mailProcessingService.getCount()
-        let largestUid = null
-
-        if (imapService) {
-            try {
-                largestUid = await imapService.getLargestUid()
-            } catch (e) {
-                debug('Error getting largest UID:', e.message)
-            }
-        }
+        // Background mail processing already keeps this persisted total current.
+        // A decorative footer must not make HTTP depend on a live IMAP request.
+        const largestUid = statisticsStore ? statisticsStore.largestUid : null
 
         res.locals.mailCount = helper.mailCountBuilder(count, largestUid)
     } else {

@@ -103,3 +103,17 @@ test('3000 actual API health requests retain bounded memory under a 64 MB heap',
 	assert.equal(row.limited, 2900)
 	assert(row.retainedHeapGrowth < 8 * 1024 * 1024)
 })
+
+test('HTTP responses use cached counts when IMAP never answers', () => {
+	const result = spawnSync(
+		process.execPath,
+		[path.join(__dirname, 'fixtures/http-mail-count.cjs')],
+		{cwd: path.resolve(__dirname, '..'), encoding: 'utf8', timeout: 10_000},
+	)
+	assert.equal(result.status, 0, result.stderr)
+	const row = JSON.parse(result.stdout)
+	assert.equal(row.requests, 4)
+	assert.equal(row.imapLookups, 0)
+	assert.equal(row.cachedTooltip, true)
+	assert.equal(row.noStatisticsFallback, true)
+})
