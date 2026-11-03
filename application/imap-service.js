@@ -107,6 +107,7 @@ class ImapService extends EventEmitter {
         this.intentionallyClosed = false
         this._reconnectPromise = null
         this._purgeRun = null
+        this._loadRun = null
     }
 
     async connectAndLoadMessages() {
@@ -184,7 +185,10 @@ class ImapService extends EventEmitter {
      * @private
      */
     _attachConnection(connection) {
+        const previous = this.connection
+        if (previous !== connection) this._cancelMailLoad()
         this.connection = connection
+        if (previous && previous !== connection) this._discardConnection(previous)
 
         const onError = error => {
             if (connection !== this.connection) return
@@ -207,9 +211,23 @@ class ImapService extends EventEmitter {
     _onConnectionLost(error) {
         // Drop the dead reference so callers fail fast and loading pauses until
         // a live connection is back.
+        const connection = this.connection
         this.connection = null
+        this._cancelMailLoad()
+        if (connection) this._discardConnection(connection)
         this.emit(ImapService.EVENT_CONNECTION_LOST, error)
         this._scheduleReconnect()
+    }
+
+    _discardConnection(connection) {
+        // LOGOUT can remain queued behind the abandoned request. A failed
+        // connection must release that queue rather than block its replacement.
+        try {
+            if (typeof connection.imap?.destroy === 'function') connection.imap.destroy()
+            else connection.end()
+        } catch (error) {
+            debug('Discarding IMAP connection failed:', error.message)
+        }
     }
 
     /**
@@ -278,23 +296,28 @@ class ImapService extends EventEmitter {
      */
     close() {
         this.intentionallyClosed = true
-        if (this.connection) {
-            try { this.connection.end() } catch { /* ignore */ }
-            this.connection = null
+        const connection = this.connection
+        const pendingLoad = Boolean(this._loadRun)
+        this.connection = null
+        this._cancelMailLoad()
+        if (connection) {
+            if (pendingLoad) this._discardConnection(connection)
+            else try { connection.end() } catch { /* ignore */ }
         }
     }
 
     _doOnNewMail() {
-        // Only react to new mails after the initial load, otherwise it might load the same mails twice.
-        if (this.initialLoadDone) {
+        // A failed initial load also needs to retry on the next notification.
+        // An active load coalesces notifications instead of fetching twice.
+        if (this.connection && !this.intentionallyClosed) {
             this._loadMailSummariesAndEmitAsEvents().catch(error =>
                 debug('On-new-mail load failed:', error.message))
         }
     }
 
     _doAfterInitialLoad() {
-        // During initial load we ignored new incoming emails. In order to catch up with those, we have to refresh
-        // the mails once after the initial load. (async)
+        // Request a catch-up pass after the initial index. Notifications received
+        // during a load coalesce into this serialized refresh.
         this._loadMailSummariesAndEmitAsEvents().catch(error =>
             debug('Post-initial-load refresh failed:', error.message))
 
@@ -316,77 +339,117 @@ class ImapService extends EventEmitter {
         }
     }
 
-    async _loadMailSummariesAndEmitAsEvents() {
-        // Prevent overlapping loads which can inflate counts
-        if (this.loadingInProgress) {
-            debug('Load skipped: another load already in progress')
-            return
-        }
-
-        if (!this.connection) {
+    _loadMailSummariesAndEmitAsEvents() {
+        if (!this.connection || this.intentionallyClosed) {
             debug('Load skipped: no live IMAP connection')
-            return
+            return Promise.resolve()
         }
 
+        if (this._loadRun?.connection === this.connection) {
+            this._loadRun.again = true
+            return this._loadRun.promise
+        }
+
+        const run = {
+            connection: this.connection,
+            cancelled: null,
+            cancelListeners: new Set(),
+            again: false,
+            promise: null
+        }
+        this._loadRun = run
         this.loadingInProgress = true
-        try {
-            if (this.initialLoadDone) {
-                debug('Updating mail summaries from server...')
-            } else {
-                debug('Fetching mail summaries from server...')
+        // Assign the promise before transport callbacks can request a refresh.
+        run.promise = Promise.resolve().then(async () => {
+            do {
+                run.again = false
+                await this._loadMailPass(run)
+            } while (run.again)
+        }).finally(() => {
+            if (this._loadRun === run) {
+                this._loadRun = null
+                this.loadingInProgress = false
             }
+        })
+        return run.promise
+    }
 
-            const uids = await this._getAllUids()
-            const newUids = uids.filter(uid => !this.loadedUids.has(uid))
-            debug(`UIDs on server: ${uids.length}, new UIDs to fetch: ${newUids.length}, already loaded: ${this.loadedUids.size}`)
+    _cancelMailLoad() {
+        const run = this._loadRun
+        if (!run) return
+        this._loadRun = null
+        this.loadingInProgress = false
+        const error = new Error('IMAP mail load superseded or closed')
+        error.code = 'IMAP_LOAD_CANCELLED'
+        run.cancelled = error
+        for (const cancel of run.cancelListeners) cancel(error)
+        run.cancelListeners.clear()
+    }
 
-            // Tuneable chunk size & concurrency for faster initial loads
-            const chunkSize = this.config.imap.fetchChunkSize
-            const concurrency = this.config.imap.fetchConcurrency
+    _assertMailLoad(run) {
+        if (run.cancelled) throw run.cancelled
+        if (this._loadRun !== run || this.connection !== run.connection || this.intentionallyClosed) {
+            const error = new Error('IMAP mail load no longer owns this connection')
+            error.code = 'IMAP_LOAD_CANCELLED'
+            throw error
+        }
+    }
 
-            // Chunk newest-first UIDs to balance speed and first-paint
-            const uidChunks = []
-            for (let i = 0; i < newUids.length; i += chunkSize) {
-                uidChunks.push(newUids.slice(i, i + chunkSize))
+    _awaitMailLoad(run, operation) {
+        return new Promise((resolve, reject) => {
+            const cancel = error => {
+                run.cancelListeners.delete(cancel)
+                reject(error)
             }
-            debug(`Chunk size: ${chunkSize}, concurrency: ${concurrency}, chunks to process: ${uidChunks.length}`)
+            run.cancelListeners.add(cancel)
+            Promise.resolve(operation).then(value => {
+                run.cancelListeners.delete(cancel)
+                resolve(value)
+            }, error => {
+                run.cancelListeners.delete(cancel)
+                reject(error)
+            })
+            if (run.cancelled) cancel(run.cancelled)
+        })
+    }
 
-            // Limited-concurrency worker
-            const pool = []
-            let workerId = 0
-            const runNext = async() => {
-                if (workerId >= uidChunks.length) return
-                const chunkId = workerId++
-                const chunk = uidChunks[chunkId]
+    async _loadMailPass(run) {
+        this._assertMailLoad(run)
+        const uids = await this._awaitMailLoad(run, this._getAllUids(run.connection))
+        this._assertMailLoad(run)
+        const newUids = uids.filter(uid => !this.loadedUids.has(uid))
+        const chunkSize = this.config.imap.fetchChunkSize
+        const concurrency = this.config.imap.fetchConcurrency
+        if (!Number.isInteger(chunkSize) || chunkSize < 1 ||
+            !Number.isInteger(concurrency) || concurrency < 1) {
+            throw new Error('Invalid IMAP summary batch configuration')
+        }
+        const uidChunks = []
+        for (let index = 0; index < newUids.length; index += chunkSize) {
+            uidChunks.push(newUids.slice(index, index + chunkSize))
+        }
+        let nextChunk = 0
+        let failure = null
+        const worker = async () => {
+            while (nextChunk < uidChunks.length && !failure) {
+                const chunk = uidChunks[nextChunk++]
                 try {
-                    debug(`Worker processing chunk ${chunkId + 1}/${uidChunks.length} (size: ${chunk.length})`)
-                    await this._getMailHeadersAndEmitAsEvents(chunk)
-                    debug(`Completed chunk ${chunkId + 1}/${uidChunks.length}; loadedUids size now: ${this.loadedUids.size}`)
-                } finally {
-                    await runNext()
+                    this._assertMailLoad(run)
+                    await this._getMailHeadersAndEmitAsEvents(chunk, run)
+                } catch (error) {
+                    failure ||= error
                 }
             }
+        }
+        // Wait for every active worker before releasing a live connection's
+        // load. A dropped/replaced connection cancels all waits explicitly.
+        await Promise.all(Array.from({ length: Math.min(concurrency, uidChunks.length) }, worker))
+        if (failure) throw failure
+        this._assertMailLoad(run)
 
-            // Start workers
-            const workers = Math.min(concurrency, uidChunks.length)
-            for (let i = 0; i < workers; i++) {
-                pool.push(runNext())
-            }
-            await Promise.all(pool)
-            debug(`All chunks processed. Final loadedUids size: ${this.loadedUids.size}`)
-
-            // Mark initial load done only after all chunks complete to avoid double-runs
-            if (!this.initialLoadDone) {
-                this.initialLoadDone = true
-                this.emit(ImapService.EVENT_INITIAL_LOAD_DONE)
-                debug('Emitted initial load done')
-            }
-
-            debug('Finished updating mail summary list')
-        } finally {
-            // Always release the lock: if the connection dropped mid-load, a stuck
-            // flag would silently skip every future refresh.
-            this.loadingInProgress = false
+        if (!this.initialLoadDone) {
+            this.initialLoadDone = true
+            this.emit(ImapService.EVENT_INITIAL_LOAD_DONE)
         }
     }
     /**
@@ -655,25 +718,32 @@ class ImapService extends EventEmitter {
     }
 
 
-    async _getAllUids() {
+    async _getAllUids(connection = this.connection) {
         // We ignore mails that are flagged as DELETED, but have not been removed (expunged) yet.
         const uids = await this._searchWithoutFetch([
                 ['!DELETED']
-            ])
+            ], connection)
             // Create copy to not mutate the original array. Sort with newest first (DESC).
         return [...uids].sort().reverse()
     }
 
-    async _getMailHeadersAndEmitAsEvents(uids) {
+    async _getMailHeadersAndEmitAsEvents(uids, run) {
         try {
-            const mails = await this._getMailHeaders(uids)
+            const mails = await this._getMailHeaders(uids, run.connection, run)
+            this._assertMailLoad(run)
+            const requested = new Set(uids)
             debug(`Fetched headers for ${uids.length} UIDs; server returned ${mails.length} messages`)
             mails.forEach(mail => {
-                this.loadedUids.add(mail.attributes.uid)
-                    // Some broadcast messages have no TO field. We have to ignore those messages.
-                if (mail.parts[0].body.to) {
-                    this.emit(ImapService.EVENT_NEW_MAIL, this._createMailSummary(mail))
+                this._assertMailLoad(run)
+                if (!Number.isSafeInteger(mail.attributes?.uid) || !requested.has(mail.attributes.uid)) {
+                    throw new Error('Unexpected IMAP summary UID')
                 }
+                const header = mail.parts?.[0]?.body
+                if (!header) throw new Error('Missing IMAP summary headers')
+                    // Some broadcast messages have no TO field. We have to ignore those messages.
+                const summary = header.to ? this._createMailSummary(mail) : null
+                this.loadedUids.add(mail.attributes.uid)
+                if (summary) this.emit(ImapService.EVENT_NEW_MAIL, summary)
             })
         } catch (error) {
             debug('Cant fetch', error)
@@ -681,16 +751,101 @@ class ImapService extends EventEmitter {
         }
     }
 
-    async _getMailHeaders(uids) {
+    _getMailHeaders(uids, connection = this.connection, run = null) {
         const fetchOptions = {
             envelope: true,
             bodies: ['HEADER.FIELDS (FROM TO SUBJECT DATE)'],
-            struct: false
+            struct: false,
+            markSeen: false
         }
-        const searchCriteria = [
-            ['UID', ...uids]
-        ]
-        return this.connection.search(searchCriteria, fetchOptions)
+        // imap-simple 1.6.3 waits for the searched UID count, even when a UID
+        // vanished before FETCH. Complete from actual message/stream/end events.
+        return new Promise((resolve, reject) => {
+            let fetch, ended = false, pending = 0, settled = false, mails = []
+            const cleanup = new Set()
+            const finish = error => {
+                if (settled) return
+                settled = true
+                run?.cancelListeners.delete(cancel)
+                fetch?.removeListener('message', onMessage)
+                fetch?.removeListener('end', onEnd)
+                for (const dispose of cleanup) dispose()
+                cleanup.clear()
+                const result = mails
+                mails = []
+                if (error) reject(error)
+                else resolve(result)
+            }
+            const complete = () => { if (ended && pending === 0) finish() }
+            const cancel = error => finish(error)
+            const onError = error => finish(error)
+            const onEnd = () => { ended = true; complete() }
+            const onMessage = message => {
+                if (settled) return
+                pending++
+                let attributes, messageEnded = false, bodies = 0, done = false
+                const parts = []
+                const completeMessage = () => {
+                    if (settled || done || !messageEnded || bodies) return
+                    done = true
+                    mails.push({ attributes, parts })
+                    pending--
+                    dispose()
+                    cleanup.delete(dispose)
+                    complete()
+                }
+                const onAttributes = value => { attributes = value }
+                const onMessageEnd = () => { messageEnded = true; completeMessage() }
+                const onBody = (stream, info) => {
+                    if (typeof info?.which !== 'string' || !info.which.startsWith('HEADER.FIELDS ')) {
+                        finish(new Error('Unexpected IMAP summary body part'))
+                        return
+                    }
+                    bodies++
+                    let body = ''
+                    const onData = chunk => { if (!settled) body += chunk.toString('utf8') }
+                    const disposeBody = () => {
+                        body = ''
+                        stream.removeListener('data', onData)
+                        stream.removeListener('end', onBodyEnd)
+                    }
+                    const onBodyEnd = () => {
+                        if (settled) return
+                        try {
+                            parts.push({ which: info.which, size: info.size, body: imaps.parseHeader(body) })
+                            bodies--
+                            disposeBody()
+                            cleanup.delete(disposeBody)
+                            completeMessage()
+                        } catch (error) { finish(error) }
+                    }
+                    cleanup.add(disposeBody)
+                    stream.on('data', onData)
+                    stream.once('end', onBodyEnd)
+                    stream.on('error', onError)
+                }
+                const dispose = () => {
+                    message.removeListener('body', onBody)
+                    message.removeListener('attributes', onAttributes)
+                    message.removeListener('end', onMessageEnd)
+                }
+                cleanup.add(dispose)
+                message.on('body', onBody)
+                message.once('attributes', onAttributes)
+                message.once('end', onMessageEnd)
+                message.on('error', onError)
+            }
+            try {
+                fetch = connection.imap.fetch(uids, fetchOptions)
+                fetch.on('message', onMessage)
+                // Keep settled error listeners to consume late errors after a
+                // disconnect; all body buffers and mutation paths are detached.
+                fetch.on('error', onError)
+                fetch.once('end', onEnd)
+                run?.cancelListeners.add(cancel)
+                if (run?.cancelled) cancel(run.cancelled)
+            } catch (error) { finish(error) }
+        })
     }
 
     /* 
